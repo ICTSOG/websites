@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="nl" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduLinks - ICT & Media Portaal</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts - Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#095186',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .card-gradient {
+      background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(243,244,246,0.95) 100%);
+    }
+    .dark .card-gradient {
+      background: linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%);
+    }
+    .text-gradient {
+      background: linear-gradient(135deg, #2563eb, #0d9488);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .dark .text-gradient {
+      background: linear-gradient(135deg, #60a5fa, #2dd4bf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-200 flex flex-col font-sans">
+
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <i class="fa-solid font-bold fa-graduation-cap text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">EduLinks <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold uppercase tracking-wider ml-1">Klasportaal</span></h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Digitale gids voor leerkrachten, ICT-coaches & leerlingen</p>
+        </div>
+      </div>
+
+      <!-- Quick Search Bar in Header -->
+      <div class="flex-1 max-w-md mx-2">
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input type="text" id="searchInput" placeholder="Zoek op titel, trefwoord, tool..." class="w-full pl-10 pr-10 py-2 text-sm bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 placeholder-slate-400 transition">
+          <button id="clearSearch" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Theme Toggle & Stats Badge -->
+      <div class="flex items-center space-x-2">
+        <div id="itemCount" class="hidden md:inline-flex items-center text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+          <i class="fa-solid fa-link mr-1.5 text-blue-500"></i> <span id="visibleCount">0</span>/<span id="totalCount">85</span> sites
+        </div>
+        <button id="themeToggle" class="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Wissel Thema">
+          <i class="fa-solid fa-moon dark:hidden text-lg"></i>
+          <i class="fa-solid fa-sun hidden dark:block text-lg text-amber-400"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    
+    <!-- Hero Banner -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-teal-600 to-indigo-700 text-white p-6 sm:p-8 shadow-lg">
+      <div class="relative z-10 max-w-2xl">
+        <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md text-xs font-semibold rounded-full mb-3 tracking-wide uppercase">Educatieve Linkverzameling</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold leading-tight">Vind snel de juiste digitale tool of schoolomgeving</h2>
+        <p class="mt-2 text-sm sm:text-base text-blue-100 leading-relaxed">
+          Filter eenvoudig op categorie, doelgroep of lesdoel. Inclusief alle platforms, beheertools, nascholingen en lesmaterialen van je favorieten.
+        </p>
+      </div>
+      <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl font-black select-none pointer-events-none">
+        <i class="fa-solid fa-compass"></i>
+      </div>
+    </div>
+
+    <!-- Interactive Filters Container -->
+    <section class="bg-white dark:bg-slate-800/80 rounded-2xl p-5 border border-slate-200 dark:border-slate-700/60 shadow-sm space-y-4">
+      
+      <!-- Categorieën Filter -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-layer-group text-blue-500"></i> Categorieën
+          </label>
+        </div>
+        <div class="flex flex-wrap gap-2" id="categoryFilters">
+          <button data-cat="all" class="cat-btn active px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 bg-blue-600 text-white shadow-sm">
+            <i class="fa-solid fa-border-all"></i> Alles
+          </button>
+          <button data-cat="beheer" class="cat-btn px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600">
+            <i class="fa-solid fa-sliders text-blue-500"></i> Beheer & Scholen
+          </button>
+          <button data-cat="platforms" class="cat-btn px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600">
+            <i class="fa-solid fa-laptop-code text-teal-500"></i> Educatieve Platforms
+          </button>
+          <button data-cat="opleidingen" class="cat-btn px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600">
+            <i class="fa-solid fa-chalkboard-user text-sky-500"></i> Opleidingen & Partners
+          </button>
+          <button data-cat="mediawijsheid" class="cat-btn px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600">
+            <i class="fa-solid fa-shield-halved text-emerald-500"></i> Mediawijsheid & Veiligheid
+          </button>
+          <button data-cat="ict-basis" class="cat-btn px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600">
+            <i class="fa-solid fa-keyboard text-amber-500"></i> ICT Basisvaardigheden
+          </button>
+          <button data-cat="creatief" class="cat-btn px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600">
+            <i class="fa-solid fa-palette text-purple-500"></i> Creatief met Media
+          </button>
+          <button data-cat="coding" class="cat-btn px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600">
+            <i class="fa-solid fa-code text-rose-500"></i> Coding & STEM
+          </button>
+          <button data-cat="ai" class="cat-btn px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600">
+            <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i> AI in de Klas
+          </button>
+        </div>
+      </div>
+
+      <div class="h-px bg-slate-200 dark:bg-slate-700/60 my-3"></div>
+
+      <!-- Secondary Filters: Leeftijd & Doel -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <!-- Leeftijd Filter -->
+        <div>
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-child text-teal-500"></i> Target Leeftijdsgroep
+          </label>
+          <div class="flex flex-wrap gap-1.5" id="ageFilters">
+            <button data-age="all" class="age-btn active px-3 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">Alle doelgroepen</button>
+            <button data-age="kleuter" class="age-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200">Kleuter / 5-7j</button>
+            <button data-age="lager" class="age-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200">Lager / 8-10j</button>
+            <button data-age="bovenbouw" class="age-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200">Bovenbouw / 11-14j</button>
+            <button data-age="leerkracht" class="age-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200">Leerkracht & Beheer</button>
+          </div>
+        </div>
+
+        <!-- Lesdoel Filter -->
+        <div>
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-bullseye text-rose-500"></i> Lesdoel / Type Tool
+          </label>
+          <div class="flex flex-wrap gap-1.5" id="goalFilters">
+            <button data-goal="all" class="goal-btn active px-3 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">Alle doelen</button>
+            <button data-goal="oefenen" class="goal-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200">Oefenen & Leren</button>
+            <button data-goal="creatief" class="goal-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200">Creatief & Maken</button>
+            <button data-goal="tool" class="goal-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200">Tool & App</button>
+            <button data-goal="materiaal" class="goal-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200">Lesmateriaal / Info</button>
+            <button data-goal="beheer" class="goal-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 hover:bg-slate-200">Beheer & Admin</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Active Filter Reset Bar -->
+      <div id="resetFilterBar" class="hidden flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-slate-700">
+        <span class="text-slate-500">Er zijn filters actief</span>
+        <button id="resetAllFilters" class="text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1">
+          <i class="fa-solid fa-rotate-left"></i> Reset alle filters
+        </button>
+      </div>
+
+    </section>
+
+    <div id="cardsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+      <!-- Dynamic Javascript rendering will populate the items here -->
+    </div>
+
+    <!-- No Results Placeholder -->
+    <div id="noResults" class="hidden text-center py-16 px-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+      <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400 text-2xl">
+        <i class="fa-solid fa-magnifying-glass-slash"></i>
+      </div>
+      <h3 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-1">Geen websites gevonden</h3>
+      <p class="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto mb-4">Probeer een andere zoekterm of wis je actieve filters om meer resultaten te zien.</p>
+      <button onclick="resetFilters()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition">
+        Reset alle zoekfilters
+      </button>
+    </div>
+
+  </main>
+
+  <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 mt-12 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p>© EduLinks - Klas- en ICT-portaal voor Stedelijk Onderwijs Gent. Volledig gratis te gebruiken.</p>
+      <div class="flex items-center space-x-4">
+        <span class="inline-flex items-center text-slate-400"><i class="fa-solid fa-graduation-cap mr-1 text-blue-500"></i> Voor Basis- & Secundair Onderwijs</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Database gevuld op basis van favorites_09-10-2026.html
+    const linksData = [
+      // BEHEER & SCHOLEN
+      { title: "De Lotus SharePoint", url: "https://stedelijkonderwijs.sharepoint.com/sites/DeLotus", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "SharePoint portal en digitale werkomgeving van Basisschool De Lotus.", tags: ["sharepoint", "de lotus", "gent", "school"] },
+      { title: "De Feniks SharePoint", url: "https://stedelijkonderwijs.sharepoint.com/sites/DeFeniks", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "SharePoint portal en digitale werkomgeving van Basisschool De Feniks.", tags: ["sharepoint", "de feniks", "gent", "school"] },
+      { title: "Hippo's Hof SharePoint", url: "https://stedelijkonderwijs.sharepoint.com/sites/HipposHof", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "SharePoint portal en werkruimte van Basisschool Hippo's Hof.", tags: ["sharepoint", "hippos hof", "gent", "school"] },
+      { title: "Mandala SharePoint", url: "https://stedelijkonderwijs.sharepoint.com/sites/Mandala", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "SharePoint omgeving voor teamleden van Basisschool Mandala.", tags: ["sharepoint", "mandala", "gent", "school"] },
+      { title: "De Tovertuin SharePoint", url: "https://stedelijkonderwijs.sharepoint.com/sites/DeTovertuin", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "SharePoint klas- en teamomgeving van Basisschool De Tovertuin.", tags: ["sharepoint", "tovertuin", "gent", "school"] },
+      { title: "De Brug SharePoint", url: "https://stedelijkonderwijs.sharepoint.com/sites/DeBrug", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "SharePoint documenten- en informatiesite van Basisschool De Brug.", tags: ["sharepoint", "de brug", "gent", "school"] },
+      { title: "De Regenboog SharePoint", url: "https://stedelijkonderwijs.sharepoint.com/sites/DeRegenboog", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "SharePoint portal van Basisschool De Regenboog.", tags: ["sharepoint", "de regenboog", "gent", "school"] },
+      { title: "Power Automate Cloud", url: "https://make.powerautomate.com/", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "Microsoft Power Automate voor het automatiseren van gestroomlijnde workflows en ICT-processen.", tags: ["power automate", "microsoft", "workflow", "automatisering"] },
+      { title: "Schoolbordtools - Intune for Education", url: "https://endpoint.microsoft.com/", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "Beheer- en instellingenportal voor Windows-toestellen en applicaties in het onderwijs.", tags: ["intune", "microsoft", "toestelbeheer", "ict"] },
+      { title: "Jamf School", url: "https://www.jamf.com/products/jamf-school/", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "MDM-beheersysteem voor het beheren van iPads en Apple-toestellen in de scholen.", tags: ["jamf", "apple", "ipad", "mdm"] },
+      { title: "Signpost M4S Portal", url: "https://m4s.signpost.be/", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "Hardware- en serviceportal van Signpost voor toestelherstellingen en garantieafhandeling.", tags: ["signpost", "m4s", "hardware", "garantie"] },
+      { title: "i3RDM - Remote Display Management", url: "https://i3rdm.com/", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "Centraal beheerplatform voor i3-TOUCH digiborden en touchscreens in de klaslokalen.", tags: ["i3rdm", "digibord", "touchscreen", "beheer"] },
+      { title: "HEAT Service Desk - District09", url: "https://heat.gent.be/", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "Meldingensysteem en helpdesk van District09 voor ICT-ondersteuning in Gentse scholen.", tags: ["heat", "district09", "helpdesk", "gent"] },
+      { title: "Passwordstate Gent", url: "https://passwordstate.gent.be/", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "Beveiligde kluis voor centraal en veilig wachtwoordbeheer binnen Stad Gent.", tags: ["passwordstate", "wachtwoorden", "beveiliging", "gent"] },
+      { title: "Ultimo - Poolwagens Gent", url: "https://ultimo.gent.be/", cat: "beheer", age: "leerkracht", goal: "beheer", desc: "Reserveringssysteem voor dienstvoertuigen en poolwagens van Stad Gent.", tags: ["ultimo", "poolwagens", "reserveren", "gent"] },
+      { title: "DigiNieuws & ICTheek", url: "https://ictheek.gent.be/", cat: "beheer", age: "leerkracht", goal: "materiaal", desc: "Interne kennisbank, handleidingen en nieuwsupdates rond ICT voor Gentse leerkrachten.", tags: ["ictheek", "diginieuws", "handleidingen", "gent"] },
+
+      // EDUCATIEVE PLATFORMS
+      { title: "Scoodle Plantyn", url: "https://www.scoodle.be/", cat: "platforms", age: "lager", goal: "oefenen", desc: "Digitale leeromgeving en bordboeken van uitgeverij Plantyn voor leraren en leerlingen.", tags: ["scoodle", "plantyn", "bordboek", "oefenplatform"] },
+      { title: "Gynzy Teacher & Manager", url: "https://www.gynzy.com/", cat: "platforms", age: "lager", goal: "tool", desc: "Interactieve software voor het digibord met kant-en-klare lessen, tools en verwerkingssoftware.", tags: ["gynzy", "digibord", "lessen", "basisonderwijs"] },
+      { title: "Kabas - die Keure", url: "https://www.kabas.be/", cat: "platforms", age: "lager", goal: "oefenen", desc: "Het digitale onderwijsplatform van die Keure voor het basisonderwijs.", tags: ["kabas", "die keure", "methode", "oefeningen"] },
+      { title: "Xnapda - Educatieve Filmpjes", url: "https://www.xnapda.be/", cat: "platforms", age: "lager", goal: "materiaal", desc: "Korte instructiefilmpjes en video's voor alle onderwerpen van het basisonderwijs.", tags: ["xnapda", "video", "instructie", "onthouden"] },
+      { title: "Prowise Learn", url: "https://www.prowiselearn.com/", cat: "platforms", age: "lager", goal: "oefenen", desc: "Oefensoftware (o.a. Rekentuin en Taalzee) die zich adaptief aanpast aan het niveau van het kind.", tags: ["prowise", "rekentuin", "taalzee", "adaptief"] },
+      { title: "Zipper - Uitgeverij Zwijsen", url: "https://www.uitgeverijzwijsen.be/", cat: "platforms", age: "lager", goal: "oefenen", desc: "Digitaal leer- en oefenplatform bij de lesmethodes van Zwijsen.", tags: ["zipper", "zwijsen", "lezen", "veilig leren lezen"] },
+      { title: "Oefenjemee.be", url: "https://www.oefenjemee.be/", cat: "platforms", age: "lager", goal: "oefenen", desc: "Overzichtelijk oefenplatform vol educatieve spelletjes voor rekenen, taal en wereldoriëntatie.", tags: ["oefenjemee", "spelletjes", "rekenen", "taal"] },
+      { title: "Schoolware / WISA", url: "https://www.wisa.be/", cat: "platforms", age: "leerkracht", goal: "beheer", desc: "Schooladministratie, leerlingenvolgsysteem en puntenboekje voor scholen.", tags: ["schoolware", "wisa", "administratie", "puntenboek"] },
+      { title: "Canva for Education", url: "https://www.canva.com/education/", cat: "platforms", age: "lager", goal: "creatief", desc: "Gratis grafisch ontwerpplatform voor scholen om visuele presentaties, posters en werkbladen te maken.", tags: ["canva", "ontwerp", "presentatie", "grafisch"] },
+
+      // OPLEIDINGEN & PARTNERS
+      { title: "Onderwijscentrum Gent", url: "https://onderwijscentrum.gent.be/", cat: "opleidingen", age: "leerkracht", goal: "materiaal", desc: "Ondersteuning, vormingsaanbod en projecten voor gelijke onderwijskansen in Gent.", tags: ["onderwijscentrum", "gent", "vorming", "ondersteuning"] },
+      { title: "Microsoft 365 Educatie Center", url: "https://education.microsoft.com/", cat: "opleidingen", age: "leerkracht", goal: "materiaal", desc: "Professionaliseringscursussen en certificaten voor het gebruik van M365-tools in de klas.", tags: ["microsoft", "m365", "cursus", "training"] },
+      { title: "Fourcast Academy", url: "https://www.fourcast.io/academy", cat: "opleidingen", age: "leerkracht", goal: "materiaal", desc: "Opleidingen, coaching en workshops rond onderwijsvernieuwing en digitale didactiek.", tags: ["fourcast", "academy", "nascholing", "coach"] },
+      { title: "Canva Design School", url: "https://www.canva.com/designschool/", cat: "opleidingen", age: "leerkracht", goal: "materiaal", desc: "Gratis online videocursussen over visueel ontwerp en het bouwen van lesmateriaal in Canva.", tags: ["canva", "design school", "cursus", "video"] },
+      { title: "Schoolupdate", url: "https://www.schoolupdate.be/", cat: "opleidingen", age: "leerkracht", goal: "materiaal", desc: "Inspiratie, vorming en begeleiding bij het opstellen van een digitaal schoolbeleid.", tags: ["schoolupdate", "ict beleid", "nascholing", "visie"] },
+      { title: "The Pop-Up Classroom", url: "https://thepopupclassroom.be/", cat: "opleidingen", age: "leerkracht", goal: "materiaal", desc: "Praktijkgerichte workshops en inspiratiesessies over innovatief lesgeven en technologie.", tags: ["popup classroom", "innovatie", "didactiek", "workshop"] },
+      { title: "Mijn Onderwijs / Schoolloket Vlaanderen", url: "https://mijn.onderwijs.vlaanderen.be/", cat: "opleidingen", age: "leerkracht", goal: "beheer", desc: "Officieel portaal van de Vlaamse overheid voor LeerID en de centrale Vlaamse Toetsen.", tags: ["vlaanderen", "leerid", "vlaamse toetsen", "overheid"] },
+      { title: "Gebruikersbeheer Vlaanderen", url: "https://gebruikersbeheer.vlaanderen.be/", cat: "opleidingen", age: "leerkracht", goal: "beheer", desc: "Toangs- en rechtenbeheer voor online toepassingen van de Vlaamse overheid.", tags: ["gebruikersbeheer", "vlaanderen", "rechten", "iam"] },
+      { title: "Onderwijsdoelen Vlaanderen", url: "https://www.onderwijsdoelen.be/", cat: "opleidingen", age: "leerkracht", goal: "materiaal", desc: "Officiële databank met alle eindtermen, ontwikkelingsdoelen en ICT-sleutelcompetenties.", tags: ["eindtermen", "onderwijsdoelen", "vlaanderen", "leerplan"] },
+      { title: "Kenniscentrum Digisprong", url: "https://www.vlaanderen.be/digisprong", cat: "opleidingen", age: "leerkracht", goal: "materiaal", desc: "Centraal aanspreekpunt van de Vlaamse overheid voor ICT-infrastructuur en digitale visie.", tags: ["digisprong", "vlaanderen", "kenniscentrum", "ict visie"] },
+      { title: "OVSG Leer Lokaal", url: "https://www.ovsg.be/", cat: "opleidingen", age: "leerkracht", goal: "materiaal", desc: "Ondersteuningscel en leerplannen van het Onderwijscentrum voor Steden en Gemeenten.", tags: ["ovsg", "leerplan", "stedelijk onderwijs", "begeleiding"] },
+      { title: "DIAtoetsen", url: "https://www.diatoetsen.be/", cat: "opleidingen", age: "leerkracht", goal: "beheer", desc: "Gestandaardiseerde volg- en evaluatietoetsen voor taal en rekenen in het basisonderwijs.", tags: ["diatoetsen", "volgsysteem", "evaluatie", "toetsen"] },
+
+      // MEDIAWIJSHEID & VEILIGHEID
+      { title: "Leerlijn ICT (lager) – Inspira academy", url: "https://www.inspira-academy.be", cat: "mediawijsheid", age: "leerkracht", goal: "materiaal", desc: "Overzichtelijke en doorlopende ICT-leerlijn voor het basisonderwijs om digitale vaardigheden op te bouwen.", tags: ["leerlijn", "inspira", "curriculum", "ict gids"] },
+      { title: "My Check-ins | Microsoft Reflect", url: "https://reflect.microsoft.com", cat: "mediawijsheid", age: "lager", goal: "tool", desc: "Interactieve emotie- en welzijnsmonitor waarmee leerlingen hun gevoelens in de klas delen.", tags: ["microsoft", "reflect", "welzijn", "sociaal emotioneel"] },
+      { title: "Mediawijs - Wegwijzer in Digitale Wereld", url: "https://www.mediawijs.be", cat: "mediawijsheid", age: "leerkracht", goal: "materiaal", desc: "Het Vlaamse Kenniscentrum voor Digitale Geletterdheid vol lespakketten en dossiers.", tags: ["mediawijs", "vlaanderen", "veiligheid", "lespakketten"] },
+      { title: "WAT WAT - Info voor Jongeren (11-24j)", url: "https://www.watwat.be", cat: "mediawijsheid", age: "bovenbouw", goal: "materiaal", desc: "Jongerenplatform met betrouwbare antwoorden over online identiteit, privacy en de digitale wereld.", tags: ["watwat", "jongeren", "privacy", "advies"] },
+      { title: "Child Focus Educatief", url: "https://childfocus.be", cat: "mediawijsheid", age: "leerkracht", goal: "materiaal", desc: "Preventiemateriaal en ondersteuning rond online veiligheid, grooming en cyberpesten.", tags: ["child focus", "veiligheid", "preventie", "cyberpesten"] },
+      { title: "Digisaurus", url: "https://www.digisaurus.be", cat: "mediawijsheid", age: "lager", goal: "oefenen", desc: "Speelse methodiek om jonge kinderen bewust te maken van media, schermtijd en online gedrag.", tags: ["digisaurus", "mediaopvoeding", "kleuters", "spel"] },
+      { title: "Cyberhelden", url: "https://www.bibliothekenzondergrenzen.be", cat: "mediawijsheid", age: "lager", goal: "oefenen", desc: "Interactieve uitdagingen die kinderen omvormen tot kritische cyberhelden op het internet.", tags: ["cyberhelden", "bibliotheken", "interactief", "game"] },
+      { title: "Cyberpesten: 6 vormen – Klasse", url: "https://www.klasse.be", cat: "mediawijsheid", age: "leerkracht", goal: "materiaal", desc: "Praktisch overzichtsartikel van Klasse over hoe je online pesten herkent en aanpakt.", tags: ["klasse", "cyberpesten", "pesten", "leerkracht tip"] },
+      { title: "BARST! Methode - BrainBugs", url: "https://www.brainbugs.be", cat: "mediawijsheid", age: "bovenbouw", goal: "materiaal", desc: "Methode om nepnieuws, desinformatie en manipulatietechnieken op sociale media te ontmaskeren.", tags: ["brainbugs", "barst", "nepnieuws", "fake news"] },
+      { title: "VRT voor Leerkrachten", url: "https://www.vrt.be/nl/heb-je-een-vraag/vrt-voor-leerkrachten/", cat: "mediawijsheid", age: "leerkracht", goal: "materiaal", desc: "Educatief aanbod, audio/video fragmenten en lesmateriaal van de publieke omroep.", tags: ["vrt", "audio", "video", "nieuws in de klas"] },
+      { title: "Yodato - Kritische Datageletterdheid", url: "https://www.paolaverhaert.be", cat: "mediawijsheid", age: "bovenbouw", goal: "oefenen", desc: "Project dat kinderen leert hoe gegevens en algoritmes verzameld worden en hier kritisch mee om te gaan.", tags: ["yodato", "paola verhaert", "data", "algoritmes"] },
+      { title: "Apestaartjaren", url: "https://www.apestaartjaren.be/", cat: "mediawijsheid", age: "leerkracht", goal: "materiaal", desc: "Tweejaarlijks onderzoek naar het mediagebruik bij kinderen en jongeren in Vlaanderen.", tags: ["apestaartjaren", "onderzoek", "jeugd", "schermtijd"] },
+      { title: "Ik Beslis - Privacy op School", url: "https://www.ikbeslis.be/", cat: "mediawijsheid", age: "lager", goal: "oefenen", desc: "Educatief pakket van de Gegevensbeschermingsautoriteit om kinderen privacy aan te leren.", tags: ["ik beslis", "privacy", "gdpr", "online rechten"] },
+      { title: "Digisnap", url: "https://www.digisnap.be/", cat: "mediawijsheid", age: "leerkracht", goal: "materiaal", desc: "Zelfevaluatietool voor scholen om de digitale competenties van leerkrachten in kaart te brengen.", tags: ["digisnap", "competenties", "ict scan", "leerkracht"] },
+      { title: "Cyberkrak", url: "https://www.cyberkrak.be/", cat: "mediawijsheid", age: "lager", goal: "oefenen", desc: "Online quiz en game over veilig internetgebruik voor de bovenbouw van het basisonderwijs.", tags: ["cyberkrak", "quiz", "veiligheid", "internet"] },
+      { title: "Speelhetslim", url: "https://www.speelhetslim.be/", cat: "mediawijsheid", age: "lager", goal: "oefenen", desc: "Informatieve website en tips rond verantwoord gamen, in-game aankopen en schermtijd.", tags: ["speelhetslim", "gaming", "schermtijd", "ouders"] },
+
+      // ICT BASISVAARDIGHEDEN & GELETTERDHEID
+      { title: "Typeles Online - Leren Typen", url: "https://www.typelesonline.nl", cat: "ict-basis", age: "lager", goal: "oefenen", desc: "Gratis online typcursus waarmee leerlingen stapsgewijs met 10 vingers blind leren typen.", tags: ["typen", "10 vingers", "toetsenbord", "blindtypen"] },
+      { title: "Mind Express - Jabbla", url: "https://www.jabbla.com/nl/software/mind-express/", cat: "ict-basis", age: "kleuter", goal: "tool", desc: "Ondersteunende communicatiesoftware voor onderwijs & communicatie (OC) met visualisaties.", tags: ["jabbla", "mind express", "ondersteunde communicatie", "inclusie"] },
+      { title: "WoordzoekerMaken.nl", url: "https://www.woordzoekermaken.nl", cat: "ict-basis", age: "lager", goal: "tool", desc: "Handige webtool om snel gepersonaliseerde woordzoekers te genereren op basis van klaswoorden.", tags: ["woordzoeker", "puzzel maker", "taal", "werkblad"] },
+      { title: "Whizzkids ICT-Competitie", url: "https://www.whizzkids.be/", cat: "ict-basis", age: "lager", goal: "oefenen", desc: "Vlaamse online ICT-competitie waarin klasgroepen via zoekstrategieën digitale vaardigheden oefenen.", tags: ["whizzkids", "quiz", "zoeken op internet", "wedstrijd"] },
+
+      // CREATIEF MET MEDIA
+      { title: "Brightlab E-class Tinkercad", url: "https://www.brightlab.be", cat: "creatief", age: "bovenbouw", goal: "materiaal", desc: "Kant-en-klare STEM-lesfiches van Brightlab om meteen aan de slag te gaan met 3D-ontwerpen.", tags: ["brightlab", "3d", "stem", "lesfiches"] },
+      { title: "Book Creator", url: "https://bookcreator.com", cat: "creatief", age: "lager", goal: "creatief", desc: "Eenvoudige tool waarmee leerlingen eigen digitale prentenboeken en verhalen maken.", tags: ["book creator", "e-books", "verhalen", "prentenboek"] },
+      { title: "Google SketchUp for Schools", url: "https://www.sketchup.com/products/sketchup-for-schools", cat: "creatief", age: "bovenbouw", goal: "creatief", desc: "3D-modelleersoftware speciaal aangepast voor scholen (Chromebook-vriendelijk).", tags: ["sketchup", "google", "3d modelleren", "ontwerp"] },
+      { title: "Tinkercad 3D Design", url: "https://www.tinkercad.com", cat: "creatief", age: "lager", goal: "creatief", desc: "Toegankelijke online CAD-tool om 3D-modellen te bouwen via bouwstenen.", tags: ["tinkercad", "3d printen", "cad", "booleans"] },
+      { title: "CapCut Videobewerking", url: "https://www.capcut.com", cat: "creatief", age: "bovenbouw", goal: "creatief", desc: "Gebruiksvriendelijke en krachtige video-editor met effecten voor klaspresentaties.", tags: ["capcut", "video", "montage", "vlog"] },
+      { title: "AutoDraw (Google AI Art)", url: "https://www.autodraw.com", cat: "creatief", age: "kleuter", goal: "creatief", desc: "Slimme AI-tekeningentool die ruwe krabbels omzet in strakke illustraties.", tags: ["autodraw", "tekenen", "ai art", "krabbel"] },
+      { title: "SketchUp Web", url: "https://app.sketchup.com", cat: "creatief", age: "bovenbouw", goal: "creatief", desc: "Direct in de browser 3D-objecten, huizen en figuren tekenen zonder installatie.", tags: ["sketchup", "3d", "browser tool"] },
+      { title: "Chrome Music Lab - Song Maker", url: "https://musiclab.chromeexperiments.com/Song-Maker/", cat: "creatief", age: "kleuter", goal: "creatief", desc: "Visuele en intuïtieve muziek-editor op basis van een gekleurd raster om melodieën te maken.", tags: ["chrome music lab", "muziek", "song maker", "componeren"] },
+      { title: "Tuttu Online Audio Recorder", url: "https://tuttu.io", cat: "creatief", age: "lager", goal: "tool", desc: "Snelle, gratis audio-opnametool in de browser om spreekopdrachten op te nemen.", tags: ["tuttu", "audio", "opnemen", "microfoon"] },
+      { title: "Silk - Generative Art", url: "http://weavesilk.com", cat: "creatief", age: "lager", goal: "creatief", desc: "Betoverende interactieve kunstgenerator die vloeiende, symmetrische patronen creëert.", tags: ["silk", "generatieve kunst", "symmetrie", "ontspanning"] },
+      { title: "FlipAnim - Animatie Maken", url: "https://flipanim.com", cat: "creatief", age: "lager", goal: "creatief", desc: "Online flipboekje waarin leerlingen frame-per-frame eenvoudige 2D-animaties maken.", tags: ["flipanim", "animatie", "flipboek", "tekenen"] },
+      { title: "Speelgoedfotografie Storytelling", url: "https://www.speelgoedfotografie.nl", cat: "creatief", age: "lager", goal: "materiaal", desc: "Inspiratieplatform over hoe je verhalen vertelt en foto-strips maakt met speelgoed.", tags: ["fotografie", "speelgoed", "storytelling", "stripverhaal"] },
+
+      // CODING & COMPUTATIONAL THINKING
+      { title: "Bebras Belgium", url: "https://www.bebras.be", cat: "coding", age: "lager", goal: "oefenen", desc: "Informatica-wedstrijd en denkopdrachten rond computationeel denken zonder code.", tags: ["bebras", "logica", "puzzels", "informatica"] },
+      { title: "Run Marco! - Allcancode", url: "https://www.allcancode.com/runmarco", cat: "coding", age: "kleuter", goal: "oefenen", desc: "Avontuurlijke game waarin kinderen een karakter sturen met visuele instructieblokken.", tags: ["run marco", "coding game", "blokken", "avontuur"] },
+      { title: "Code.org - Hour of Code", url: "https://code.org", cat: "coding", age: "lager", goal: "oefenen", desc: "Hét wereldwijde platform met honderden gratis programmeerlessen en Minecraft-games.", tags: ["code.org", "hour of code", "minecraft", "programmeren"] },
+      { title: "Blockly Spelletjes", url: "https://blockly.games/?lang=nl", cat: "coding", age: "lager", goal: "oefenen", desc: "Educatieve spellen die de basisprincipes van programmeren aangeven via blokken.", tags: ["blockly", "google", "doolhof", "puzzel"] },
+      { title: "Ko de Kraker", url: "https://www.kodekraker.nl", cat: "coding", age: "kleuter", goal: "oefenen", desc: "Vrolijke programmeeromgeving voor de jongste leerlingen om algoritmes te begrijpen.", tags: ["ko de kraker", "algoritme", "basisonderwijs"] },
+      { title: "Sprite Lab - Code.org", url: "https://studio.code.org/s/spritelab", cat: "coding", age: "lager", goal: "creatief", desc: "Interactieve omgeving binnen Code.org om eigen karakters te programmeren en games te maken.", tags: ["sprite lab", "code.org", "game maker", "sprites"] },
+      { title: "CoderDojo Projectkaarten", url: "https://coderdojo.be", cat: "coding", age: "bovenbouw", goal: "materiaal", desc: "Projectkaarten en stappenplannen om uitdagende projecten in Scratch en Python te maken.", tags: ["coderdojo", "steekkaarten", "python", "scratch"] },
+      { title: "Make Pixel Art Online", url: "https://www.makepixelart.com", cat: "coding", age: "lager", goal: "creatief", desc: "Digitale pixel-art editor om retro game-graphics raster per raster te ontwerpen.", tags: ["pixel art", "retro", "graphics", "rooster"] },
+      { title: "Scratch Platform", url: "https://scratch.mit.edu", cat: "coding", age: "lager", goal: "creatief", desc: "De populairste programmeertaal voor kinderen. Maak verhalen, games en animaties.", tags: ["scratch", "mit", "blokken", "games maken"] },
+      { title: "Scratch Starter Projects", url: "https://scratch.mit.edu/starter-projects", cat: "coding", age: "lager", goal: "oefenen", desc: "Kant-en-klare voorbeeldprojecten in Scratch die leerlingen direct kunnen remixen.", tags: ["scratch", "remix", "starter", "voorbeelden"] },
+      { title: "ScratchJr for Web", url: "https://www.scratchjr.org", cat: "coding", age: "kleuter", goal: "oefenen", desc: "Vereenvoudigde versie van Scratch speciaal ontworpen voor jonge kinderen (5-7 jaar).", tags: ["scratchjr", "kleuters", "iconen", "verhalen"] },
+      { title: "CodeKinderen Unplugged", url: "https://www.codekinderen.nl", cat: "coding", age: "lager", goal: "materiaal", desc: "Oefeningen rond computationeel denken ZONDER computer: kaarten, opdrachten en roosters.", tags: ["codekinderen", "unplugged", "zonder scherm", "papier"] },
+      { title: "BotLogic Puzzle Game", url: "http://botlogic.us", cat: "coding", age: "lager", goal: "oefenen", desc: "Logische puzzelgame waarin een robot met zo min mogelijk opdrachten navigeert.", tags: ["botlogic", "robot", "puzzel", "efficiëntie"] },
+      { title: "Makey Makey Guides", url: "https://makeymakey.com", cat: "coding", age: "lager", goal: "tool", desc: "Uitvinderskit waarmee alledaagse voorwerpen veranderd worden in toetsenbordknoppen.", tags: ["makey makey", "hardware", "stem", "stroomkring"] },
+
+      // AI IN DE KLAS
+      { title: "AI Visie Stedelijk Onderwijs Gent", url: "https://stad.gent/nl/onderwijs-vorming", cat: "ai", age: "leerkracht", goal: "materiaal", desc: "Visie en gidsen over hoe kunstmatige intelligentie ethisch ingezet wordt in Gentse scholen.", tags: ["gent", "stedelijk onderwijs", "visie ai", "beleid"] },
+      { title: "De EU AI-Wet (Info & Uitleg)", url: "https://www.europarl.europa.eu", cat: "ai", age: "leerkracht", goal: "materiaal", desc: "Achtergrondinformatie over de Europese regelgeving rond artificiële intelligentie.", tags: ["ai wet", "eu", "ethiek", "wetgeving"] },
+      { title: "Odd One Out — Google Arts", url: "https://artsandculture.google.com/experiment/odd-one-out/", cat: "ai", age: "lager", goal: "oefenen", desc: "Visueel AI-spelletje waarin je raadt welke kunstafbeelding gegenereerd is door AI.", tags: ["google arts", "odd one out", "kunst ai", "herkennen"] },
+      { title: "Diffit for Teachers", url: "https://web.diffit.me", cat: "ai", age: "leerkracht", goal: "tool", desc: "AI-assistent die leesteksten en opdrachten aanpast aan het leesniveau van leerlingen.", tags: ["diffit", "differentiatie", "leesniveau", "lesvoorbereiding"] },
+      { title: "SchoolHub.ai", url: "https://schoolhub.ai", cat: "ai", age: "leerkracht", goal: "tool", desc: "Educatief AI-platform boordevol sjablonen voor lesplannen, rubrics en evaluaties.", tags: ["schoolhub", "lesplan", "rubrics", "prompt sjabloon"] },
+      { title: "NotebookLM (Google AI)", url: "https://notebooklm.google.com", cat: "ai", age: "bovenbouw", goal: "tool", desc: "AI-onderzoeksassistent van Google die je eigen documenten analyseert en samenvat.", tags: ["notebooklm", "google", "samenvatting", "studeren"] },
+      { title: "Copilot in Education - Video", url: "https://www.youtube.com/watch?v=education-copilot", cat: "ai", age: "leerkracht", goal: "materiaal", desc: "Instructievideo van Microsoft over het inzetten van AI-assistenten in het onderwijs.", tags: ["copilot", "microsoft", "video gids", "youtube"] },
+      { title: "AI Test Kitchen (Google)", url: "https://aitestkitchen.withgoogle.com", cat: "ai", age: "bovenbouw", goal: "oefenen", desc: "Experimenteel labo waar je de nieuwste AI-modellen van Google zelf kunt testen.", tags: ["ai test kitchen", "google", "experimenten", "muziek ai"] },
+      { title: "There's An AI For That", url: "https://theresanaiforthat.com", cat: "ai", age: "leerkracht", goal: "materiaal", desc: "Zoekmachine voor AI-tools wereldwijd. Vind voor elke specifieke taak een AI-toepassing.", tags: ["taaft", "zoekmachine", "ai verzameling", "tools"] },
+      { title: "AI Studio - Het Klokhuis", url: "https://www.hetklokhuis.nl", cat: "ai", age: "lager", goal: "materiaal", desc: "Kindvriendelijke video's van Het Klokhuis over hoe computers leren en de impact van AI.", tags: ["klokhuis", "kinderen", "uitlegvideo", "ai basis"] },
+      { title: "Promptfabriek", url: "https://www.promptfabriek.nl", cat: "ai", age: "leerkracht", goal: "materiaal", desc: "Nederlandse gids vol kant-en-klare prompts voor leraren om ChatGPT optimaal in te zetten.", tags: ["promptfabriek", "prompts", "chatgpt", "lesideeën"] },
+      { title: "Airtable", url: "https://airtable.com", cat: "ai", age: "leerkracht", goal: "tool", desc: "Hybride tussen spreadsheet en database met AI-automatiseringen voor klasorganisatie.", tags: ["airtable", "database", "organisatie", "automatisering"] },
+      { title: "Suno AI - Make Music", url: "https://suno.com", cat: "ai", age: "lager", goal: "creatief", desc: "AI-muziekgenerator die op basis van een beschrijving complete liedjes met zang maakt.", tags: ["suno", "muziek ai", "liedjes", "creatief"] },
+      { title: "Napkin AI - Visual Storytelling", url: "https://www.napkin.ai", cat: "ai", age: "bovenbouw", goal: "tool", desc: "Zet geschreven teksten automatisch om in duidelijke stroomdiagrammen en schema's.", tags: ["napkin", "diagrammen", "schema maker", "visuals"] },
+      { title: "Magic Hour AI Video", url: "https://magichour.ai", cat: "ai", age: "bovenbouw", goal: "creatief", desc: "Creatieve AI-videotool om korte video-animaties en visuele transformaties mee te maken.", tags: ["magic hour", "video ai", "animatie", "generatief"] },
+      { title: "Designify AI Photo", url: "https://www.designify.com", cat: "ai", age: "lager", goal: "creatief", desc: "Automatische fotobewerker die achtergronden verwijdert en effecten toevoegt.", tags: ["designify", "foto", "achtergrond", "design"] },
+      { title: "Remove.bg - Achtergrond Verwijderen", url: "https://www.remove.bg", cat: "ai", age: "kleuter", goal: "tool", desc: "Verwijder in 1 seconde de achtergrond van een foto met behulp van AI.", tags: ["remove bg", "foto bewerken", "vrijstellen", "snijwerk"] },
+      { title: "Unscreen Video Background", url: "https://www.unscreen.com", cat: "ai", age: "lager", goal: "tool", desc: "Verwijder gratis de achtergrond van korte video's zonder green-screen.", tags: ["unscreen", "video achtergrond", "greenscreen", "gif"] },
+      { title: "Lees Simpel App", url: "https://www.leessimpel.nl", cat: "ai", age: "lager", goal: "tool", desc: "AI-app die ingewikkelde teksten of brieven vertaalt naar begrijpelijke en korte taal.", tags: ["lees simpel", "begrijpelijk lezen", "samenvatten", "app"] }
+    ];
+
+    function getCategoryBadge(cat) {
+      const config = {
+        'beheer': { text: 'Beheer & Scholen', class: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' },
+        'platforms': { text: 'Educatief Platform', class: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300' },
+        'opleidingen': { text: 'Opleiding & Partner', class: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300' },
+        'mediawijsheid': { text: 'Mediawijsheid', class: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' },
+        'ict-basis': { text: 'ICT Basis', class: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' },
+        'creatief': { text: 'Creatief', class: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' },
+        'coding': { text: 'Coding & STEM', class: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300' },
+        'ai': { text: 'AI in de Klas', class: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' }
+      };
+      return config[cat] || { text: cat, class: 'bg-slate-100 text-slate-800' };
+    }
+
+    function getAgeBadge(age) {
+      const config = {
+        'kleuter': '5-7 Jaar / Kleuter',
+        'lager': '8-10 Jaar / Lager',
+        'bovenbouw': '11-14 Jaar / Bovenbouw',
+        'leerkracht': 'Leerkracht & Beheer'
+      };
+      return config[age] || 'Alle leeftijden';
+    }
+
+    function getGoalBadge(goal) {
+      const config = {
+        'oefenen': 'Oefenen & Leren',
+        'creatief': 'Creatief & Maken',
+        'tool': 'Tool & App',
+        'materiaal': 'Lesmateriaal / Info',
+        'beheer': 'Beheer & Admin'
+      };
+      return config[goal] || goal;
+    }
+
+    function getScreenshotUrl(targetUrl) {
+      try {
+        const cleanUrl = encodeURIComponent(targetUrl);
+        return `https://s0.wp.com/mshots/v1/${cleanUrl}?w=600&h=380`;
+      } catch (e) {
+        return `https://placehold.co/600x380/0284c7/ffffff?text=Website+Preview`;
+      }
+    }
+
+    const state = {
+      search: '',
+      category: 'all',
+      age: 'all',
+      goal: 'all'
+    };
+
+    function renderCards() {
+      const grid = document.getElementById('cardsGrid');
+      const noResults = document.getElementById('noResults');
+      const visibleCountElem = document.getElementById('visibleCount');
+      const totalCountElem = document.getElementById('totalCount');
+      const resetFilterBar = document.getElementById('resetFilterBar');
+
+      totalCountElem.textContent = linksData.length;
+
+      const isFiltered = state.category !== 'all' || state.age !== 'all' || state.goal !== 'all' || state.search.trim() !== '';
+      resetFilterBar.classList.toggle('hidden', !isFiltered);
+
+      const filtered = linksData.filter(item => {
+        const matchesCat = state.category === 'all' || item.cat === state.category;
+        const matchesAge = state.age === 'all' || item.age === state.age;
+        const matchesGoal = state.goal === 'all' || item.goal === state.goal;
+        
+        const q = state.search.toLowerCase().trim();
+        const matchesSearch = q === '' || 
+          item.title.toLowerCase().includes(q) || 
+          item.desc.toLowerCase().includes(q) || 
+          item.tags.some(t => t.toLowerCase().includes(q));
+
+        return matchesCat && matchesAge && matchesGoal && matchesSearch;
+      });
+
+      visibleCountElem.textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        noResults.classList.remove('hidden');
+        return;
+      }
+
+      noResults.classList.add('hidden');
+
+      grid.innerHTML = filtered.map((item) => {
+        const catInfo = getCategoryBadge(item.cat);
+        const ageText = getAgeBadge(item.age);
+        const goalText = getGoalBadge(item.goal);
+        const screenshot = getScreenshotUrl(item.url);
+
+        return `
+          <div class="group card-gradient rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col justify-between">
+            <div>
+              <div class="relative w-full h-44 bg-slate-100 dark:bg-slate-800 overflow-hidden border-b border-slate-100 dark:border-slate-800">
+                <img 
+                  src="${screenshot}" 
+                  alt="Preview van ${item.title}" 
+                  class="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500" loading="lazy"
+                  onerror="this.onerror=null; this.src='https://placehold.co/600x380/0f172a/ffffff?text=${encodeURIComponent(item.title)}';"
+                />
+                <div class="absolute inset-0 bg-slate-900/10 group-hover:bg-slate-900/0 transition"></div>
+                
+                <span class="absolute top-3 left-3 px-2.5 py-1 text-xs font-bold rounded-lg shadow-sm backdrop-blur-md ${catInfo.class}">
+                  ${catInfo.text}
+                </span>
+              </div>
+
+              <div class="p-5 space-y-3">
+                <h3 class="font-bold text-base text-slate-900 dark:text-white line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+                  ${item.title}
+                </h3>
+                
+                <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">
+                  ${item.desc}
+                </p>
+
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                    <i class="fa-solid fa-child mr-1"></i>${ageText}
+                  </span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                    <i class="fa-solid fa-bullseye mr-1"></i>${goalText}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-5 pb-5 pt-2">
+              <a 
+                href="${item.url}" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="w-full py-2.5 px-4 bg-slate-900 hover:bg-blue-600 text-white dark:bg-slate-800 dark:hover:bg-blue-600 font-semibold text-xs rounded-xl flex items-center justify-center gap-2 shadow-sm transition duration-200"
+              >
+                <span>Bezoek website</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function resetFilters() {
+      state.category = 'all';
+      state.age = 'all';
+      state.goal = 'all';
+      state.search = '';
+
+      document.getElementById('searchInput').value = '';
+      document.getElementById('clearSearch').classList.add('hidden');
+
+      document.querySelectorAll('#categoryFilters .cat-btn').forEach(btn => {
+        const isAll = btn.dataset.cat === 'all';
+        btn.classList.toggle('active', isAll);
+        btn.classList.toggle('bg-blue-600', isAll);
+        btn.classList.toggle('text-white', isAll);
+        btn.classList.toggle('bg-slate-100', !isAll);
+      });
+
+      document.querySelectorAll('#ageFilters .age-btn').forEach(btn => {
+        const isAll = btn.dataset.age === 'all';
+        btn.classList.toggle('active', isAll);
+        btn.classList.toggle('bg-blue-100', isAll);
+        btn.classList.toggle('text-blue-700', isAll);
+      });
+
+      document.querySelectorAll('#goalFilters .goal-btn').forEach(btn => {
+        const isAll = btn.dataset.goal === 'all';
+        btn.classList.toggle('active', isAll);
+        btn.classList.toggle('bg-blue-100', isAll);
+        btn.classList.toggle('text-blue-700', isAll);
+      });
+
+      renderCards();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCards();
+
+      const searchInput = document.getElementById('searchInput');
+      const clearSearch = document.getElementById('clearSearch');
+
+      searchInput.addEventListener('input', (e) => {
+        state.search = e.target.value;
+        clearSearch.classList.toggle('hidden', state.search === '');
+        renderCards();
+      });
+
+      clearSearch.addEventListener('click', () => {
+        searchInput.value = '';
+        state.search = '';
+        clearSearch.classList.add('hidden');
+        renderCards();
+      });
+
+      document.getElementById('categoryFilters').addEventListener('click', (e) => {
+        const btn = e.target.closest('.cat-btn');
+        if (!btn) return;
+
+        document.querySelectorAll('#categoryFilters .cat-btn').forEach(b => {
+          b.classList.remove('active', 'bg-blue-600', 'text-white');
+          b.classList.add('bg-slate-100', 'text-slate-700', 'dark:bg-slate-700', 'dark:text-slate-200');
+        });
+
+        btn.classList.add('active', 'bg-blue-600', 'text-white');
+        btn.classList.remove('bg-slate-100', 'text-slate-700', 'dark:bg-slate-700');
+        state.category = btn.dataset.cat;
+        renderCards();
+      });
+
+      document.getElementById('ageFilters').addEventListener('click', (e) => {
+        const btn = e.target.closest('.age-btn');
+        if (!btn) return;
+
+        document.querySelectorAll('#ageFilters .age-btn').forEach(b => {
+          b.classList.remove('active', 'bg-blue-100', 'text-blue-700', 'dark:bg-blue-900/60', 'dark:text-blue-300');
+        });
+
+        btn.classList.add('active', 'bg-blue-100', 'text-blue-700', 'dark:bg-blue-900/60', 'dark:text-blue-300');
+        state.age = btn.dataset.age;
+        renderCards();
+      });
+
+      document.getElementById('goalFilters').addEventListener('click', (e) => {
+        const btn = e.target.closest('.goal-btn');
+        if (!btn) return;
+
+        document.querySelectorAll('#goalFilters .goal-btn').forEach(b => {
+          b.classList.remove('active', 'bg-blue-100', 'text-blue-700', 'dark:bg-blue-900/60', 'dark:text-blue-300');
+        });
+
+        btn.classList.add('active', 'bg-blue-100', 'text-blue-700', 'dark:bg-blue-900/60', 'dark:text-blue-300');
+        state.goal = btn.dataset.goal;
+        renderCards();
+      });
+
+      document.getElementById('resetAllFilters').addEventListener('click', resetFilters);
+
+      const themeToggle = document.getElementById('themeToggle');
+      themeToggle.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+      });
+    });
+  </script>
+</body>
+</html>
