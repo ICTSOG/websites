@@ -1,303 +1,100 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ICT & Onderwijs Portal - Stedelijk Onderwijs Gent</title>
-  <style>
-    :root {
-      --primary-color: #0056b3;
-      --secondary-color: #f4f6f9;
-      --card-bg: #ffffff;
-      --text-color: #333333;
-      --accent-color: #00a86b;
-      --border-radius: 8px;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--secondary-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 0;
-    }
-
-    header {
-      background-color: var(--primary-color);
-      color: white;
-      padding: 2rem 1rem;
-      text-align: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 2.2rem;
-    }
-
-    header p {
-      margin-top: 0.5rem;
-      opacity: 0.9;
-    }
-
-    .search-container {
-      max-width: 600px;
-      margin: 1.5rem auto -1rem auto;
-      padding: 0 1rem;
-    }
-
-    .search-container input {
-      width: 100%;
-      padding: 12px 20px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: var(--border-radius);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      box-sizing: border-box;
-    }
-
-    main {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .category-card {
-      background-color: var(--card-bg);
-      border-radius: var(--border-radius);
-      padding: 1.5rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .category-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-    }
-
-    .category-card h2 {
-      margin-top: 0;
-      font-size: 1.3rem;
-      color: var(--primary-color);
-      border-bottom: 2px solid var(--secondary-color);
-      padding-bottom: 0.5rem;
-    }
-
-    .link-list {
-      list-style-type: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .link-list li {
-      margin: 0.6rem 0;
-    }
-
-    .link-list a {
-      color: var(--text-color);
-      text-decoration: none;
-      font-weight: 500;
-      display: inline-block;
-      transition: color 0.2s ease;
-    }
-
-    .link-list a:hover {
-      color: var(--accent-color);
-      text-decoration: underline;
-    }
-
-    .sub-section {
-      margin-top: 1rem;
-    }
-
-    .sub-section h3 {
-      font-size: 1rem;
-      margin-bottom: 0.4rem;
-      color: #555;
-    }
-
-    footer {
-      text-align: center;
-      padding: 1.5rem;
-      background-color: #e9ecef;
-      color: #666;
-      font-size: 0.9rem;
-      margin-top: 2rem;
-    }
-  </style>
-</head>
-<body>
-
-  <header>
-    <h1>ICT & Onderwijs Portal</h1>
-    <p>Snelkoppelingen & Hulpbronnen voor Stedelijk Onderwijs Gent</p>
-  </header>
-
-  <div class="search-container">
-    <input type="text" id="searchInput" onkeyup="filterLinks()" placeholder="Zoek op naam, tool of categorie...">
-  </div>
-
-  <main id="portalContent">
-
-    <!-- Categorie 1: Beheer & Ondersteuning -->
-    <div class="category-card">
-      <h2>Beheer & Ondersteuning</h2>
-      <div class="sub-section">
-        <h3>SharePoint Scholen</h3>
-        <ul class="link-list">
-          <li><a href="https://stedelijkonderwijs.sharepoint.com/sites/DeLotus" target="_blank">De Lotus</a></li>
-          <li><a href="https://stedelijkonderwijs.sharepoint.com/sites/DeFeniks" target="_blank">De Feniks</a></li>
-          <li><a href="https://stedelijkonderwijs.sharepoint.com/sites/HipposHof" target="_blank">Hippo's Hof</a></li>
-          <li><a href="https://stedelijkonderwijs.sharepoint.com/sites/Mandala" target="_blank">Mandala</a></li>
-          <li><a href="https://stedelijkonderwijs.sharepoint.com/sites/DeTovertuin" target="_blank">De Tovertuin</a></li>
-          <li><a href="https://stedelijkonderwijs.sharepoint.com/sites/DeBrug" target="_blank">De Brug</a></li>
-          <li><a href="https://stedelijkonderwijs.sharepoint.com/sites/DeRegenboog" target="_blank">De Regenboog</a></li>
-        </ul>
-      </div>
-
-      <div class="sub-section">
-        <h3>Toestel- & ICT-beheer</h3>
-        <ul class="link-list">
-          <li><a href="https://endpoint.microsoft.com/" target="_blank">Intune for Education / Schoolbordtools</a></li>
-          <li><a href="https://www.jamf.com/" target="_blank">Jamf School (Apple-beheer)</a></li>
-          <li><a href="https://m4s.signpost.be/" target="_blank">Signpost (M4S Hardware)</a></li>
-          <li><a href="https://i3rdm.com/" target="_blank">i3RDM (Schermbeheer)</a></li>
-          <li><a href="https://make.powerautomate.com/" target="_blank">Power Automate</a></li>
-        </ul>
-      </div>
-
-      <div class="sub-section">
-        <h3>District09 & Stad Gent</h3>
-        <ul class="link-list">
-          <li><a href="https://heat.gent.be/" target="_blank">HEAT Service Desk</a></li>
-          <li><a href="https://passwordstate.gent.be/" target="_blank">Passwordstate</a></li>
-          <li><a href="https://ultimo.gent.be/" target="_blank">Poolwagens (Ultimo)</a></li>
-          <li><a href="https://ictheek.gent.be/" target="_blank">ICTheek & DigiNieuws</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Categorie 2: Educatieve Platforms & Software -->
-    <div class="category-card">
-      <h2>Educatieve Platforms & Software</h2>
-      <ul class="link-list">
-        <li><a href="https://www.scoodle.be/" target="_blank">Scoodle (Plantyn)</a></li>
-        <li><a href="https://www.gynzy.com/" target="_blank">Gynzy Teacher & School Manager</a></li>
-        <li><a href="https://www.kabas.be/" target="_blank">Kabas (die Keure)</a></li>
-        <li><a href="https://www.xnapda.be/" target="_blank">Xnapda (Instructievideo's)</a></li>
-        <li><a href="https://www.prowiselearn.com/" target="_blank">Prowise Learn</a></li>
-        <li><a href="https://www.uitgeverijzwijsen.be/" target="_blank">Zipper (Zwijsen)</a></li>
-        <li><a href="https://www.oefenjemee.be/" target="_blank">Oefenjemee</a></li>
-        <li><a href="https://www.wisa.be/" target="_blank">Schoolware / WISA</a></li>
-        <li><a href="https://www.canva.com/" target="_blank">Canva for Education</a></li>
-      </ul>
-    </div>
-
-    <!-- Categorie 3: Opleidingen & Partners -->
-    <div class="category-card">
-      <h2>Opleidingen & Partners</h2>
-      <div class="sub-section">
-        <h3>Professionalisering</h3>
-        <ul class="link-list">
-          <li><a href="https://onderwijscentrum.gent.be/" target="_blank">Onderwijscentrum Gent</a></li>
-          <li><a href="https://www.vlaanderen.be/digisprong" target="_blank">Kenniscentrum Digisprong</a></li>
-          <li><a href="https://education.microsoft.com/" target="_blank">Microsoft 365 Educatie</a></li>
-          <li><a href="https://www.fourcast.io/academy" target="_blank">Fourcast Academy</a></li>
-          <li><a href="https://www.canva.com/designschool/" target="_blank">Canva Design School</a></li>
-          <li><a href="https://www.schoolupdate.be/" target="_blank">Schoolupdate</a></li>
-          <li><a href="https://thepopupclassroom.be/" target="_blank">The Pop-Up Classroom</a></li>
-        </ul>
-      </div>
-
-      <div class="sub-section">
-        <h3>Vlaanderen & OVSG</h3>
-        <ul class="link-list">
-          <li><a href="https://mijn.onderwijs.vlaanderen.be/" target="_blank">Schoolloket Vlaanderen (LeerID, Vlaamse toetsen)</a></li>
-          <li><a href="https://gebruikersbeheer.vlaanderen.be/" target="_blank">Gebruikersbeheer Vlaanderen</a></li>
-          <li><a href="https://www.onderwijsdoelen.be/" target="_blank">Onderwijsdoelen</a></li>
-          <li><a href="https://www.ovsg.be/" target="_blank">OVSG Leer Lokaal</a></li>
-          <li><a href="https://www.diatoetsen.be/" target="_blank">DIAtoetsen</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Categorie 4: Mediacoach & ICT-Tools -->
-    <div class="category-card">
-      <h2>Mediacoach & ICT-Tools</h2>
-      <div class="sub-section">
-        <h3>Mediawijsheid & Veiligheid</h3>
-        <ul class="link-list">
-          <li><a href="https://www.apestaartjaren.be/" target="_blank">Apestaartjaren</a></li>
-          <li><a href="https://www.watwat.be/" target="_blank">WAT WAT</a></li>
-          <li><a href="https://www.childfocus.be/" target="_blank">Child Focus</a></li>
-          <li><a href="https://www.ikbeslis.be/" target="_blank">Ik beslis (Privacy)</a></li>
-          <li><a href="https://www.digisnap.be/" target="_blank">Digisnap</a></li>
-          <li><a href="https://www.cyberkrak.be/" target="_blank">Cyberkrak</a></li>
-          <li><a href="https://www.speelhetslim.be/" target="_blank">Speelhetslim</a></li>
-        </ul>
-      </div>
-
-      <div class="sub-section">
-        <h3>ICT Basisvaardigheden & Creatie</h3>
-        <ul class="link-list">
-          <li><a href="https://www.typelesonline.nl/" target="_blank">Typeles Online</a></li>
-          <li><a href="https://www.mindexpress.com/" target="_blank">Mind Express</a></li>
-          <li><a href="https://www.tinkercad.com/" target="_blank">Tinkercad (3D Design)</a></li>
-          <li><a href="https://bookcreator.com/" target="_blank">Book Creator</a></li>
-          <li><a href="https://www.capcut.com/" target="_blank">CapCut</a></li>
-          <li><a href="https://www.autodraw.com/" target="_blank">AutoDraw</a></li>
-          <li><a href="https://musiclab.chromeexperiments.com/" target="_blank">Chrome Music Lab</a></li>
-        </ul>
-      </div>
-
-      <div class="sub-section">
-        <h3>Coding & Computational Thinking</h3>
-        <ul class="link-list">
-          <li><a href="https://code.org/" target="_blank">Code.org</a></li>
-          <li><a href="https://scratch.mit.edu/" target="_blank">Scratch / ScratchJr</a></li>
-          <li><a href="https://blockly.games/" target="_blank">Blockly Games</a></li>
-          <li><a href="https://www.bebras.be/" target="_blank">Bebras Wedstrijd</a></li>
-          <li><a href="https://www.codekinderen.nl/" target="_blank">CodeKinderen</a></li>
-        </ul>
-      </div>
-    </div>
-
-  </main>
-
-  <footer>
-    <p>&copy; Stedelijk Onderwijs Gent | Beheerd via GitHub Pages</p>
-  </footer>
+  <title>EduLinks - ICT & Media Portaal</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts - Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <script>
-    function filterLinks() {
-      const input = document.getElementById('searchInput');
-      const filter = input.value.toLowerCase();
-      const cards = document.getElementsByClassName('category-card');
-
-      for (let i = 0; i < cards.length; i++) {
-        const links = cards[i].getElementsByTagName('li');
-        let cardMatches = false;
-
-        for (let j = 0; j < links.length; j++) {
-          const text = links[j].textContent || links[j].innerText;
-          if (text.toLowerCase().indexOf(filter) > -1) {
-            links[j].style.display = "";
-            cardMatches = true;
-          } else {
-            links[j].style.display = "none";
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#095186',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
           }
-        }
-
-        if (cardMatches) {
-          cards[i].style.display = "";
-        } else {
-          cards[i].style.display = "none";
         }
       }
     }
   </script>
-</body>
-</html>
+
+  <style>
+    .card-gradient {
+      background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(243,244,246,0.95) 100%);
+    }
+    .dark .card-gradient {
+      background: linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%);
+    }
+    .text-gradient {
+      background: linear-gradient(135deg, #2563eb, #0d9488);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .dark .text-gradient {
+      background: linear-gradient(135deg, #60a5fa, #2dd4bf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-200 flex flex-col font-sans">
+
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <i class="fa-solid font-bold fa-graduation-cap text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">EduLinks <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold uppercase tracking-wider ml-1">Klasportaal</span></h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Digitale gids voor leerkrachten, ICT-coaches & leerlingen</p>
+        </div>
+      </div>
+
+      <!-- Quick Search Bar in Header -->
+      <div class="flex-1 max-w-md mx-2">
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input type="text" id="searchInput" placeholder="Zoek op titel, trefwoord, tool..." class="w-full pl-10 pr-10 py-2 text-sm bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 placeholder-slate-400 transition">
+          <button id="clearSearch" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Theme Toggle & Stats Badge -->
+      <div class="flex items-center space-x-2">
+        <div id="itemCount" class="hidden md:inline-flex items-center text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+          <i class="fa-solid fa-link mr-1.5 text-blue-500"></i> <span id="visibleCount">0</span>/<span id="totalCount">85</span> sites
+        </div>
+        <button id="themeToggle" class="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Wissel Thema">
+          <i class="fa-solid fa-moon dark:hidden text-lg"></i>
+          <i class="fa-solid fa-sun hidden dark:block text-lg text-amber-400"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    
+    <!-- Hero Banner -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-teal-600 to-indigo-700 text-white p-6 sm:p-8 shadow-lg">
+      <div class="relative z-10 max-w-2xl">
+        <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md text-xs font-semibold rounded-full mb-3 tracking-wide uppercase">Educatieve Linkverzameling</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold leading-tight">Vind snel
