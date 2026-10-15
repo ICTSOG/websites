@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kleuterklas Keuzebord & Analysedashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts (Fredoka for playfulness, Inter for readability) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#FF85A1',
+                            yellow: '#FFD166',
+                            green: '#06D6A0',
+                            blue: '#118AB2',
+                            purple: '#9D4EDD',
+                            dark: '#073B4C'
+                        }
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .font-playful { font-family: 'Fredoka', cursive, sans-serif; }
+        .bg-pattern {
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+        .pulse-slow {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.95; transform: scale(1.02); }
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-pattern min-h-screen font-sans text-slate-800 flex flex-col antialiased selection:bg-brand-pink selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- App Logo / Title -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-pink via-brand-purple to-brand-blue flex items-center justify-center text-white shadow-md text-xl font-playful font-bold">
+                        🧩
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold font-playful text-slate-800 tracking-wide flex items-center gap-2">
+                            KIDDO<span class="text-brand-pink">KEUZEBORD</span>
+                        </h1>
+                        <p class="text-xs text-slate-500 font-medium">Kleuterklas 2/3A • Juf Annelies</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex space-x-1 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80">
+                    <button onclick="switchTab('digibord')" id="nav-digibord" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 bg-white text-slate-900 shadow-xs">
+                        <i class="fa-solid fa-tv text-brand-pink"></i> Digibord Keuzebord
+                    </button>
+                    <button onclick="switchTab('live')" id="nav-live" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white/50 transition-all duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-users text-brand-blue"></i> Live Klas
+                        <span id="active-count-badge" class="ml-1 px-2 py-0.5 text-xs bg-brand-green/20 text-brand-green font-bold rounded-full">0</span>
+                    </button>
+                    <button onclick="switchTab('reflectie')" id="nav-reflectie" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white/50 transition-all duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-sun text-brand-yellow"></i> Reflectiebord
+                    </button>
+                    <button onclick="switchTab('inzichten')" id="nav-inzichten" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white/50 transition-all duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-brand-purple"></i> Inzichten & Analyse
+                    </button>
+                    <button onclick="switchTab('beheer')" id="nav-beheer" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white/50 transition-all duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-slate-600"></i> Beheer
+                    </button>
+                </nav>
+
+                <!-- Action Controls -->
+                <div class="flex items-center gap-2">
+                    <button onclick="resetDemoData()" title="Herstel Demo Gegevens" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                    <button onclick="toggleFullscreen()" title="Volledig Scherm voor Digibord" class="p-2 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation Bar -->
+        <div class="flex md:hidden overflow-x-auto border-t border-slate-200 p-2 gap-2 bg-slate-50 text-xs">
+            <button onclick="switchTab('digibord')" class="px-3 py-1.5 rounded-lg bg-white shadow-xs font-semibold whitespace-nowrap">📺 Digibord</button>
+            <button onclick="switchTab('live')" class="px-3 py-1.5 rounded-lg font-medium text-slate-600 whitespace-nowrap">👀 Live Klas</button>
+            <button onclick="switchTab('reflectie')" class="px-3 py-1.5 rounded-lg font-medium text-slate-600 whitespace-nowrap">☀️ Reflectie</button>
+            <button onclick="switchTab('inzichten')" class="px-3 py-1.5 rounded-lg font-medium text-slate-600 whitespace-nowrap">📊 Inzichten</button>
+            <button onclick="switchTab('beheer')" class="px-3 py-1.5 rounded-lg font-medium text-slate-600 whitespace-nowrap">⚙️ Beheer</button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: DIGIBORD KEUZEBORD MODUS (KLEUTER) -->
+        <!-- ========================================== -->
+        <section id="tab-digibord" class="tab-content flex-1 flex flex-col">
+            <!-- Step Indicator Bar -->
+            <div class="bg-amber-100 border border-amber-200 text-amber-900 rounded-2xl p-4 mb-6 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <span id="step-badge" class="w-10 h-10 rounded-full bg-amber-400 text-amber-9 font-playful font-bold text-xl flex items-center justify-center shadow-inner">1</span>
+                    <div>
+                        <h2 id="step-title" class="font-playful text-2xl font-bold tracking-wide">Wie ben jij? Kies je gezichtje!</h2>
+                        <p id="step-subtitle" class="text-sm text-amber-800">Tik op je eigen foto of symbool om te beginnen.</p>
+                    </div>
+                </div>
+                <!-- Selected Pupil Banner (if active step 2) -->
+                <div id="active-pupil-banner" class="hidden bg-white px-4 py-2 rounded-xl shadow-xs border border-amber-300 flex items-center gap-3">
+                    <span id="selected-pupil-avatar" class="text-3xl">🌸</span>
+                    <span id="selected-pupil-name" class="font-playful text-xl font-bold text-slate-800">Lotte</span>
+                    <button onclick="cancelSelection()" class="text-slate-400 hover:text-red-500 ml-2 font-bold p-1">✕</button>
+                </div>
+            </div>
+
+            <!-- STEP 1: SELECT PUPIL GRID -->
+            <div id="step-pupil-select" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
+                <!-- Pupil cards generated by JS -->
+            </div>
+
+            <!-- STEP 2: SELECT ACTIVITY GRID -->
+            <div id="step-activity-select" class="hidden">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="activity-grid">
+                    <!-- Activity cards generated by JS -->
+                </div>
+                <div class="mt-8 text-center">
+                    <button onclick="cancelSelection()" class="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-playful text-lg font-bold rounded-2xl transition shadow-sm">
+                        ⬅️ Terug naar de klasgenootjes
+                    </button>
+                </div>
+            </div>
+
+            <!-- MODAL: EVALUATION / SMILEY FEEDBACK -->
+            <div id="eval-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+                <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full text-center shadow-2xl border-4 border-brand-yellow transform transition-all animate-bounce-short">
+                    <div class="w-16 h-16 bg-brand-yellow/20 text-brand-yellow rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+                        ✨
+                    </div>
+                    <h3 class="font-playful text-3xl font-bold text-slate-800 mb-2">Activiteit afgerond!</h3>
+                    <p class="text-lg text-slate-600 mb-6 font-medium">Hoe vond je het in de <span id="eval-activity-name" class="font-bold text-brand-purple">Bouwhoek</span>?</p>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                        <button onclick="submitEvaluation('super')" class="p-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50 hover:bg-emerald-100 hover:scale-105 transition flex flex-col items-center gap-2 group">
+                            <span class="text-5xl group-hover:animate-bounce">😃</span>
+                            <span class="font-playful font-bold text-emerald-800 text-lg">Super leuk!</span>
+                        </button>
+                        <button onclick="submitEvaluation('ok')" class="p-4 rounded-2xl border-2 border-amber-200 bg-amber-50 hover:bg-amber-100 hover:scale-105 transition flex flex-col items-center gap-2 group">
+                            <span class="text-5xl group-hover:animate-bounce">😐</span>
+                            <span class="font-playful font-bold text-amber-800 text-lg">Gewoon / Ok</span>
+                        </button>
+                        <button onclick="submitEvaluation('moeilijk')" class="p-4 rounded-2xl border-2 border-sky-200 bg-sky-50 hover:bg-sky-100 hover:scale-105 transition flex flex-col items-center gap-2 group">
+                            <span class="text-5xl group-hover:animate-bounce">☹️</span>
+                            <span class="font-playful font-bold text-sky-800 text-lg">Moeilijk</span>
+                        </button>
+                        <button onclick="submitEvaluation('stom')" class="p-4 rounded-2xl border-2 border-rose-200 bg-rose-50 hover:bg-rose-100 hover:scale-105 transition flex flex-col items-center gap-2 group">
+                            <span class="text-5xl group-hover:animate-bounce">😡</span>
+                            <span class="font-playful font-bold text-rose-800 text-lg">Niet leuk</span>
+                        </button>
+                    </div>
+
+                    <button onclick="closeEvalModal()" class="text-xs text-slate-400 hover:text-slate-600 underline">Slaan evaluatie over</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: LIVE KLASKAMER OVERZICHT           -->
+        <!-- ========================================== -->
+        <section id="tab-live" class="tab-content hidden space-y-6">
+            <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-xs border border-slate-200">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Live Status Hoeken & Leerlingen</h2>
+                    <p class="text-sm text-slate-500">Zie in één oogopslag wie waar bezig is en hoelang.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-2"></span> Realtime Actief
+                    </span>
+                </div>
+            </div>
+
+            <!-- Active corners live view -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="live-corners-grid">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Unassigned pupils list -->
+            <div class="bg-white p-6 rounded-2xl shadow-xs border border-slate-200">
+                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-chair text-slate-400"></i> Nog niet ingedeeld / Vrij spelmateriaal (<span id="unassigned-count">0</span>)
+                </h3>
+                <div class="flex flex-wrap gap-3" id="unassigned-pupils-list">
+                    <!-- Unassigned pupils JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: REFLECTIEBORD (DAGAFSLUITING)       -->
+        <!-- ========================================== -->
+        <section id="tab-reflectie" class="tab-content hidden space-y-6">
+            <div class="bg-gradient-to-r from-amber-400 via-orange-400 to-brand-pink text-white p-6 rounded-3xl shadow-md">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="font-playful text-3xl font-bold tracking-wide">☀️ Kringgesprek & Reflectiebord</h2>
+                        <p class="text-amber-50 font-medium mt-1">Samen terugblikken op de dag: Wat vonden we leuk? Wie heeft fijn samengespeeld?</p>
+                    </div>
+                    <div class="text-5xl hidden sm:block">
+                        🧸🎨🏰
+                    </div>
+                </div>
+            </div>
+
+            <!-- Badges & Daily Highlights -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Highlight 1 -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex items-start gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-3xl shrink-0">
+                        🏗️
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-amber-600 uppercase tracking-wider">Grootste Bouwers</span>
+                        <h4 id="badge-builder-names" class="font-playful text-xl font-bold text-slate-800">Liam & Noah</h4>
+                        <p class="text-xs text-slate-500 mt-1">Hebben vandaag de meeste tijd in de Bouwhoek doorgebracht!</p>
+                    </div>
+                </div>
+
+                <!-- Highlight 2 -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex items-start gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-3xl shrink-0">
+                        🔍
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">Super Ontdekker</span>
+                        <h4 id="badge-explorer-name" class="font-playful text-xl font-bold text-slate-800">Mila</h4>
+                        <p class="text-xs text-slate-500 mt-1">Heeft vandaag in 4 verschillende hoeken gespeeld!</p>
+                    </div>
+                </div>
+
+                <!-- Highlight 3 -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex items-start gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl shrink-0">
+                        ⭐
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Meest Populaire Hoek</span>
+                        <h4 id="badge-popular-activity" class="font-playful text-xl font-bold text-slate-800">Watertafel 💧</h4>
+                        <p class="text-xs text-slate-500 mt-1">Werd vandaag door de meeste kleuters gekozen!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reflection Mood Overview -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                <h3 class="font-playful text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <span>💬</span> Hoe voelden de kleuters zich vandaag?
+                </h3>
+                <div id="reflection-mood-summary" class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Classroom Timeline / Activity logs per student for circle discussion -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                <h3 class="font-playful text-2xl font-bold text-slate-800 mb-4 flex items-center justify-between">
+                    <span>📋</span> Dagoverzicht per Kleuter
+                    <span class="text-xs font-normal text-slate-500 font-sans">Klik op een kleuter om te bespreken</span>
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="reflection-pupil-cards">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: INZICHTEN & ANALYSE                -->
+        <!-- ========================================== -->
+        <section id="tab-inzichten" class="tab-content hidden space-y-6">
+            <!-- Header Analytics -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-2xl border border-slate-200 shadow-xs gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Analysedashboard & Slimme Patronen</h2>
+                    <p class="text-sm text-slate-500">Inzichten in tijdsbesteding, gedrag en sociale dynamiek.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <select id="analytics-timeframe" onchange="updateAnalytics()" class="bg-slate-100 border border-slate-300 text-slate-700 text-sm rounded-xl px-3 py-2 font-medium">
+                        <option value="today">Vandaag</option>
+                        <option value="week" selected>Deze Week (Demo Data)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Behaviour Alerts (Vlinderen, Vermijden, Fixatie) -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                <h3 class="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-brand-yellow text-xl"></i> Automatische Gedragsinzichten & Signalering
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="behavior-alerts-container">
+                    <!-- Dynamic Behavior Cards -->
+                </div>
+            </div>
+
+            <!-- Charts Row 1: Activity Popularity & Developmental Goals -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Activity Duration & Choice Count -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                    <h3 class="font-bold text-slate-800 mb-1">Populariteit van Activiteiten</h3>
+                    <p class="text-xs text-slate-500 mb-4">Totale tijdsduur (minuten) per hoek</p>
+                    <div class="h-64 relative">
+                        <canvas id="chartActivityPopularity"></canvas>
+                    </div>
+                </div>
+
+                <!-- Developmental Goals Coverage -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                    <h3 class="font-bold text-slate-800 mb-1">Verdeling Ontwikkelingsdoelen</h3>
+                    <p class="text-xs text-slate-500 mb-4">Tijd besteed per domein (Taal, Motoriek, Sociaal, etc.)</p>
+                    <div class="h-64 relative flex items-center justify-center">
+                        <canvas id="chartDevelopmentalGoals"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Interaction Matrix -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Sociale Interactie & Samenspeel-matrix</h3>
+                        <p class="text-xs text-slate-500">Brengt in beeld welke kleuters vaak samen in dezelfde hoek kiezen.</p>
+                    </div>
+                    <div class="mt-2 sm:mt-0 text-xs text-slate-500 flex items-center gap-2">
+                        <span class="w-3 h-3 bg-indigo-100 rounded"></span> Zelden
+                        <span class="w-3 h-3 bg-indigo-400 rounded"></span> Regelmatig
+                        <span class="w-3 h-3 bg-indigo-700 rounded"></span> Veel samen
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <div id="social-matrix-container" class="min-w-max p-2">
+                        <!-- Matrix Table JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pupil Specific Breakdown -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                    <h3 class="font-bold text-slate-800 text-lg">Individuele Leerling Inzichten</h3>
+                    <select id="pupil-analytics-select" onchange="renderIndividualPupilAnalysis()" class="bg-slate-100 border border-slate-300 text-slate-800 font-semibold text-sm rounded-xl px-4 py-2">
+                        <!-- Populated JS -->
+                    </select>
+                </div>
+                <div id="individual-pupil-details" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Dynamic Details JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: LEERKRACHT BEHEER                   -->
+        <!-- ========================================== -->
+        <section id="tab-beheer" class="tab-content hidden space-y-8">
+            <!-- Manage Activities -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">Activiteiten & Hoeken Beheren</h3>
+                        <p class="text-sm text-slate-500">Stel capaciteit, emoji's en doelen in.</p>
+                    </div>
+                    <button onclick="openAddActivityModal()" class="px-4 py-2 bg-brand-pink hover:bg-pink-600 text-white font-semibold rounded-xl text-sm transition shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nieuwe Activiteit
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="manage-activities-grid">
+                    <!-- JS generated -->
+                </div>
+            </div>
+
+            <!-- Manage Pupils -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">Kleuters & Blokkades Beheren</h3>
+                        <p class="text-sm text-slate-500">Beheer klaslijst, symbolen en specifieke uitsluitingen.</p>
+                    </div>
+                    <button onclick="openAddPupilModal()" class="px-4 py-2 bg-brand-blue hover:bg-blue-600 text-white font-semibold rounded-xl text-sm transition shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nieuwe Kleuter
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="manage-pupils-grid">
+                    <!-- JS generated -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: ADD / EDIT ACTIVITY -->
+    <div id="modal-activity" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+            <h3 class="text-xl font-bold text-slate-800 mb-4" id="modal-activity-title">Nieuwe Activiteit</h3>
+            <form id="activity-form" onsubmit="saveActivity(event)" class="space-y-4">
+                <input type="hidden" id="act-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Naam Activiteit</label>
+                    <input type="text" id="act-name" required class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-pink focus:outline-none" placeholder="bijv. Bouwhoek">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Emoji / Symbool</label>
+                        <input type="text" id="act-icon" required class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-pink focus:outline-none text-xl text-center" placeholder="🏰">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Max Capaciteit</label>
+                        <input type="number" id="act-capacity" min="1" max="10" required class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-pink focus:outline-none" value="3">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Ontwikkelingsdoel</label>
+                    <select id="act-goal" class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-pink focus:outline-none">
+                        <option value="Constructie & Ruimtelijk">Constructie & Ruimtelijk</option>
+                        <option value="Sociaal-Emotioneel & Rollenspel">Sociaal-Emotioneel & Rollenspel</option>
+                        <option value="Fijne Motoriek & Creatief">Fijne Motoriek & Creatief</option>
+                        <option value="Sensorisch & Ontdekken">Sensorisch & Ontdekken</option>
+                        <option value="Taal & Geletterdheid">Taal & Geletterdheid</option>
+                        <option value="Digitale Vaardigheden">Digitale Vaardigheden</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" onclick="closeActivityModal()" class="px-4 py-2 text-slate-600 font-semibold text-sm hover:bg-slate-100 rounded-xl">Annuleren</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-pink text-white font-semibold text-sm rounded-xl hover:bg-pink-600">Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT PUPIL -->
+    <div id="modal-pupil" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+            <h3 class="text-xl font-bold text-slate-800 mb-4" id="modal-pupil-title">Nieuwe Kleuter</h3>
+            <form id="pupil-form" onsubmit="savePupil(event)" class="space-y-4">
+                <input type="hidden" id="pupil-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Naam Kleuter</label>
+                    <input type="text" id="pupil-name" required class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-blue focus:outline-none" placeholder="bijv. Sophie">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Symbool / Emoji Avatar</label>
+                    <input type="text" id="pupil-avatar" required class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-blue focus:outline-none text-2xl text-center" placeholder="🦄">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Uitsluitingen (Mag niet in hoek):</label>
+                    <div id="pupil-blocked-checkboxes" class="space-y-1 max-h-36 overflow-y-auto border border-slate-200 p-2 rounded-xl text-xs">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" onclick="closePupilModal()" class="px-4 py-2 text-slate-600 font-semibold text-sm hover:bg-slate-100 rounded-xl">Annuleren</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-blue text-white font-semibold text-sm rounded-xl hover:bg-blue-600">Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- AUDIO EFFECTS USING WEB AUDIO API -->
+    <script>
+        // Simple Web Audio API sound synthesizer for interactive feedback
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'select') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.15);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } else if (type === 'success') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'blocked') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.setValueAtTime(150, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+        }
+    </script>
+
+    <!-- MAIN APPLICATION SCRIPT -->
+    <script>
+        // INITIAL DEMO DATA SETUP
+        const DEFAULT_ACTIVITIES = [
+            { id: 'act_1', name: 'Bouwhoek', icon: '🏰', capacity: 3, goal: 'Constructie & Ruimtelijk', active: true },
+            { id: 'act_2', name: 'Huishoek', icon: '🏠', capacity: 3, goal: 'Sociaal-Emotioneel & Rollenspel', active: true },
+            { id: 'act_3', name: 'Puzzelhoek', icon: '🧩', capacity: 2, goal: 'Fijne Motoriek & Creatief', active: true },
+            { id: 'act_4', name: 'Tekenhoek', icon: '🖍️', capacity: 4, goal: 'Fijne Motoriek & Creatief', active: true },
+            { id: 'act_5', name: 'Watertafel', icon: '💧', capacity: 2, goal: 'Sensorisch & Ontdekken', active: true },
+            { id: 'act_6', name: 'Leeshoek', icon: '📚', capacity: 2, goal: 'Taal & Geletterdheid', active: true },
+            { id: 'act_7', name: 'Kleihoek', icon: '🎨', capacity: 3, goal: 'Fijne Motoriek & Creatief', active: true },
+            { id: 'act_8', name: 'Digitaal Bord', icon: '💻', capacity: 2, goal: 'Digitale Vaardigheden', active: true },
+        ];
+
+        const DEFAULT_PUPILS = [
+            { id: 'p_1', name: 'Lotte', avatar: '🌸', blockedActivities: [] },
+            { id: 'p_2', name: 'Liam', avatar: '🦁', blockedActivities: [] },
+            { id: 'p_3', name: 'Emma', avatar: '🎨', blockedActivities: ['act_8'] }, // Emma restricted from Digitaal bord
+            { id: 'p_4', name: 'Finn', avatar: '🚀', blockedActivities: [] },
+            { id: 'p_5', name: 'Mila', avatar: '🦄', blockedActivities: [] },
+            { id: 'p_6', name: 'Noah', avatar: '🦖', blockedActivities: [] },
+            { id: 'p_7', name: 'Senne', avatar: '🤖', blockedActivities: [] },
+            { id: 'p_8', name: 'Yara', avatar: '🦋', blockedActivities: [] },
+        ];
+
+        // Mock historical data for analytics demonstration
+        const MOCK_HISTORICAL_SESSIONS = [
+            // Today & Past days sessions
+            { id: 's1', pupilId: 'p_1', activityId: 'act_1', startTime: Date.now() - 45*60*1000, endTime: Date.now() - 15*60*1000, durationMin: 30, mood: 'super' },
+            { id: 's2', pupilId: 'p_2', activityId: 'act_1', startTime: Date.now() - 40*60*1000, endTime: Date.now() - 10*60*1000, durationMin: 30, mood: 'super' },
+            { id: 's3', pupilId: 'p_3', activityId: 'act_4', startTime: Date.now() - 50*60*1000, endTime: Date.now() - 30*60*1000, durationMin: 20, mood: 'ok' },
+            { id: 's4', pupilId: 'p_3', activityId: 'act_3', startTime: Date.now() - 25*60*1000, endTime: Date.now() - 5*60*1000, durationMin: 20, mood: 'moeilijk' },
+            // Fluttering example pupil (Finn: short duration, frequent shifts)
+            { id: 's5', pupilId: 'p_4', activityId: 'act_1', startTime: Date.now() - 60*60*1000, endTime: Date.now() - 54*60*1000, durationMin: 6, mood: 'stom' },
+            { id: 's6', pupilId: 'p_4', activityId: 'act_5', startTime: Date.now() - 50*60*1000, endTime: Date.now() - 43*60*1000, durationMin: 7, mood: 'ok' },
+            { id: 's7', pupilId: 'p_4', activityId: 'act_7', startTime: Date.now() - 35*60*1000, endTime: Date.now() - 28*60*1000, durationMin: 7, mood: 'ok' },
+            // Fixation example (Noah: always Bouwhoek)
+            { id: 's8', pupilId: 'p_6', activityId: 'act_1', startTime: Date.now() - 120*60*1000, endTime: Date.now() - 60*60*1000, durationMin: 60, mood: 'super' },
+            { id: 's9', pupilId: 'p_5', activityId: 'act_5', startTime: Date.now() - 70*60*1000, endTime: Date.now() - 30*60*1000, durationMin: 40, mood: 'super' },
+            { id: 's10', pupilId: 'p_5', activityId: 'act_2', startTime: Date.now() - 25*60*1000, endTime: Date.now() - 5*60*1000, durationMin: 20, mood: 'super' },
+        ];
+
+        // APP STATE
+        let activities = [];
+        let pupils = [];
+        let activeSessions = []; // { pupilId, activityId, startTime }
+        let completedSessions = [];
+        let selectedPupilId = null;
+        let pendingEvaluationSession = null;
+
+        // Chart instances
+        let chartPopularityInstance = null;
+        let chartGoalsInstance = null;
+
+        // INITIALIZATION
+        window.onload = function() {
+            loadState();
+            renderAll();
+            startTimerTick();
+        };
+
+        function loadState() {
+            const storedAct = localStorage.getItem('kiddo_activities');
+            const storedPup = localStorage.getItem('kiddo_pupils');
+            const storedActive = localStorage.getItem('kiddo_active_sessions');
+            const storedHist = localStorage.getItem('kiddo_completed_sessions');
+
+            activities = storedAct ? JSON.parse(storedAct) : DEFAULT_ACTIVITIES;
+            pupils = storedPup ? JSON.parse(storedPup) : DEFAULT_PUPILS;
+            activeSessions = storedActive ? JSON.parse(storedActive) : [
+                { pupilId: 'p_1', activityId: 'act_1', startTime: Date.now() - 18 * 60 * 1000 },
+                { pupilId: 'p_2', activityId: 'act_1', startTime: Date.now() - 18 * 60 * 1000 },
+                { pupilId: 'p_5', activityId: 'act_5', startTime: Date.now() - 12 * 60 * 1000 },
+            ];
+            completedSessions = storedHist ? JSON.parse(storedHist) : MOCK_HISTORICAL_SESSIONS;
+        }
+
+        function saveState() {
+            localStorage.setItem('kiddo_activities', JSON.stringify(activities));
+            localStorage.setItem('kiddo_pupils', JSON.stringify(pupils));
+            localStorage.setItem('kiddo_active_sessions', JSON.stringify(activeSessions));
+            localStorage.setItem('kiddo_completed_sessions', JSON.stringify(completedSessions));
+        }
+
+        function resetDemoData() {
+            if (confirm("Wil je alle data herstellen naar de standaard voorbeeld-instellingen?")) {
+                localStorage.clear();
+                loadState();
+                renderAll();
+                alert("Demo data hersteld!");
+            }
+        }
+
+        // NAVIGATION & TAB SWITCHING
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-slate-900', 'shadow-xs');
+                btn.classList.add('text-slate-600');
+            });
+
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-white', 'text-slate-900', 'shadow-xs');
+                activeBtn.classList.remove('text-slate-600');
+            }
+
+            // Render tab specific data
+            if (tabId === 'digibord') renderDigibord();
+            if (tabId === 'live') renderLiveView();
+            if (tabId === 'reflectie') renderReflectionView();
+            if (tabId === 'inzichten') updateAnalytics();
+            if (tabId === 'beheer') renderManagement();
+        }
+
+        function renderAll() {
+            renderDigibord();
+            renderLiveView();
+            renderReflectionView();
+            renderManagement();
+            updateActiveBadge();
+        }
+
+        function updateActiveBadge() {
+            const badge = document.getElementById('active-count-badge');
+            if (badge) badge.innerText = activeSessions.length;
+        }
+
+        // ==========================================
+        // 1. DIGIBORD KEUZEBORD RENDERERS & LOGIC
+        // ==========================================
+        function renderDigibord() {
+            const pupilGrid = document.getElementById('step-pupil-select');
+            pupilGrid.innerHTML = '';
+
+            pupils.forEach(pupil => {
+                const session = activeSessions.find(s => s.pupilId === pupil.id);
+                const isPlaying = !!session;
+                let currentActName = '';
+                if (isPlaying) {
+                    const act = activities.find(a => a.id === session.activityId);
+                    currentActName = act ? act.name : 'Bezig';
+                }
+
+                const card = document.createElement('button');
+                card.onclick = () => selectPupil(pupil.id);
+                card.className = `p-4 rounded-3xl border-4 text-center transition-all duration-200 shadow-md hover:shadow-xl flex flex-col items-center justify-between aspect-square relative ${
+                    isPlaying 
+                        ? 'bg-amber-50 border-amber-300 hover:border-amber-400' 
+                        : 'bg-white border-slate-200 hover:border-brand-pink hover:scale-105'
+                }`;
+
+                card.innerHTML = `
+                    ${isPlaying ? `<span class="absolute top-2 right-2 bg-amber-400 text-amber-950 font-bold text-xs px-2 py-0.5 rounded-full flex items-center gap-1 pulse-slow"><span>⏳</span> ${getFormattedDuration(session.startTime)}</span>` : ''}
+                    <div class="text-5xl sm:text-6xl my-auto transform group-hover:scale-110 transition">${pupil.avatar}</div>
+                    <div class="w-full">
+                        <div class="font-playful text-xl font-bold text-slate-800 truncate">${pupil.name}</div>
+                        ${isPlaying ? `<p class="text-xs text-amber-700 font-semibold truncate">📍 ${currentActName}</p>` : `<p class="text-xs text-emerald-600 font-medium">✨ Vrij om te kiezen</p>`}
+                    </div>
+                `;
+                pupilGrid.appendChild(card);
+            });
+        }
+
+        function selectPupil(pupilId) {
+            playSound('select');
+            selectedPupilId = pupilId;
+            const pupil = pupils.find(p => p.id === pupilId);
+            const activeSession = activeSessions.find(s => s.pupilId === pupilId);
+
+            // If pupil is currently playing, clicking them allows finishing current activity
+            if (activeSession) {
+                const act = activities.find(a => a.id === activeSession.activityId);
+                if (confirm(`${pupil.name} speelt nu in de ${act ? act.name : 'activiteit'}. Wil je deze activiteit stopzetten / afronden?`)) {
+                    stopSessionAndEvaluate(pupilId);
+                }
+                selectedPupilId = null;
+                return;
+            }
+
+            // Update Header for Step 2
+            document.getElementById('step-badge').innerText = '2';
+            document.getElementById('step-title').innerText = `Hallo ${pupil.name}! Waar wil je spelen?`;
+            document.getElementById('step-subtitle').innerText = 'Kies een hoek waar nog plek is.';
+            
+            document.getElementById('active-pupil-banner').classList.remove('hidden');
+            document.getElementById('selected-pupil-avatar').innerText = pupil.avatar;
+            document.getElementById('selected-pupil-name').innerText = pupil.name;
+
+            // Show activity step
+            document.getElementById('step-pupil-select').classList.add('hidden');
+            document.getElementById('step-activity-select').classList.remove('hidden');
+
+            renderActivityChoices(pupil);
+        }
+
+        function renderActivityChoices(pupil) {
+            const grid = document.getElementById('activity-grid');
+            grid.innerHTML = '';
+
+            activities.filter(a => a.active).forEach(act => {
+                const occupants = activeSessions.filter(s => s.activityId === act.id);
+                const currentCount = occupants.length;
+                const isFull = currentCount >= act.capacity;
+                const isBlockedForPupil = pupil.blockedActivities && pupil.blockedActivities.includes(act.id);
+
+                const card = document.createElement('div');
+                card.className = `p-6 rounded-3xl border-4 transition-all duration-200 flex flex-col justify-between text-center relative overflow-hidden ${
+                    isBlockedForPupil
+                        ? 'bg-slate-100 border-slate-300 opacity-60 cursor-not-allowed'
+                        : isFull 
+                            ? 'bg-rose-50 border-rose-200 opacity-80 cursor-not-allowed' 
+                            : 'bg-white border-emerald-300 hover:border-emerald-500 hover:shadow-xl cursor-pointer hover:scale-102'
+                }`;
+
+                if (!isFull && !isBlockedForPupil) {
+                    card.onclick = () => chooseActivity(act.id);
+                } else if (isBlockedForPupil) {
+                    card.onclick = () => {
+                        playSound('blocked');
+                        alert(`Deze activiteit is vandaag niet beschikbaar voor ${pupil.name}.`);
+                    };
+                } else {
+                    card.onclick = () => {
+                        playSound('blocked');
+                        alert(`De ${act.name} is helaas vol! Kies een andere hoek.`);
+                    };
+                }
+
+                // Render current occupants avatars
+                let occupantsHtml = '';
+                occupants.forEach(occ => {
+                    const p = pupils.find(x => x.id === occ.pupilId);
+                    if (p) occupantsHtml += `<span class="text-xl" title="${p.name}">${p.avatar}</span>`;
+                });
+
+                card.innerHTML = `
+                    ${isBlockedForPupil 
+                        ? `<div class="absolute top-2 right-2 bg-slate-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">🚫 Geblokkeerd</div>`
+                        : isFull 
+                            ? `<div class="absolute top-2 right-2 bg-rose-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">VOL</div>` 
+                            : `<div class="absolute top-2 right-2 bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">${act.capacity - currentCount} plek(ken) frei</div>`
+                    }
+                    <div class="text-6xl my-3">${act.icon}</div>
+                    <div>
+                        <h3 class="font-playful text-2xl font-bold text-slate-800">${act.name}</h3>
+                        <p class="text-xs text-slate-500 font-medium mb-3">${act.goal}</p>
+                    </div>
+                    <!-- Capacity indicator bar -->
+                    <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200 flex mb-2">
+                        <div class="bg-emerald-500 h-full transition-all" style="width: ${(currentCount / act.capacity) * 100}%"></div>
+                    </div>
+                    <div class="flex justify-center items-center gap-1 min-h-[28px]">
+                        ${occupantsHtml || '<span class="text-xs text-slate-400 italic">Nog niemand hier</span>'}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function cancelSelection() {
+            selectedPupilId = null;
+            document.getElementById('step-badge').innerText = '1';
+            document.getElementById('step-title').innerText = 'Wie ben jij? Kies je gezichtje!';
+            document.getElementById('step-subtitle').innerText = 'Tik op je eigen foto of symbool om te beginnen.';
+            document.getElementById('active-pupil-banner').classList.add('hidden');
+
+            document.getElementById('step-pupil-select').classList.remove('hidden');
+            document.getElementById('step-activity-select').classList.add('hidden');
+            renderDigibord();
+        }
+
+        function chooseActivity(activityId) {
+            playSound('success');
+            // Start session
+            activeSessions.push({
+                pupilId: selectedPupilId,
+                activityId: activityId,
+                startTime: Date.now()
+            });
+
+            saveState();
+            cancelSelection();
+            updateActiveBadge();
+        }
+
+        function stopSessionAndEvaluate(pupilId) {
+            const sessionIndex = activeSessions.findIndex(s => s.pupilId === pupilId);
+            if (sessionIndex > -1) {
+                const session = activeSessions[sessionIndex];
+                const act = activities.find(a => a.id === session.activityId);
+                
+                pendingEvaluationSession = {
+                    ...session,
+                    endTime: Date.now(),
+                    durationMin: Math.max(1, Math.round((Date.now() - session.startTime) / (1000 * 60)))
+                };
+
+                // Remove from active
+                activeSessions.splice(sessionIndex, 1);
+                saveState();
+
+                // Open evaluation modal
+                document.getElementById('eval-activity-name').innerText = act ? act.name : 'de activiteit';
+                document.getElementById('eval-modal').classList.remove('hidden');
+                playSound('select');
+            }
+        }
+
+        function submitEvaluation(mood) {
+            if (pendingEvaluationSession) {
+                pendingEvaluationSession.mood = mood;
+                completedSessions.push(pendingEvaluationSession);
+                pendingEvaluationSession = null;
+                saveState();
+            }
+            closeEvalModal();
+            renderAll();
+            playSound('success');
+        }
+
+        function closeEvalModal() {
+            if (pendingEvaluationSession) {
+                // Default mood ok if skipped
+                pendingEvaluationSession.mood = 'ok';
+                completedSessions.push(pendingEvaluationSession);
+                pendingEvaluationSession = null;
+                saveState();
+            }
+            document.getElementById('eval-modal').classList.add('hidden');
+            renderAll();
+        }
+
+        // ==========================================
+        // 2. LIVE KLASKAMER OVERZICHT
+        // ==========================================
+        function renderLiveView() {
+            const container = document.getElementById('live-corners-grid');
+            container.innerHTML = '';
+
+            activities.filter(a => a.active).forEach(act => {
+                const occupants = activeSessions.filter(s => s.activityId === act.id);
+                
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between";
+
+                let occupantsListHtml = '';
+                if (occupants.length === 0) {
+                    occupantsListHtml = `<p class="text-xs text-slate-400 italic py-4 text-center">Momenteel leeg</p>`;
+                } else {
+                    occupantsListHtml = occupants.map(s => {
+                        const p = pupils.find(x => x.id === s.pupilId);
+                        const dur = getFormattedDuration(s.startTime);
+                        return `
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100 mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-2xl">${p ? p.avatar : '👦'}</span>
+                                    <div>
+                                        <span class="font-bold text-sm text-slate-800">${p ? p.name : 'Kleuter'}</span>
+                                        <span class="text-xs text-slate-500 block">⏱️ ${dur} bezig</span>
+                                    </div>
+                                </div>
+                                <button onclick="stopSessionAndEvaluate('${s.pupilId}')" title="Stop activiteit" class="text-xs bg-rose-100 hover:bg-rose-200 text-rose-700 px-2.5 py-1 rounded-lg font-semibold transition">
+                                    Wisselen
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-3xl">${act.icon}</span>
+                                <div>
+                                    <h4 class="font-bold text-slate-800">${act.name}</h4>
+                                    <span class="text-xs text-slate-500">${act.goal}</span>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold ${occupants.length >= act.capacity ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700'}">
+                                ${occupants.length} / ${act.capacity}
+                            </span>
+                        </div>
+                        <div class="mt-2">
+                            ${occupantsListHtml}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Unassigned pupils list
+            const activePupilIds = activeSessions.map(s => s.pupilId);
+            const unassigned = pupils.filter(p => !activePupilIds.includes(p.id));
+            document.getElementById('unassigned-count').innerText = unassigned.length;
+            
+            const unassignedContainer = document.getElementById('unassigned-pupils-list');
+            unassignedContainer.innerHTML = '';
+            
+            if (unassigned.length === 0) {
+                unassignedContainer.innerHTML = `<span class="text-xs text-emerald-600 font-semibold">Iedereen is momenteel bezig in een hoek! 🎉</span>`;
+            } else {
+                unassigned.forEach(p => {
+                    const tag = document.createElement('div');
+                    tag.className = "flex items-center gap-2 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700";
+                    tag.innerHTML = `<span>${p.avatar}</span> <span>${p.name}</span>`;
+                    unassignedContainer.appendChild(tag);
+                });
+            }
+        }
+
+        // ==========================================
+        // 3. REFLECTIEBORD (DAGAFSLUITING)
+        // ==========================================
+        function renderReflectionView() {
+            // Highlights calculations
+            const todaySessions = completedSessions; // Simplified for demo view
+            
+            // Highlight Builder
+            const countsPerPupil = {};
+            todaySessions.forEach(s => {
+                countsPerPupil[s.pupilId] = (countsPerPupil[s.pupilId] || 0) + s.durationMin;
+            });
+            
+            // Activity counts
+            const activityCounts = {};
+            todaySessions.forEach(s => {
+                activityCounts[s.activityId] = (activityCounts[s.activityId] || 0) + 1;
+            });
+            let topActId = Object.keys(activityCounts).reduce((a, b) => activityCounts[a] > activityCounts[b] ? a : b, null);
+            const topAct = activities.find(a => a.id === topActId);
+            document.getElementById('badge-popular-activity').innerText = topAct ? `${topAct.name} ${topAct.icon}` : 'Bouwhoek 🏰';
+
+            // Mood summary
+            const moodCounts = { super: 0, ok: 0, moeilijk: 0, stom: 0 };
+            todaySessions.forEach(s => {
+                if (s.mood && moodCounts[s.mood] !== undefined) moodCounts[s.mood]++;
+            });
+
+            const moodContainer = document.getElementById('reflection-mood-summary');
+            moodContainer.innerHTML = `
+                <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+                    <span class="text-4xl block mb-1">😃</span>
+                    <span class="font-bold text-emerald-800 text-lg">${moodCounts.super}x</span>
+                    <span class="text-xs text-emerald-600 block">Super leuk</span>
+                </div>
+                <div class="p-4 rounded-2xl bg-amber-50 border border-amber-100">
+                    <span class="text-4xl block mb-1">😐</span>
+                    <span class="font-bold text-amber-800 text-lg">${moodCounts.ok}x</span>
+                    <span class="text-xs text-amber-600 block">Gewoon / Ok</span>
+                </div>
+                <div class="p-4 rounded-2xl bg-sky-50 border border-sky-100">
+                    <span class="text-4xl block mb-1">☹️</span>
+                    <span class="font-bold text-sky-800 text-lg">${moodCounts.moeilijk}x</span>
+                    <span class="text-xs text-sky-600 block">Moeilijk</span>
+                </div>
+                <div class="p-4 rounded-2xl bg-rose-50 border border-rose-100">
+                    <span class="text-4xl block mb-1">😡</span>
+                    <span class="font-bold text-rose-800 text-lg">${moodCounts.stom}x</span>
+                    <span class="text-xs text-rose-600 block">Niet leuk</span>
+                </div>
+            `;
+
+            // Pupil timeline cards
+            const pupilTimelineContainer = document.getElementById('reflection-pupil-cards');
+            pupilTimelineContainer.innerHTML = '';
+
+            pupils.forEach(pupil => {
+                const pupilSessions = todaySessions.filter(s => s.pupilId === pupil.id);
+                
+                let sessionChips = pupilSessions.map(s => {
+                    const act = activities.find(a => a.id === s.activityId);
+                    const moodEmoji = s.mood === 'super' ? '😃' : s.mood === 'moeilijk' ? '☹️' : s.mood === 'stom' ? '😡' : '😐';
+                    return `
+                        <div class="bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-xl text-xs flex items-center gap-1.5 font-medium">
+                            <span>${act ? act.icon : '📌'}</span>
+                            <span>${act ? act.name : 'Hoek'}</span>
+                            <span class="text-slate-400">(${s.durationMin}m)</span>
+                            <span>${moodEmoji}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                if (pupilSessions.length === 0) {
+                    sessionChips = `<span class="text-xs text-slate-400 italic">Nog geen geregistreerde activiteiten vandaag</span>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = "p-4 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-white transition shadow-2xs";
+                card.innerHTML = `
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-3xl">${pupil.avatar}</span>
+                        <div>
+                            <h4 class="font-bold font-playful text-slate-800 text-lg">${pupil.name}</h4>
+                            <span class="text-xs text-slate-500 font-medium">${pupilSessions.length} activiteit(en) gekozen</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        ${sessionChips}
+                    </div>
+                `;
+                pupilTimelineContainer.appendChild(card);
+            });
+        }
+
+        // ==========================================
+        // 4. INZICHTEN & ANALYSE (CHARTS & SMART PATTERNS)
+        // ==========================================
+        function updateAnalytics() {
+            renderBehaviorAlerts();
+            renderCharts();
+            renderSocialMatrix();
+            populatePupilAnalyticsDropdown();
+            renderIndividualPupilAnalysis();
+        }
+
+        function renderBehaviorAlerts() {
+            const container = document.getElementById('behavior-alerts-container');
+            container.innerHTML = '';
+
+            // Analyze patterns per pupil
+            const alerts = [];
+
+            pupils.forEach(pupil => {
+                const pSessions = completedSessions.filter(s => s.pupilId === pupil.id);
+                
+                // 1. Fluttering check (Vlinderen: many short sessions < 10 mins)
+                const shortSessions = pSessions.filter(s => s.durationMin <= 10);
+                if (shortSessions.length >= 3) {
+                    alerts.push({
+                        type: 'butterfly',
+                        title: 'Vlindergedrag gedetecteerd 🦋',
+                        pupilName: pupil.name,
+                        desc: `${pupil.name} wisselt erg snel van activiteit (${shortSessions.length} korte momenten < 10 min). Heeft extra ondersteuning/focus nodig.`
+                    });
+                }
+
+                // 2. Fixation check (Fixatie: > 70% of time spent on 1 activity)
+                if (pSessions.length >= 2) {
+                    const totalTime = pSessions.reduce((sum, s) => sum + s.durationMin, 0);
+                    const actTime = {};
+                    pSessions.forEach(s => actTime[s.activityId] = (actTime[s.activityId] || 0) + s.durationMin);
+                    
+                    Object.keys(actTime).forEach(actId => {
+                        if (actTime[actId] / totalTime >= 0.65) {
+                            const act = activities.find(a => a.id === actId);
+                            alerts.push({
+                                type: 'fixation',
+                                title: 'Sterke Voorkeur / Fixatie 🎯',
+                                pupilName: pupil.name,
+                                desc: `${pupil.name} kiest vrijwel uitsluitend voor de ${act ? act.name : 'activiteit'}. Stimuleer variatie naar andere doelen.`
+                            });
+                        }
+                    });
+                }
+
+                // 3. Avoidance check (Vermijden: pupil never chose a specific domain)
+                const domainsChosen = new Set(pSessions.map(s => {
+                    const a = activities.find(x => x.id === s.activityId);
+                    return a ? a.goal : null;
+                }));
+                if (!domainsChosen.has('Constructie & Ruimtelijk') && pSessions.length > 3) {
+                    alerts.push({
+                        type: 'avoidance',
+                        title: 'Domein Vermijding 🙈',
+                        pupilName: pupil.name,
+                        desc: `${pupil.name} vermijdt 'Constructie & Ruimtelijk'. Bied uitnodigende opdrachten in de bouwhoek aan.`
+                    });
+                }
+            });
+
+            if (alerts.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 italic col-span-3">Geen opvallende gedragspatronen gedetecteerd. Alle kleuters vertonen een gebalanceerde tijdsbesteding! 👍</p>`;
+                return;
+            }
+
+            alerts.slice(0, 3).forEach(al => {
+                const card = document.createElement('div');
+                card.className = "p-4 rounded-2xl border border-amber-200 bg-amber-50/60 flex items-start gap-3";
+                card.innerHTML = `
+                    <div class="text-2xl mt-0.5">⚠️</div>
+                    <div>
+                        <h4 class="font-bold text-amber-900 text-sm">${al.title}</h4>
+                        <p class="text-xs text-amber-800 mt-0.5">${al.desc}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderCharts() {
+            // Chart 1: Activity Popularity
+            const actLabels = activities.map(a => a.name);
+            const actDurations = activities.map(a => {
+                return completedSessions
+                    .filter(s => s.activityId === a.id)
+                    .reduce((sum, s) => sum + s.durationMin, 0);
+            });
+
+            const ctx1 = document.getElementById('chartActivityPopularity').getContext('2d');
+            if (chartPopularityInstance) chartPopularityInstance.destroy();
+            
+            chartPopularityInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: actLabels,
+                    datasets: [{
+                        label: 'Totale tijd (minuten)',
+                        data: actDurations,
+                        backgroundColor: '#FF85A1',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Chart 2: Developmental Goals Breakdown
+            const goalTotals = {};
+            completedSessions.forEach(s => {
+                const act = activities.find(a => a.id === s.activityId);
+                if (act) {
+                    goalTotals[act.goal] = (goalTotals[act.goal] || 0) + s.durationMin;
+                }
+            });
+
+            const goalLabels = Object.keys(goalTotals);
+            const goalValues = Object.values(goalTotals);
+
+            const ctx2 = document.getElementById('chartDevelopmentalGoals').getContext('2d');
+            if (chartGoalsInstance) chartGoalsInstance.destroy();
+
+            chartGoalsInstance = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: goalLabels.length > 0 ? goalLabels : ['Geen data'],
+                    datasets: [{
+                        data: goalValues.length > 0 ? goalValues : [1],
+                        backgroundColor: ['#FF85A1', '#FFD166', '#06D6A0', '#118AB2', '#9D4EDD', '#073B4C']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+                }
+            });
+        }
+
+        function renderSocialMatrix() {
+            const container = document.getElementById('social-matrix-container');
+            
+            // Build co-occurrence matrix
+            const matrix = {};
+            pupils.forEach(p1 => {
+                matrix[p1.id] = {};
+                pupils.forEach(p2 => {
+                    matrix[p1.id][p2.id] = 0;
+                });
+            });
+
+            // Check sessions overlap (same activity, overlapping time)
+            completedSessions.forEach((s1, i) => {
+                completedSessions.forEach((s2, j) => {
+                    if (i < j && s1.activityId === s2.activityId && s1.pupilId !== s2.pupilId) {
+                        matrix[s1.pupilId][s2.pupilId] += 1;
+                        matrix[s2.pupilId][s1.pupilId] += 1;
+                    }
+                });
+            });
+
+            let tableHtml = `<table class="w-full text-xs text-center border-collapse"><thead><tr><th></th>`;
+            pupils.forEach(p => {
+                tableHtml += `<th class="p-2 font-bold text-slate-700">${p.avatar} ${p.name}</th>`;
+            });
+            tableHtml += `</tr></thead><tbody>`;
+
+            pupils.forEach(p1 => {
+                tableHtml += `<tr><td class="font-bold text-slate-700 text-left p-2 whitespace-nowrap">${p1.avatar} ${p1.name}</td>`;
+                pupils.forEach(p2 => {
+                    if (p1.id === p2.id) {
+                        tableHtml += `<td class="bg-slate-100 p-2 text-slate-300">-</td>`;
+                    } else {
+                        const count = matrix[p1.id][p2.id];
+                        let bg = 'bg-slate-50 text-slate-400';
+                        if (count === 1) bg = 'bg-indigo-100 text-indigo-800 font-bold';
+                        if (count >= 2) bg = 'bg-indigo-600 text-white font-bold';
+                        tableHtml += `<td class="${bg} p-2 border border-white rounded-lg" title="${p1.name} en ${p2.name} speelden ${count}x samen">${count > 0 ? count + 'x' : '0'}</td>`;
+                    }
+                });
+                tableHtml += `</tr>`;
+            });
+            tableHtml += `</tbody></table>`;
+
+            container.innerHTML = tableHtml;
+        }
+
+        function populatePupilAnalyticsDropdown() {
+            const select = document.getElementById('pupil-analytics-select');
+            select.innerHTML = pupils.map(p => `<option value="${p.id}">${p.avatar} ${p.name}</option>`).join('');
+        }
+
+        function renderIndividualPupilAnalysis() {
+            const select = document.getElementById('pupil-analytics-select');
+            const pupilId = select.value || (pupils[0] ? pupils[0].id : null);
+            if (!pupilId) return;
+
+            const pupil = pupils.find(p => p.id === pupilId);
+            const pSessions = completedSessions.filter(s => s.pupilId === pupilId);
+            
+            const totalMin = pSessions.reduce((sum, s) => sum + s.durationMin, 0);
+            const avgMin = pSessions.length > 0 ? Math.round(totalMin / pSessions.length) : 0;
+
+            const container = document.getElementById('individual-pupil-details');
+            container.innerHTML = `
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-4xl">${pupil.avatar}</span>
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-lg">${pupil.name}</h4>
+                            <span class="text-xs text-slate-500">Totaal ${totalMin} min geregistreerd</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 space-y-2 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Aantal keuzes:</span>
+                            <span class="font-bold text-slate-800">${pSessions.length}x</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Gem. tijdsduur per hoek:</span>
+                            <span class="font-bold text-slate-800">${avgMin} min</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 col-span-2">
+                    <h5 class="font-bold text-slate-800 text-xs uppercase mb-3">Meest gekozen activiteiten & stemming</h5>
+                    <div class="space-y-2">
+                        ${pSessions.map(s => {
+                            const act = activities.find(a => a.id === s.activityId);
+                            return `
+                                <div class="flex items-center justify-between text-xs bg-white p-2 rounded-lg border border-slate-200">
+                                    <span class="font-semibold text-slate-700">${act ? act.icon + ' ' + act.name : 'Hoek'}</span>
+                                    <span class="text-slate-500">${s.durationMin} minuten</span>
+                                    <span>Stemming: ${s.mood === 'super' ? '😃 Super' : s.mood === 'moeilijk' ? '☹️ Moeilijk' : '😐 Ok'}</span>
+                                </div>
+                            `;
+                        }).join('') || '<p class="text-xs text-slate-400 italic">Nog geen data voor deze leerling.</p>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 5. LEERKRACHT BEHEER (MANAGEMENT)
+        // ==========================================
+        function renderManagement() {
+            // Activities management list
+            const actContainer = document.getElementById('manage-activities-grid');
+            actContainer.innerHTML = '';
+
+            activities.forEach(act => {
+                const card = document.createElement('div');
+                card.className = "p-4 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-between";
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">${act.icon}</span>
+                        <div>
+                            <h4 class="font-bold text-slate-800">${act.name}</h4>
+                            <p class="text-xs text-slate-500">Capaciteit: ${act.capacity} kleuters • ${act.goal}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="editActivity('${act.id}')" class="text-xs text-slate-600 hover:text-brand-pink font-semibold p-1">Bewerken</button>
+                        <button onclick="deleteActivity('${act.id}')" class="text-xs text-rose-500 hover:text-rose-700 font-semibold p-1">✕</button>
+                    </div>
+                `;
+                actContainer.appendChild(card);
+            });
+
+            // Pupils management list
+            const pupContainer = document.getElementById('manage-pupils-grid');
+            pupContainer.innerHTML = '';
+
+            pupils.forEach(pupil => {
+                const card = document.createElement('div');
+                card.className = "p-4 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-between";
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">${pupil.avatar}</span>
+                        <div>
+                            <h4 class="font-bold text-slate-800">${pupil.name}</h4>
+                            <p class="text-xs text-slate-500">${pupil.blockedActivities.length} geblokkeerde hoek(en)</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="editPupil('${pupil.id}')" class="text-xs text-slate-600 hover:text-brand-blue font-semibold p-1">Bewerken</button>
+                        <button onclick="deletePupil('${pupil.id}')" class="text-xs text-rose-500 hover:text-rose-700 font-semibold p-1">✕</button>
+                    </div>
+                `;
+                pupContainer.appendChild(card);
+            });
+        }
+
+        // Activity CRUD Modal Handling
+        function openAddActivityModal() {
+            document.getElementById('modal-activity-title').innerText = "Nieuwe Activiteit";
+            document.getElementById('act-id').value = "";
+            document.getElementById('act-name').value = "";
+            document.getElementById('act-icon').value = "🎯";
+            document.getElementById('act-capacity').value = 3;
+            document.getElementById('modal-activity').classList.remove('hidden');
+        }
+
+        function editActivity(actId) {
+            const act = activities.find(a => a.id === actId);
+            if (!act) return;
+            document.getElementById('modal-activity-title').innerText = "Activiteit Bewerken";
+            document.getElementById('act-id').value = act.id;
+            document.getElementById('act-name').value = act.name;
+            document.getElementById('act-icon').value = act.icon;
+            document.getElementById('act-capacity').value = act.capacity;
+            document.getElementById('act-goal').value = act.goal;
+            document.getElementById('modal-activity').classList.remove('hidden');
+        }
+
+        function saveActivity(e) {
+            e.preventDefault();
+            const id = document.getElementById('act-id').value;
+            const name = document.getElementById('act-name').value;
+            const icon = document.getElementById('act-icon').value;
+            const capacity = parseInt(document.getElementById('act-capacity').value, 10);
+            const goal = document.getElementById('act-goal').value;
+
+            if (id) {
+                const act = activities.find(a => a.id === id);
+                if (act) {
+                    act.name = name;
+                    act.icon = icon;
+                    act.capacity = capacity;
+                    act.goal = goal;
+                }
+            } else {
+                activities.push({
+                    id: 'act_' + Date.now(),
+                    name, icon, capacity, goal, active: true
+                });
+            }
+
+            saveState();
+            closeActivityModal();
+            renderAll();
+        }
+
+        function closeActivityModal() {
+            document.getElementById('modal-activity').classList.add('hidden');
+        }
+
+        function deleteActivity(actId) {
+            if (confirm("Weet je zeker dat je deze activiteit wilt verwijderen?")) {
+                activities = activities.filter(a => a.id !== actId);
+                saveState();
+                renderAll();
+            }
+        }
+
+        // Pupil CRUD Modal Handling
+        function openAddPupilModal() {
+            document.getElementById('modal-pupil-title').innerText = "Nieuwe Kleuter";
+            document.getElementById('pupil-id').value = "";
+            document.getElementById('pupil-name').value = "";
+            document.getElementById('pupil-avatar').value = "⭐";
+            renderPupilBlockedCheckboxes([]);
+            document.getElementById('modal-pupil').classList.remove('hidden');
+        }
+
+        function editPupil(pupilId) {
+            const pupil = pupils.find(p => p.id === pupilId);
+            if (!pupil) return;
+            document.getElementById('modal-pupil-title').innerText = "Kleuter Bewerken";
+            document.getElementById('pupil-id').value = pupil.id;
+            document.getElementById('pupil-name').value = pupil.name;
+            document.getElementById('pupil-avatar').value = pupil.avatar;
+            renderPupilBlockedCheckboxes(pupil.blockedActivities || []);
+            document.getElementById('modal-pupil').classList.remove('hidden');
+        }
+
+        function renderPupilBlockedCheckboxes(blockedArray) {
+            const container = document.getElementById('pupil-blocked-checkboxes');
+            container.innerHTML = activities.map(a => `
+                <label class="flex items-center gap-2 cursor-pointer p-1 hover:bg-slate-100 rounded">
+                    <input type="checkbox" name="blocked-act" value="${a.id}" ${blockedArray.includes(a.id) ? 'checked' : ''} class="rounded text-brand-blue">
+                    <span>${a.icon} ${a.name}</span>
+                </label>
+            `).join('');
+        }
+
+        function savePupil(e) {
+            e.preventDefault();
+            const id = document.getElementById('pupil-id').value;
+            const name = document.getElementById('pupil-name').value;
+            const avatar = document.getElementById('pupil-avatar').value;
+            
+            const blockedCheckboxes = document.querySelectorAll('input[name="blocked-act"]:checked');
+            const blockedActivities = Array.from(blockedCheckboxes).map(cb => cb.value);
+
+            if (id) {
+                const pupil = pupils.find(p => p.id === id);
+                if (pupil) {
+                    pupil.name = name;
+                    pupil.avatar = avatar;
+                    pupil.blockedActivities = blockedActivities;
+                }
+            } else {
+                pupils.push({
+                    id: 'p_' + Date.now(),
+                    name, avatar, blockedActivities
+                });
+            }
+
+            saveState();
+            closePupilModal();
+            renderAll();
+        }
+
+        function closePupilModal() {
+            document.getElementById('modal-pupil').classList.add('hidden');
+        }
+
+        function deletePupil(pupilId) {
+            if (confirm("Weet je zeker dat je deze kleuter wilt verwijderen?")) {
+                pupils = pupils.filter(p => p.id !== pupilId);
+                saveState();
+                renderAll();
+            }
+        }
+
+        // ==========================================
+        // UTILITIES & TIMERS
+        // ==========================================
+        function startTimerTick() {
+            setInterval(() => {
+                // Periodically refresh active timers display
+                const activeTab = document.querySelector('.tab-content:not(.hidden)');
+                if (activeTab && (activeTab.id === 'tab-digibord' || activeTab.id === 'tab-live')) {
+                    if (activeTab.id === 'tab-digibord' && !selectedPupilId) renderDigibord();
+                    if (activeTab.id === 'tab-live') renderLiveView();
+                }
+            }, 10000); // refresh timer labels every 10s
+        }
+
+        function getFormattedDuration(startTimeMs) {
+            const elapsedMin = Math.floor((Date.now() - startTimeMs) / (1000 * 60));
+            if (elapsedMin < 1) return '< 1m';
+            return `${elapsedMin}m`;
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`Fout bij inschakelen volledig scherm: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
