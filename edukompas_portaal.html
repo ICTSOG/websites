@@ -164,7 +164,33 @@
                     </button>
                 </div>
 
-                <!-- 1. STAR RATING FILTER (1 - 4 Stars) -->
+                
+                <!-- 1. CATEGORIES FILTER (12 CATEGORIES) -->
+                <div>
+                    <h3 class="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-shapes text-fun-purple"></i> Categorieën
+                    </h3>
+                    <div id="category-filter-list" class="space-y-1">
+                        <!-- Dynamic Categories populated via JS -->
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <!-- 3. AGE GROUP / LEERJAAR FILTER -->
+                <div>
+                    <h3 class="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-graduation-cap text-fun-blue"></i> Doelgroep & Leeftijd
+                    </h3>
+                    <div id="age-filter-list" class="space-y-1">
+                        <!-- Dynamic Age groups -->
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+            
+                <!-- 3. STAR RATING FILTER (1 - 4 Stars) -->
                 <div>
                     <h3 class="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
                         <i class="fa-solid fa-star text-amber-400"></i> Beoordeling (Sterren)
@@ -209,30 +235,7 @@
 
                 <hr class="border-slate-100">
 
-                <!-- 2. CATEGORIES FILTER (12 CATEGORIES) -->
-                <div>
-                    <h3 class="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-shapes text-fun-purple"></i> Categorieën
-                    </h3>
-                    <div id="category-filter-list" class="space-y-1">
-                        <!-- Dynamic Categories populated via JS -->
-                    </div>
-                </div>
-
-                <hr class="border-slate-100">
-
-                <!-- 3. AGE GROUP / LEERJAAR FILTER -->
-                <div>
-                    <h3 class="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-graduation-cap text-fun-blue"></i> Doelgroep & Leeftijd
-                    </h3>
-                    <div id="age-filter-list" class="space-y-1">
-                        <!-- Dynamic Age groups -->
-                    </div>
-                </div>
-
-                <hr class="border-slate-100">
-
+                
                 <!-- 4. FAVORITES QUICK TOGGLE -->
                 <div>
                     <button onclick="toggleFavoritesOnly()" id="favorites-toggle-btn" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-rose-700 font-bold text-xs transition-colors">
