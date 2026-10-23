@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="nl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduKompas - Kindvriendelijk Schoolportaal</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['Fredoka', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts: Fredoka & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        h1, h2, h3, .font-display {
+            font-family: 'Fredoka', cursive;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+            
+            <!-- Logo & Title -->
+            <div class="flex items-center gap-3 cursor-pointer select-none" onclick="resetFilters()">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+                    <i class="fa-solid fa-compass text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-xl tracking-wide bg-gradient-to-r from-sky-600 to-indigo-600 dark:from-sky-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                        EduKompas
+                    </h1>
+                    <p class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 -mt-1 hidden sm:block">Het Kindvriendelijke Schoolportaal</p>
+                </div>
+            </div>
+
+            <!-- Header Controls -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                
+                <!-- PROMINENT DIRECT DOWNLOAD BUTTON -->
+                <button onclick="downloadCurrentPageHTML()" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-emerald-500/20 transition-all">
+                    <i class="fa-solid fa-file-arrow-down text-sm"></i>
+                    <span class="hidden md:inline">Download Broncode (.html)</span>
+                    <span class="md:hidden">.html</span>
+                </button>
+
+                <!-- Export / Data Option -->
+                <button onclick="openExportModal()" class="px-3 py-2 rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/50 hover:bg-sky-100 text-sky-700 dark:text-sky-300 text-xs font-bold flex items-center gap-1.5 transition-all">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span class="hidden lg:inline">Exporteer</span>
+                </button>
+
+                <!-- Favorites Toggle -->
+                <button id="favOnlyBtn" onclick="toggleFavoritesOnly()" class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700/60 text-xs font-semibold flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-heart text-rose-500"></i>
+                    <span class="hidden sm:inline">Favorieten</span>
+                    <span id="favBadgeCount" class="bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 px-1.5 py-0.5 rounded-full text-[10px] font-bold">0</span>
+                </button>
+
+                <!-- Admin Status / Toggle -->
+                <button id="adminToggleBtn" onclick="handleAdminToggleClick()" class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 text-xs font-semibold flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-user-shield text-indigo-500"></i>
+                    <span id="adminBtnLabel" class="hidden md:inline">Beheer Login</span>
+                </button>
+
+                <!-- Dark Mode Toggle -->
+                <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all" title="Donker/Licht thema">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+        <!-- HERO BANNER MET CENTRALE ZOEKBALK -->
+        <div class="bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-sky-500/10 relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="relative z-10 max-w-3xl mx-auto text-center space-y-3">
+                <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/20 text-white text-xs font-semibold backdrop-blur-md mb-1">
+                    <i class="fa-solid fa-shield-cat text-amber-300"></i> Kindvriendelijk & Veilig Onderwijs
+                </span>
+                
+                <h2 class="text-2xl sm:text-4xl font-bold tracking-tight text-white font-display">
+                    Veilig & Kindvriendelijk Leren
+                </h2>
+                
+                <p class="text-sky-100 text-xs sm:text-sm leading-relaxed max-w-xl mx-auto">
+                    Doorzoek en ontdek goedgekeurde educatieve websites, digitale tools en lesmateriaal voor school en thuis.
+                </p>
+
+                <!-- CENTRALE ZOEKBALK BINNEN DE BANNER -->
+                <div class="pt-2 max-w-2xl mx-auto">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+                        <input type="text" id="globalSearch" oninput="handleSearch(this.value)" placeholder="Zoek op naam, trefwoord, beschrijving of tool..." 
+                            class="w-full pl-12 pr-10 py-3.5 bg-white text-slate-800 rounded-2xl text-xs sm:text-sm font-medium shadow-lg focus:outline-none focus:ring-4 focus:ring-sky-300/50 transition-all placeholder:text-slate-400">
+                        <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                            <i class="fa-solid fa-circle-xmark text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DOELGROEP FILTERBALK (BOVENAAN MULTI-SELECT) -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-users text-indigo-500"></i> Doelgroep Selecteren
+                </span>
+                <span class="text-[11px] text-slate-400">
+                    Meerdere opties mogelijk
+                </span>
+            </div>
+
+            <!-- Horizontal Doelgroep Buttons -->
+            <div id="doelgroepPillContainer" class="flex flex-wrap gap-2 pt-1">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+
+        <!-- MAIN LAYOUT GRID: SIDEBAR (12 CATEGORIES) + MAIN CONTENT (HORIZONTAL CARDS) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- EXACTE 12 CATEGORIEËN ZIJBALK (COMPACT, GEEN SCROLLBAR) -->
+            <aside class="lg:col-span-4 space-y-4">
+                
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-3.5 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-700">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-sky-500 text-sm"></i>
+                            <h3 class="font-bold text-xs uppercase tracking-wider text-slate-900 dark:text-white">Categorieën</h3>
+                        </div>
+                        <div class="flex items-center gap-2 text-[11px]">
+                            <button onclick="selectAllCategories()" class="font-semibold text-sky-600 dark:text-sky-400 hover:underline">Alles</button>
+                            <span class="text-slate-300 dark:text-slate-600">•</span>
+                            <button onclick="clearCategories()" class="font-semibold text-slate-400 hover:underline">Wissen</button>
+                        </div>
+                    </div>
+
+                    <!-- Compact list fitting all 12 categories without internal scrolling -->
+                    <div id="categorySidebarList" class="space-y-0.5 pt-2">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- ADMIN PANEL BOX -->
+                <div id="adminPanelBox" class="hidden bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 rounded-2xl p-4 text-center space-y-2">
+                    <div class="flex items-center justify-center gap-2 text-indigo-700 dark:text-indigo-300 font-bold text-xs">
+                        <i class="fa-solid fa-user-shield"></i> Beheerdersmodus Actief
+                    </div>
+                    <button onclick="openAddModal()" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus-circle"></i> Nieuwe Website Toevoegen
+                    </button>
+                </div>
+
+                <!-- RESET FILTERS BUTTON -->
+                <button onclick="resetFilters()" class="w-full py-2.5 px-4 bg-slate-200/80 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i> Alle Filters Herstellen
+                </button>
+
+            </aside>
+
+            <!-- MAIN RESULTS LIST (HORIZONTAL CARDS) -->
+            <section class="lg:col-span-8 space-y-4">
+
+                <!-- TOOLBAR / COUNT HEADER -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-3.5 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <span id="resultsCountBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-300">
+                            0 websites
+                        </span>
+                        <span id="activeFilterSummary" class="text-xs text-slate-500 dark:text-slate-400 truncate max-w-xs sm:max-w-md">
+                            Alle resultaten
+                        </span>
+                    </div>
+
+                    <!-- SORT DROPDOWN (NO RATINGS) -->
+                    <div class="flex items-center gap-2">
+                        <label for="sortSelect" class="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                            Sorteer:
+                        </label>
+                        <select id="sortSelect" onchange="handleSortChange(this.value)" class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-200 text-xs rounded-xl px-3 py-1.5 font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="title">A - Z (Naam)</option>
+                            <option value="newest">Nieuwste eerst</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- HORIZONTAL RESULT CARDS CONTAINER -->
+                <div id="resultsList" class="flex flex-col gap-3.5">
+                    <!-- Website cards rendered here -->
+                </div>
+
+                <!-- EMPTY STATE -->
+                <div id="emptyState" class="hidden bg-white dark:bg-slate-800 rounded-3xl p-10 sm:p-12 text-center border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="w-16 h-16 rounded-2xl bg-sky-50 dark:bg-sky-950/60 text-sky-500 flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Geen resultaten gevonden</h3>
+                    <p id="emptyStateMessage" class="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-6 leading-relaxed">
+                        Er zijn geen leermiddelen gevonden voor je huidige zoekopdracht of filterselectie.
+                    </p>
+                    <button onclick="resetFilters()" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition-all shadow-md">
+                        Filters Herstellen
+                    </button>
+                </div>
+
+            </section>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 mt-12 py-6 text-xs text-slate-500 dark:text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-300">
+                <i class="fa-solid fa-compass text-sky-500"></i> EduKompas Schoolportaal
+            </div>
+            <p>© 2026 EduKompas — Kindvriendelijke & overzichtelijke digitale leeromgeving.</p>
+        </div>
+    </footer>
+
+    <!-- DETAIL MODAL -->
+    <div id="detailModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 relative my-8">
+            <button onclick="closeModal('detailModal')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center hover:bg-slate-200 transition-all">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- ADMIN LOGIN MODAL -->
+    <div id="loginModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 relative">
+            <button onclick="closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+            <div class="text-center mb-5">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-2 text-xl">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Beheerders Login</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Log in om websites te beheren</p>
+            </div>
+
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">E-mailadres</label>
+                    <input type="email" id="loginEmail" required value="admin@school.be" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Wachtwoord</label>
+                    <input type="password" id="loginPassword" required value="admin123" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div id="loginError" class="hidden text-rose-500 text-[11px] font-semibold text-center bg-rose-50 dark:bg-rose-950/40 p-2 rounded-lg">
+                    Gebruik `admin@school.be` en wachtwoord `admin123`.
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('loginModal')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold">Annuleren</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md transition-all">Inloggen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- WEBSITE EDITOR MODAL (ADD / EDIT) -->
+    <div id="websiteModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 relative my-8">
+            <button onclick="closeModal('websiteModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+            <h3 id="formModalTitle" class="text-lg font-bold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-plus-circle text-sky-500"></i> Website Toevoegen
+            </h3>
+
+            <form id="websiteForm" onsubmit="handleSaveWebsite(event)" class="space-y-3.5 text-xs">
+                <input type="hidden" id="editWebsiteId">
+
+                <div>
+                    <label class="block font-semibold mb-1">Naam / Titel *</label>
+                    <input type="text" id="formTitle" required placeholder="bijv. Scratch Junior" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block font-semibold mb-1">Categorie *</label>
+                    <select id="formCategory" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-semibold mb-1">Doelgroep(en) * <span class="text-slate-400 font-normal">(selecteer één of meerdere)</span></label>
+                    <div id="formDoelgroepCheckboxes" class="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold mb-1">URL (Website Adres) *</label>
+                    <input type="url" id="formUrl" required placeholder="https://scratch.mit.edu" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block font-semibold mb-1">Beschrijving *</label>
+                    <textarea id="formDesc" rows="3" required placeholder="Toelichting over de inhoud..." class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block font-semibold mb-1">Trefwoorden / Tags <span class="text-slate-400 font-normal">(komma-gescheiden)</span></label>
+                    <input type="text" id="formTags" placeholder="bijv. programmeren, creatief, gratis" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('websiteModal')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold">Annuleren</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold shadow-md transition-all">Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DOWNLOAD / EXPORT MODAL -->
+    <div id="exportModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 relative text-center">
+            <button onclick="closeModal('exportModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center mx-auto mb-3 text-xl">
+                <i class="fa-solid fa-download"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Download / Exporteer</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                Download de volledige EduKompas applicatie als direct bruikbaar HTML-bestand of als JSON databestand.
+            </p>
+            <div class="space-y-2.5">
+                <button onclick="downloadCurrentPageHTML()" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-file-code"></i> Download Broncode (EduKompas_index.html)
+                </button>
+                <button onclick="exportDataJSON()" class="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-file-json"></i> Exporteer Data (JSON)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM CONFIRMATION MODAL -->
+    <div id="confirmModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 text-center">
+            <div class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-500 flex items-center justify-center mx-auto mb-3 text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 id="confirmModalTitle" class="text-base font-bold text-slate-900 dark:text-white mb-2">Bevestigen</h3>
+            <p id="confirmModalText" class="text-xs text-slate-500 dark:text-slate-400 mb-5">Weet je dit zeker?</p>
+            <div class="flex gap-2">
+                <button onclick="closeModal('confirmModal')" class="flex-1 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs">Annuleren</button>
+                <button id="confirmModalBtn" class="flex-1 py-2 rounded-xl bg-rose-600 text-white font-bold text-xs shadow-md">Verwijderen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // --- STRICT CATEGORIES LIST (EXACTLY THESE 12) ---
+        const STRICT_CATEGORIES = [
+            { id: "mediawijsheid", name: "Mediawijsheid & Veiligheid", icon: "fa-shield-halved" },
+            { id: "ict_basis", name: "ICT Basisvaardigheden", icon: "fa-desktop" },
+            { id: "creatief_media", name: "Creatief met Media (foto, video, audio)", icon: "fa-photo-film" },
+            { id: "coding", name: "Computationeel Denken & Coding", icon: "fa-code" },
+            { id: "digitale_geletterdheid", name: "Digitale Geletterdheid (Vakoverschrijdend)", icon: "fa-book-bookmark" },
+            { id: "ai_klas", name: "AI in de Klas", icon: "fa-robot" },
+            { id: "onderwijsvisie", name: "Onderwijsvisie & Methodieken", icon: "fa-lightbulb" },
+            { id: "platformen", name: "Platformen (ondersteunen bij leren)", icon: "fa-cubes" },
+            { id: "internet_leerkrachten", name: "Internet leerkrachten", icon: "fa-chalkboard-user" },
+            { id: "ict_materiaal", name: "ICT didactisch materiaal", icon: "fa-toolbox" },
+            { id: "werken_taal", name: "Werken aan taal", icon: "fa-spell-check" },
+            { id: "digibord_tools", name: "Digibord tools", icon: "fa-display" }
+        ];
+
+        // --- DOELGROEP OPTIONS ---
+        const DOELGROEP_OPTIONS = [
+            "Kleuter", "Onderbouw", "Middenbouw", "Bovenbouw", "Lager", "Leerkracht", "Ouders"
+        ];
+
+        // --- COMPLETE DATABASE INITIALIZATION (ALL USER SUBMITTED WEBSITES) ---
+        const INITIAL_WEBSITES = [
+            // 1. Mediawijsheid & Veiligheid
+            { id: 101, title: "Leerlijn ICT (lager) – Inspira academy", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Leerkracht", "Lager"], url: "https://inspira.academy", description: "Doorlopende ICT-leerlijn met uitgewerkte lessen mediawijsheid voor het basisonderwijs.", tags: ["leerlijn", "ict", "veiligheid"] },
+            { id: 102, title: "My check-ins | Microsoft Reflect", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Leerkracht", "Bovenbouw", "Lager"], url: "https://reflect.microsoft.com", description: "Ondersteunt sociaal-emotioneel welzijn en digitale veiligheid in het klaslokaal.", tags: ["welzijn", "reflectie", "gevoelens"] },
+            { id: 103, title: "Mediawijs - Kenniscentrum Digitale Geletterdheid", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Leerkracht", "Ouders", "Bovenbouw"], url: "https://www.mediawijs.be", description: "Vlaams kenniscentrum voor mediawijsheid met lespakketten, tips en nieuws.", tags: ["mediawijs", "vlaanderen", "kennis"] },
+            { id: 104, title: "Info voor jongeren 11-24 jaar | WAT WAT", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Bovenbouw", "Ouders"], url: "https://www.watwat.be", description: "Betrouwbare info over online privacy, sociale media en mentaal welzijn.", tags: ["jongeren", "advies", "privacy"] },
+            { id: 105, title: "Child Focus", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Leerkracht", "Ouders", "Lager"], url: "https://childfocus.be", description: "Preventie en educatie rond online veiligheid, grooming en bescherming van kinderen.", tags: ["preventie", "veiligheid", "hulp"] },
+            { id: 106, title: "Digisaurus", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw"], url: "https://www.digisaurus.be", description: "Speelse aanpak om jonge kinderen bewust om te laten gaan met digitale schermen.", tags: ["schermtijd", "kleuters", "bewustzijn"] },
+            { id: 107, title: "Cyberhelden (Bibliotheken Zonder Grenzen)", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Middenbouw", "Bovenbouw", "Lager"], url: "https://www.bibliothekenzondergrenzen.be", description: "Interactieve Cyberhelden-game over online phishing, nepnieuws en wachtwoorden.", tags: ["game", "cyberhelden", "phishing"] },
+            { id: 108, title: "Cyberpesten: 6 vormen van online pesten - Klasse", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Leerkracht", "Ouders", "Bovenbouw"], url: "https://www.klasse.be", description: "Handvatten voor leerkrachten en ouders om cyberpesten tijdig te herkennen en te stoppen.", tags: ["cyberpesten", "klasse", "pesten"] },
+            { id: 109, title: "BARST! methode - BrainBugs", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Bovenbouw", "Leerkracht"], url: "https://www.brainbugs.be", description: "Lesmethode gericht op het herkennen van desinformatie en manipulatietechnieken.", tags: ["desinformatie", "kritisch", "brainbugs"] },
+            { id: 110, title: "VRT voor leerkrachten", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Leerkracht"], url: "https://www.vrt.be/vrtnu/nl/voor-leerkrachten", description: "Educatieve mediacontent, nieuwsanalyses en mediawijze projecten van de VRT.", tags: ["vrt", "nieuws", "media"] },
+            { id: 111, title: "Yodato | Kritische datageletterdheid bij kinderen", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://www.yodato.be", description: "Educatieve hulpmiddelen om kinderen te leren wat er met hun digitale gegevens gebeurt.", tags: ["data", "privacy", "kritisch"] },
+            { id: 112, title: "Opiniedossiers - Stampmedia", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Bovenbouw", "Leerkracht"], url: "https://www.stampmedia.be", description: "Jongerenpersagentschap met maatschappelijke opiniestukken en persvrijheid-thema's.", tags: ["pers", "opinie", "journalistiek"] },
+            { id: 113, title: "De Schaal van M", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Bovenbouw", "Lager"], url: "https://www.deschaalvanm.be", description: "De grootste mediawijsheid-wedstrijd voor lagere scholen in Vlaanderen.", tags: ["wedstrijd", "mediaquiz", "klassen"] },
+            { id: 114, title: "Is het echt zo? | Mediawijs", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Bovenbouw", "Leerkracht"], url: "https://www.ishetechtzo.be", description: "Gids en oefeningen om nepnieuws, desinformatie en bewerkte foto's te ontmaskeren.", tags: ["nepnieuws", "factcheck", "mediawijs"] },
+            { id: 115, title: "HoeZoo | Mediawijs", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Onderbouw", "Middenbouw"], url: "https://www.hoezoo.be", description: "Vragen en antwoorden over media, schermen en techniek voor nieuwsgierige kinderen.", tags: ["vragen", "ontdekken", "schermen"] },
+            { id: 116, title: "Kritikat | Mediawijs", category: "Mediawijsheid & Veiligheid", targetAudiences: ["Middenbouw", "Bovenbouw"], url: "https://www.kritikat.be", description: "Interactief spel om kritisch te leren nadenken over online berichten en reclame.", tags: ["kritisch", "reclame", "kat"] },
+
+            // 2. ICT Basisvaardigheden
+            { id: 201, title: "Typeles Online - Gratis leren typen", category: "ICT Basisvaardigheden", targetAudiences: ["Onderbouw", "Middenbouw", "Bovenbouw", "Lager"], url: "https://www.typelesonline.nl", description: "Oefen gratis blind typen met 10 vingers via interactieve oefeningen.", tags: ["typen", "toetsenbord", "10vingers"] },
+            { id: 202, title: "Mind Express - Jabbla", category: "ICT Basisvaardigheden", targetAudiences: ["Kleuter", "Onderbouw", "Leerkracht"], url: "https://www.jabbla.com/mindexpress", description: "Software voor ondersteunende communicatie en toegankelijkheid op de computer.", tags: ["toegankelijkheid", "communicatie", "pictogrammen"] },
+
+            // 3. Creatief met Media (foto, video, audio)
+            { id: 301, title: "Brightlab E-class Tinkercad", category: "Creatief met Media (foto, video, audio)", targetAudiences: ["Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://www.brightlab.be", description: "Klassenprojecten rond 3D-ontwerpen en creatieve STEM-opdrachten.", tags: ["brightlab", "3d", "stem"] },
+            { id: 302, title: "Book Creator", category: "Creatief met Media (foto, video, audio)", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Bovenbouw", "Lager", "Leerkracht"], url: "https://bookcreator.com", description: "Maak eenvoudig je eigen digitale prentenboeken, verhalen en portfolio's.", tags: ["boeken", "digitaal", "creatief"] },
+            { id: 303, title: "Google SketchUp for Schools", category: "Creatief met Media (foto, video, audio)", targetAudiences: ["Bovenbouw", "Leerkracht"], url: "https://edu.sketchup.com", description: "Gratis 3D-modelleringstool in de browser speciaal voor onderwijsinstellingen.", tags: ["3d", "sketchup", "ontwerpen"] },
+            { id: 304, title: "Tinkercad 3D Design", category: "Creatief met Media (foto, video, audio)", targetAudiences: ["Middenbouw", "Bovenbouw", "Lager"], url: "https://www.tinkercad.com", description: "Toegankelijke 3D CAD-ontwerptool voor leerlingen en makers.", tags: ["3d", "cad", "modelleren"] },
+            { id: 305, title: "CapCut Videobewerking", category: "Creatief met Media (foto, video, audio)", targetAudiences: ["Bovenbouw", "Leerkracht"], url: "https://www.capcut.com", description: "Moderne videobewerker met sjablonen, effecten en ondertiteling.", tags: ["video", "montage", "effecten"] },
+            { id: 306, title: "Canva voor Onderwijs", category: "Creatief met Media (foto, video, audio)", targetAudiences: ["Bovenbouw", "Leerkracht"], url: "https://www.canva.com", description: "Grafisch ontwerp voor posters, presentaties, infographics en video's.", tags: ["ontwerp", "posters", "presentatie"] },
+            { id: 307, title: "AutoDraw", category: "Creatief met Media (foto, video, audio)", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Bovenbouw"], url: "https://www.autodraw.com", description: "Tekeninstrument van Google dat je schetsen omzet in strakke illustraties met AI.", tags: ["tekenen", "ai", "schetsen"] },
+            { id: 308, title: "Chrome Music Lab - Song Maker", category: "Creatief met Media (foto, video, audio)", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Bovenbouw", "Lager"], url: "https://musiclab.chromeexperiments.com/Song-Maker", description: "Maak en speel muzieknummers in je browser met gekleurde vakjes.", tags: ["muziek", "songmaker", "audio"] },
+            { id: 309, title: "Tuttu Online Audio Recorder", category: "Creatief met Media (foto, video, audio)", targetAudiences: ["Leerkracht", "Bovenbouw"], url: "https://tuttu.io", description: "Eenvoudige browser-audiorecorder voor podcasts, spreekbeurten en audio-opnames.", tags: ["audio", "microfoon", "podcast"] },
+            { id: 310, title: "Silk - Generative Art", category: "Creatief met Media (foto, video, audio)", targetAudiences: ["Onderbouw", "Middenbouw", "Bovenbouw"], url: "http://weavesilk.com", description: "Maak betoverende symmetrische kunstwerken met lichtgevende lijnen.", tags: ["kunst", "symmetrie", "ontspanning"] },
+            { id: 311, title: "FlipAnim - Animatie Tekenen", category: "Creatief met Media (foto, video, audio)", targetAudiences: ["Middenbouw", "Bovenbouw", "Lager"], url: "https://flipanim.com", description: "Teken frame-voor-frame animaties en bewaar ze als geanimeerde GIF.", tags: ["animatie", "flipbook", "tekenen"] },
+            { id: 312, title: "Speelgoedfotografie & Storytelling", category: "Creatief met Media (foto, video, audio)", targetAudiences: ["Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://www.speelgoedfotografie.nl", description: "Ontdek verhalen vertellen met LEGO en figuren via macrofotografie.", tags: ["fotografie", "verhalen", "lego"] },
+            { id: 313, title: "Nieuws in de Klas", category: "Creatief met Media (foto, video, audio)", targetAudiences: ["Bovenbouw", "Leerkracht"], url: "https://www.nieuwsindeklas.be", description: "Kranten, tijdschriften en journalistiek lesmateriaal voor de klas.", tags: ["kranten", "nieuws", "schrijven"] },
+
+            // 4. Computationeel Denken & Coding
+            { id: 401, title: "Bebras Belgium", category: "Computationeel Denken & Coding", targetAudiences: ["Middenbouw", "Bovenbouw", "Lager", "Leerkracht"], url: "https://www.bebras.be", description: "Jaarlijkse internationale informatica- en logica-wedstrijd voor scholen.", tags: ["bebras", "logica", "puzzels"] },
+            { id: 402, title: "Run Marco! - Allcancode", category: "Computationeel Denken & Coding", targetAudiences: ["Onderbouw", "Middenbouw"], url: "https://www.allcancode.com/runmarco", description: "Avonturenspel waarin kinderen een personage besturen met codeblokken.", tags: ["avontuur", "blokken", "game"] },
+            { id: 403, title: "Code.org", category: "Computationeel Denken & Coding", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Bovenbouw", "Lager", "Leerkracht"], url: "https://code.org", description: "Het wereldwijde platform met Hour of Code, Minecraft-opdrachten en cursussen.", tags: ["code", "hourofcode", "minecraft"] },
+            { id: 404, title: "Blockly Spelletjes", category: "Computationeel Denken & Coding", targetAudiences: ["Onderbouw", "Middenbouw", "Bovenbouw"], url: "https://blockly.games", description: "Educatieve spelletjes die de basisprincipes van programmeren aanleren.", tags: ["blockly", "doolhof", "puzzel"] },
+            { id: 405, title: "Wat Nou? Ko de Kraker", category: "Computationeel Denken & Coding", targetAudiences: ["Onderbouw", "Middenbouw"], url: "https://www.kodekraker.nl", description: "Oefen stapsgewijs nadenken en logische patronen herkennen met Ko.", tags: ["ko", "kraker", "patronen"] },
+            { id: 406, title: "Sprite Lab - Code.org", category: "Computationeel Denken & Coding", targetAudiences: ["Middenbouw", "Bovenbouw"], url: "https://studio.code.org/s/spritelab", description: "Maak je eigen interactieve karakters (sprites) en spellen in de browser.", tags: ["sprites", "spellen", "creatief"] },
+            { id: 407, title: "CoderDojo KopGroep", category: "Computationeel Denken & Coding", targetAudiences: ["Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://www.coderdojo.be", description: "Gratis programmeerclubs en lesfiches voor kinderen en jongeren.", tags: ["coderdojo", "fiches", "club"] },
+            { id: 408, title: "Make Pixel Art", category: "Computationeel Denken & Coding", targetAudiences: ["Onderbouw", "Middenbouw", "Bovenbouw"], url: "https://www.makepixelart.com", description: "Teken retro pixelart en begrijp hoe beelden op een scherm zijn opgebouwd uit pixels.", tags: ["pixel", "pixels", "retro"] },
+            { id: 409, title: "Scratch MIT", category: "Computationeel Denken & Coding", targetAudiences: ["Middenbouw", "Bovenbouw", "Lager"], url: "https://scratch.mit.edu", description: "De populairste visuele programmeertaal ter wereld voor verhalen en games.", tags: ["scratch", "blokken", "mit"] },
+            { id: 410, title: "Scratch Starter Projects", category: "Computationeel Denken & Coding", targetAudiences: ["Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://scratch.mit.edu/starter-projects", description: "Kant-en-klare startprojecten om direct te remixen en te bewerken.", tags: ["starter", "remix", "voorbeelden"] },
+            { id: 411, title: "ScratchJr for Web (Leeftijd 5-7)", category: "Computationeel Denken & Coding", targetAudiences: ["Kleuter", "Onderbouw"], url: "https://www.scratchjr.org", description: "Aangepaste Scratch-omgeving voor jonge kinderen die nog leren lezen.", tags: ["kleuters", "scratchjr", "pictogrammen"] },
+            { id: 412, title: "CodeKinderen - Unplugged Programmeren", category: "Computationeel Denken & Coding", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Leerkracht"], url: "https://www.codekinderen.nl", description: "Lessen programmeren zonder computer via fysieke opdrachten en spelletjes.", tags: ["unplugged", "papieren", "bewegend"] },
+            { id: 413, title: "BotLogic.us", category: "Computationeel Denken & Coding", targetAudiences: ["Onderbouw", "Middenbouw", "Bovenbouw"], url: "http://botlogic.us", description: "Puzzelgame waarin je een robot met zo min mogelijk commando's naar het doel leidt.", tags: ["robot", "puzzel", "efficientie"] },
+            { id: 414, title: "Makey Makey Invention Guides", category: "Computationeel Denken & Coding", targetAudiences: ["Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://makeymakey.com", description: "Verbind alledaagse voorwerpen (zoals banaan of klei) als toetsenbord met je pc.", tags: ["makeymakey", "hardware", "uitvinden"] },
+
+            // 5. Digitale Geletterdheid (Vakoverschrijdend)
+            { id: 501, title: "WoordzoekerMaken.nl", category: "Digitale Geletterdheid (Vakoverschrijdend)", targetAudiences: ["Onderbouw", "Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://www.woordzoekermaken.nl", description: "Maak en print op maat gemaakte woordzoekers met eigen klaswoorden.", tags: ["woordzoeker", "puzzel", "generator"] },
+            { id: 502, title: "Thematische Qwhizzkids", category: "Digitale Geletterdheid (Vakoverschrijdend)", targetAudiences: ["Middenbouw", "Bovenbouw", "Lager"], url: "https://www.whizzkids.be", description: "Online zoek- en informatievaardighedenwedstrijd voor lagere scholen.", tags: ["whizzkids", "zoeken", "quiz"] },
+
+            // 6. AI in de Klas
+            { id: 601, title: "AI in het Stedelijk Onderwijs Gent", category: "AI in de Klas", targetAudiences: ["Leerkracht"], url: "https://onderwijs.gent.be", description: "Praktijkgids en visie over ethisch en efficiënt AI-gebruik op school.", tags: ["gent", "visie", "ethiek"] },
+            { id: 602, title: "De Europese AI-wet (EU AI Act)", category: "AI in de Klas", targetAudiences: ["Leerkracht"], url: "https://www.euaact.eu", description: "Informatie over Europese wetgeving en regelgeving rond kunstmatige intelligentie.", tags: ["wetgeving", "eu", "regels"] },
+            { id: 603, title: "Odd One Out — Google Arts & Culture", category: "AI in de Klas", targetAudiences: ["Middenbouw", "Bovenbouw", "Lager"], url: "https://artsandculture.google.com/experiment/odd-one-out", description: "Ontdek door AI gegenereerde kunstwerken en zoek welke foto er niet bij hoort.", tags: ["google", "kunst", "ai-herkenning"] },
+            { id: 604, title: "Diffit for Teachers", category: "AI in de Klas", targetAudiences: ["Leerkracht"], url: "https://beta.diffit.me", description: "Genereer direct op maat gemaakte leesteksten en werkbladen op elk niveau.", tags: ["diffit", "differentiatie", "werkbladen"] },
+            { id: 605, title: "SchoolHub.ai - Gratis AI voor Scholen", category: "AI in de Klas", targetAudiences: ["Leerkracht"], url: "https://www.schoolhub.ai", description: "Handige AI-assistenten voor leerkrachten om lesplannen en toetsen op te stellen.", tags: ["lesplannen", "assistent", "schoolhub"] },
+            { id: 606, title: "NotebookLM (Google AI)", category: "AI in de Klas", targetAudiences: ["Leerkracht", "Bovenbouw"], url: "https://notebooklm.google.com", description: "AI-notitieboek dat je eigen documenten en bronnen samenvat en analyseert.", tags: ["google", "bronnen", "samenvatting"] },
+            { id: 607, title: "AI Test Kitchen - Google", category: "AI in de Klas", targetAudiences: ["Leerkracht", "Bovenbouw"], url: "https://aitestkitchen.withgoogle.com", description: "Experimenteer met de nieuwste AI-modellen voor tekst-, beeld- en muziekgeneratie.", tags: ["experimenten", "google", "generatief"] },
+            { id: 608, title: "There's An AI For That (TAAFT)", category: "AI in de Klas", targetAudiences: ["Leerkracht"], url: "https://theresanaiforthat.com", description: "De grootste zoekmachine voor alle bestaande AI-tools ter wereld.", tags: ["databank", "tools", "zoeken"] },
+            { id: 609, title: "AI Studio - Het Klokhuis", category: "AI in de Klas", targetAudiences: ["Middenbouw", "Bovenbouw", "Lager"], url: "https://hetklokhuis.nl", description: "Kindvriendelijke video's en uitleg over de werking van algoritmes en AI.", tags: ["klokhuis", "uitleg", "kindvriendelijk"] },
+            { id: 610, title: "Promptfabriek", category: "AI in de Klas", targetAudiences: ["Leerkracht"], url: "https://www.promptfabriek.nl", description: "Inspirerende bibliotheek met effectieve AI-prompts voor leerkrachten.", tags: ["prompts", "chatgpt", "voorbeelden"] },
+            { id: 611, title: "Suno - AI Muziek Generator", category: "AI in de Klas", targetAudiences: ["Bovenbouw", "Leerkracht"], url: "https://suno.com", description: "Maak complete liedjes en klas-songs op basis van eenvoudige tekstinstructies.", tags: ["muziek", "suno", "liedjes"] },
+            { id: 612, title: "Napkin AI - Visuele Storytelling", category: "AI in de Klas", targetAudiences: ["Leerkracht", "Bovenbouw"], url: "https://www.napkin.ai", description: "Zet je geschreven tekst automatisch om in heldere diagrammen en schema's.", tags: ["schema", "diagram", "visueel"] },
+            { id: 613, title: "Remove Background (remove.bg)", category: "AI in de Klas", targetAudiences: ["Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://www.remove.bg", description: "Verwijder automatisch de achtergrond van elke foto in 1 seconde.", tags: ["foto", "achtergrond", "uitsnijden"] },
+            { id: 614, title: "Lees Simpel App", category: "AI in de Klas", targetAudiences: ["Leerkracht", "Ouders", "Bovenbouw"], url: "https://www.leessimpel.nl", description: "Gebruikt AI om ingewikkelde brieven en teksten te vertalen naar eenvoudige taal.", tags: ["eenvoudig", "taal", "toegankelijk"] },
+
+            // 7. Onderwijsvisie & Methodieken
+            { id: 701, title: "Wijzer Platform", category: "Onderwijsvisie & Methodieken", targetAudiences: ["Leerkracht"], url: "https://www.wijzerplatform.be", description: "Kennisplatform over effectieve didactiek, onderwijsinnovatie en bewezen leermethoden.", tags: ["didactiek", "visie", "onderzoek"] },
+
+            // 8. Platformen (ondersteunen bij leren)
+            { id: 801, title: "ClassDojo", category: "Platformen (ondersteunen bij leren)", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Leerkracht", "Ouders"], url: "https://www.classdojo.com", description: "Klassenplatform voor positieve bekrachtiging, communicatie met ouders en klasfoto's.", tags: ["klasbeheer", "ouders", "dojo"] },
+            { id: 802, title: "Xnapda - Educatieve Video's", category: "Platformen (ondersteunen bij leren)", targetAudiences: ["Onderbouw", "Middenbouw", "Bovenbouw", "Lager", "Leerkracht"], url: "https://www.xnapda.be", description: "Honderden korte, duidelijke instructievideo's voor wiskunde, spelling en taal.", tags: ["video", "instructie", "onthoudkaarten"] },
+            { id: 803, title: "Gynzy Platform", category: "Platformen (ondersteunen bij leren)", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://www.gynzy.com", description: "Het complete digitale platform voor digibordlessen, verwerking en adaptief oefenen.", tags: ["gynzy", "digibord", "oefenen"] },
+            { id: 804, title: "Widgit Online (Pictogrammen)", category: "Platformen (ondersteunen bij leren)", targetAudiences: ["Kleuter", "Onderbouw", "Leerkracht"], url: "https://www.widgit.com/online", description: "Maak geletterde documenten, kaarten en roosters ondersteund met Widgit-pictogrammen.", tags: ["pictogrammen", "zorg", "widgit"] },
+            { id: 805, title: "Wordwall.net", category: "Platformen (ondersteunen bij leren)", targetAudiences: ["Onderbouw", "Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://wordwall.net", description: "Maak in een handomdraai je eigen interactieve quizzen, spellen en draairaderen.", tags: ["quiz", "games", "generator"] },
+            { id: 806, title: "BookWidgets", category: "Platformen (ondersteunen bij leren)", targetAudiences: ["Bovenbouw", "Leerkracht"], url: "https://www.bookwidgets.com", description: "Maak interactieve oefeningen, automatische testen en digitale werkbladen.", tags: ["widgets", "toetsen", "evaluatie"] },
+            { id: 807, title: "Miro - ICT-co Team Boards", category: "Platformen (ondersteunen bij leren)", targetAudiences: ["Leerkracht"], url: "https://miro.com", description: "Visueel online whiteboard voor brainstorms, ICT-beleidsplannen en samenwerken.", tags: ["miro", "whiteboard", "overleg"] },
+
+            // 9. Internet leerkrachten
+            { id: 901, title: "Base6 – Meester Lars Online", category: "Internet leerkrachten", targetAudiences: ["Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://www.meesterlars.nl", description: "Populaire lesideeën, ICT-materialen en handige tools gemaakt door Meester Lars.", tags: ["meesterlars", "lesidee", "tips"] },
+            { id: 902, title: "Wikiwijs PO - Leermaterialen Digitale Geletterdheid", category: "Internet leerkrachten", targetAudiences: ["Leerkracht"], url: "https://www.wikiwijs.nl", description: "Openbaar lesmateriaal en arrangementen voor het primair onderwijs.", tags: ["wikiwijs", "open", "lesmateriaal"] },
+            { id: 903, title: "CS Unplugged - Computer Science zonder pc", category: "Internet leerkrachten", targetAudiences: ["Leerkracht"], url: "https://csunplugged.org", description: "Gratis verzameling lesactiviteiten om informatica aan te leren via games en puzzels.", tags: ["csunplugged", "doen", "wetenschap"] },
+            { id: 904, title: "ICT Juf Nina", category: "Internet leerkrachten", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Leerkracht"], url: "https://www.ictjufnina.nl", description: "Praktische tips, leskaarten en apps voor de kleuter- en onderbouwklas.", tags: ["jufnina", "kleuters", "leskaarten"] },
+            { id: 905, title: "Kleuters Digitaal!", category: "Internet leerkrachten", targetAudiences: ["Kleuter", "Leerkracht"], url: "https://www.kleutersdigitaal.nl", description: "Inspiratiebron voor het betekenisvol inzetten van technologie bij kleuters.", tags: ["kleuters", "apps", "hoeken"] },
+            { id: 906, title: "Computermeester - Educatieve Spelletjes", category: "Internet leerkrachten", targetAudiences: ["Onderbouw", "Middenbouw", "Bovenbouw", "Lager"], url: "https://www.computermeester.be", description: "Populaire Belgische site boordevol oefeningen voor wiskunde, Frans en ICT.", tags: ["computermeester", "oefenen", "spelletjes"] },
+            { id: 907, title: "Digipuzzle.net - Educatieve Games", category: "Internet leerkrachten", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Lager"], url: "https://www.digipuzzle.net", description: "Grote verzameling educatieve puzzels en rekenspelletjes per thema.", tags: ["puzzels", "rekenen", "thema"] },
+            { id: 908, title: "Digikriebels", category: "Internet leerkrachten", targetAudiences: ["Onderbouw", "Middenbouw", "Leerkracht"], url: "https://www.digikriebels.be", description: "Overzichtelijke verzameling digitale educatieve spelletjes voor de lagere school.", tags: ["digikriebels", "links", "oefenstof"] },
+            { id: 909, title: "Junior Einstein", category: "Internet leerkrachten", targetAudiences: ["Onderbouw", "Middenbouw", "Bovenbouw", "Lager"], url: "https://www.junioreinstein.nl", description: "Online oefenomgeving voor alle vakken van het basisonderwijs.", tags: ["oefenen", "bijles", "toetsen"] },
+            { id: 910, title: "LearningApps.org - Interactieve Modules", category: "Internet leerkrachten", targetAudiences: ["Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://learningapps.org", description: "Maak of gebruik kleine bouwstenen voor interactief lesmateriaal.", tags: ["learningapps", "bouwstenen", "quiz"] },
+            { id: 911, title: "Juf Milou Online", category: "Internet leerkrachten", targetAudiences: ["Kleuter", "Onderbouw", "Leerkracht"], url: "https://www.jufmilou.nl", description: "Werkbladen, kleurplaten en lesideeën voor de onderbouw.", tags: ["jufmilou", "werkbladen", "thema"] },
+            { id: 912, title: "Juf Anke - Lesideeën Kleuters", category: "Internet leerkrachten", targetAudiences: ["Kleuter", "Leerkracht"], url: "https://www.jufanke.nl", description: "Thematische uitwerkingen, kringactiviteiten en doelen voor groep 1/2.", tags: ["jufanke", "kring", "kleuterdoelen"] },
+
+            // 10. ICT didactisch materiaal
+            { id: 1001, title: "Het Archief voor Onderwijs", category: "ICT didactisch materiaal", targetAudiences: ["Leerkracht"], url: "https://onderwijs.hetarchief.be", description: "Duizenden beeld- and geluidsfragmenten uit de Vlaamse media direct bruikbaar in de klas.", tags: ["archief", "beeld", "vrt"] },
+            { id: 1002, title: "Leidraad Digitale Technologie - Leerpunt", category: "ICT didactisch materiaal", targetAudiences: ["Leerkracht"], url: "https://www.leerpunt.be", description: "Wetenschappelijk onderbouwde adviezen over hoe technologie leren versterkt.", tags: ["leerpunt", "onderzoek", "effectief"] },
+            { id: 1003, title: "Startpagina - WAI-NOT", category: "ICT didactisch materiaal", targetAudiences: ["Kleuter", "Onderbouw", "Leerkracht"], url: "https://www.wai-not.be", description: "Toegankelijke internetomgeving met pictogrammen voor kinderen met een beperking.", tags: ["wainot", "toegankelijk", "pictos"] },
+            { id: 1004, title: "imec Vlaanderen - Kennisuitwisseling", category: "ICT didactisch materiaal", targetAudiences: ["Leerkracht"], url: "https://www.imec.be", description: "Onderzoek en onderwijsinnovatie rond de nieuwste technologieën.", tags: ["imec", "technologie", "innovatie"] },
+            { id: 1005, title: "KlasCement Leermiddelennetwerk", category: "ICT didactisch materiaal", targetAudiences: ["Leerkracht"], url: "https://www.klascement.net", description: "Het grootste onderwijsnetwerk van Vlaanderen waar leerkrachten lesmateriaal delen.", tags: ["klascement", "delen", "lesfiches"] },
+
+            // 11. Werken aan taal
+            { id: 1011, title: "AVI-lezen - Symbaloo Gallerij", category: "Werken aan taal", targetAudiences: ["Onderbouw", "Middenbouw", "Lager"], url: "https://www.symbaloo.com", description: "Handige verzameling digitaal leesmateriaal gesorteerd op AVI-niveau.", tags: ["avi", "lezen", "symbaloo"] },
+            { id: 1012, title: "Werkwoordspelling Oefenen", category: "Werken aan taal", targetAudiences: ["Middenbouw", "Bovenbouw", "Lager"], url: "https://www.werkwoordspelling.nl", description: "Gericht de regels van d, t en dt oefenen met directe feedback.", tags: ["spelling", "werkwoorden", "dt"] },
+            { id: 1013, title: "Jungle the Bungle", category: "Werken aan taal", targetAudiences: ["Kleuter", "Onderbouw", "Ouders"], url: "https://www.junglethebungle.com", description: "Spelenderwijs talen leren met prentenboeken en audio-ondersteuning.", tags: ["talen", "prentenboek", "meertalig"] },
+            { id: 1014, title: "Elena - Taal & Digitaal", category: "Werken aan taal", targetAudiences: ["Kleuter", "Onderbouw"], url: "https://www.elena-leren.be", description: "Ondersteunt beginnende geletterdheid bij meertalige en anderstalige nieuwkomers.", tags: ["elena", "anderstalig", "woordenschat"] },
+            { id: 1015, title: "Luisterpuntbibliotheek", category: "Werken aan taal", targetAudiences: ["Onderbouw", "Middenbouw", "Bovenbouw", "Ouders"], url: "https://www.luisterpuntbibliotheek.be", description: "Daisy-boeken en gesproken boeken voor lezers met dyslexie of een leesbeperking.", tags: ["audioboeken", "dyslexie", "luisteren"] },
+            { id: 1016, title: "Microsoft Immersive Reader (Inclusief Lezen)", category: "Werken aan taal", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://www.microsoft.com", description: "Gratis hulpmiddel dat teksten voorleest, opbreekt in lettergrepen en vertaalt.", tags: ["voorlezen", "inclusief", "microsoft"] },
+            { id: 1017, title: "Rijke Teksten", category: "Werken aan taal", targetAudiences: ["Leerkracht"], url: "https://www.rijketeksten.nl", description: "Inspiratiebron voor het kiezen van kwaliteitsvolle kinderboeken in de klas.", tags: ["rijketeksten", "boeken", "leesplezier"] },
+
+            // 12. Digibord tools
+            { id: 1021, title: "Basisonderwijs.online", category: "Digibord tools", targetAudiences: ["Onderbouw", "Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://www.basisonderwijs.online", description: "Verzameling handige digibordtools, klokken, timers en rekenhulpen.", tags: ["digibord", "tools", "timer"] },
+            { id: 1022, title: "Schooltv Videobank", category: "Digibord tools", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Bovenbouw", "Lager"], url: "https://schooltv.nl", description: "Educatieve filmpjes direct afspeelbaar op het digibord per vak en thema.", tags: ["video", "schooltv", "thema"] },
+            { id: 1023, title: "Classroomscreen Whiteboard", category: "Digibord tools", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://classroomscreen.com", description: "Het meest gebruikte klassen-whiteboard met klok, zandloper, namenkizer en geluidsmeter.", tags: ["classroomscreen", "whiteboard", "klasbeheer"] },
+            { id: 1024, title: "Bouncy Balls - Geluidsmeter", category: "Digibord tools", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://bouncyballs.org", description: "Visuele geluidsmeter met stuiterende ballen om het geluidsniveau in de klas te beheren.", tags: ["geluid", "ballen", "stilte"] },
+            { id: 1025, title: "Draairad / Rad van Fortuin", category: "Digibord tools", targetAudiences: ["Kleuter", "Onderbouw", "Middenbouw", "Bovenbouw", "Leerkracht"], url: "https://www.radvanfortuin.nl", description: "Interactief draairad voor het willekeurig kiezen van leerlingen, vlaggen of begrippen.", tags: ["draairad", "kiezer", "interactief"] },
+            { id: 1026, title: "The True Size Of ...", category: "Digibord tools", targetAudiences: ["Middenbouw", "Bovenbouw", "Lager", "Leerkracht"], url: "https://thetruesize.com", description: "Vergelijk de werkelijke grootte van landen en continenten op de wereldkaart op het digibord.", tags: ["aardrijkskunde", "kaart", "wereld"] }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let websitesData = [];
+        let selectedCategories = []; // Empty means ALL
+        let selectedDoelgroepen = []; // Empty or includes "Alle" means ALL
+        let searchQuery = "";
+        let favoritesOnly = false;
+        let currentSort = "title";
+        let isAdminLoggedIn = false;
+        let favoritesList = JSON.parse(localStorage.getItem('edu_favs_v4') || '[]');
+
+        // --- APP INITIALIZATION ---
+        window.onload = function() {
+            const savedData = localStorage.getItem('edu_websites_v4');
+            if (savedData) {
+                try {
+                    websitesData = JSON.parse(savedData);
+                } catch(e) {
+                    websitesData = INITIAL_WEBSITES;
+                }
+            } else {
+                websitesData = INITIAL_WEBSITES;
+            }
+
+            renderCategorySidebar();
+            renderDoelgroepBar();
+            renderFormDoelgroepCheckboxes();
+            renderCategoryFormSelect();
+            updateFavBadge();
+            applyFiltersAndRender();
+        };
+
+        function saveWebsitesToStorage() {
+            localStorage.setItem('edu_websites_v4', JSON.stringify(websitesData));
+        }
+
+        // --- 1. RENDER EXACT 12 CATEGORIES SIDEBAR (COMPACT, NO SCROLLBAR) ---
+        function renderCategorySidebar() {
+            const container = document.getElementById('categorySidebarList');
+            let html = "";
+
+            STRICT_CATEGORIES.forEach(cat => {
+                const isSelected = selectedCategories.includes(cat.name);
+                const count = websitesData.filter(w => w.category === cat.name).length;
+
+                html += `
+                    <label class="w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs cursor-pointer transition-all ${isSelected ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-bold border border-sky-200 dark:border-sky-800' : 'hover:bg-slate-100 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-200 font-medium'}">
+                        <div class="flex items-center gap-2 truncate pr-1">
+                            <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleCategory('${cat.name}')" class="rounded text-sky-600 focus:ring-sky-500 w-3.5 h-3.5">
+                            <i class="fa-solid ${cat.icon} text-[11px] text-sky-500 w-3.5 text-center flex-shrink-0"></i>
+                            <span class="truncate text-[11px]">${cat.name}</span>
+                        </div>
+                        <span class="text-[9px] px-1.5 py-0.2 rounded-full font-bold flex-shrink-0 ${isSelected ? 'bg-sky-200 dark:bg-sky-800 text-sky-800 dark:text-sky-100' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}">
+                            ${count}
+                        </span>
+                    </label>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function toggleCategory(catName) {
+            if (selectedCategories.includes(catName)) {
+                selectedCategories = selectedCategories.filter(c => c !== catName);
+            } else {
+                selectedCategories.push(catName);
+            }
+            renderCategorySidebar();
+            applyFiltersAndRender();
+        }
+
+        function selectAllCategories() {
+            selectedCategories = [];
+            renderCategorySidebar();
+            applyFiltersAndRender();
+        }
+
+        function clearCategories() {
+            selectedCategories = ["__NONE__"];
+            renderCategorySidebar();
+            applyFiltersAndRender();
+        }
+
+        // --- 2. RENDER DOELGROEP BAR (MULTI-SELECT) ---
+        function renderDoelgroepBar() {
+            const container = document.getElementById('doelgroepPillContainer');
+            const isAllSelected = selectedDoelgroepen.length === 0 || selectedDoelgroepen.includes("Alle");
+
+            let html = `
+                <button onclick="toggleDoelgroep('Alle')" 
+                    class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm ${isAllSelected ? 'bg-indigo-600 text-white shadow-indigo-500/20' : 'bg-slate-100 dark:bg-slate-700/70 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}">
+                    <i class="fa-solid fa-layer-group text-[10px] mr-1"></i> Alle Doelgroepen
+                </button>
+            `;
+
+            DOELGROEP_OPTIONS.forEach(dg => {
+                const isSelected = !isAllSelected && selectedDoelgroepen.includes(dg);
+                html += `
+                    <button onclick="toggleDoelgroep('${dg}')" 
+                        class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${isSelected ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-slate-100 dark:bg-slate-700/60 border-slate-200 dark:border-slate-600/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200'}">
+                        ${dg}
+                    </button>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function toggleDoelgroep(dg) {
+            if (dg === "Alle") {
+                selectedDoelgroepen = [];
+            } else {
+                selectedDoelgroepen = selectedDoelgroepen.filter(d => d !== "Alle");
+                if (selectedDoelgroepen.includes(dg)) {
+                    selectedDoelgroepen = selectedDoelgroepen.filter(d => d !== dg);
+                } else {
+                    selectedDoelgroepen.push(dg);
+                }
+            }
+            renderDoelgroepBar();
+            applyFiltersAndRender();
+        }
+
+        // --- 3. FILTERING & SEARCH LOGIC ---
+        function handleSearch(val) {
+            searchQuery = val.toLowerCase().trim();
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (clearBtn) clearBtn.classList.toggle('hidden', searchQuery.length === 0);
+            applyFiltersAndRender();
+        }
+
+        function clearSearch() {
+            document.getElementById('globalSearch').value = '';
+            searchQuery = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            applyFiltersAndRender();
+        }
+
+        function toggleFavoritesOnly() {
+            favoritesOnly = !favoritesOnly;
+            const btn = document.getElementById('favOnlyBtn');
+            if (favoritesOnly) {
+                btn.classList.add('bg-rose-500', 'text-white', 'border-rose-500');
+                btn.classList.remove('border-slate-200', 'dark:border-slate-700');
+            } else {
+                btn.classList.remove('bg-rose-500', 'text-white', 'border-rose-500');
+                btn.classList.add('border-slate-200', 'dark:border-slate-700');
+            }
+            applyFiltersAndRender();
+        }
+
+        function handleSortChange(val) {
+            currentSort = val;
+            applyFiltersAndRender();
+        }
+
+        function resetFilters() {
+            selectedCategories = [];
+            selectedDoelgroepen = [];
+            searchQuery = "";
+            favoritesOnly = false;
+            currentSort = "title";
+
+            document.getElementById('globalSearch').value = "";
+            document.getElementById('sortSelect').value = "title";
+
+            const favBtn = document.getElementById('favOnlyBtn');
+            favBtn.classList.remove('bg-rose-500', 'text-white', 'border-rose-500');
+
+            renderCategorySidebar();
+            renderDoelgroepBar();
+            applyFiltersAndRender();
+        }
+
+        // --- 4. RENDER HORIZONTAL RESULT CARDS ---
+        function applyFiltersAndRender() {
+            let filtered = websitesData.filter(item => {
+                const isSearching = searchQuery !== "";
+
+                // Wanneer er gezocht wordt, negeren we ingestelde categorie- & doelgroepfilters (zoeken door gehele databank)
+                if (!isSearching) {
+                    // Category Filter
+                    if (selectedCategories.length > 0) {
+                        if (selectedCategories.includes("__NONE__") || !selectedCategories.includes(item.category)) {
+                            return false;
+                        }
+                    }
+
+                    // Doelgroep Filter
+                    if (selectedDoelgroepen.length > 0 && !selectedDoelgroepen.includes("Alle")) {
+                        const itemAudiences = item.targetAudiences || [];
+                        const matchesDoelgroep = itemAudiences.some(aud => selectedDoelgroepen.includes(aud));
+                        if (!matchesDoelgroep) return false;
+                    }
+                }
+
+                // Favorites Filter (blijft actief indien gewenst)
+                if (favoritesOnly && !favoritesList.includes(item.id)) return false;
+
+                // Search Query Filter
+                if (isSearching) {
+                    const matchTitle = item.title.toLowerCase().includes(searchQuery);
+                    const matchDesc = item.description.toLowerCase().includes(searchQuery);
+                    const matchCat = item.category.toLowerCase().includes(searchQuery);
+                    const matchTags = (item.tags || []).some(t => t.toLowerCase().includes(searchQuery));
+                    if (!matchTitle && !matchDesc && !matchCat && !matchTags) return false;
+                }
+
+                return true;
+            });
+
+            // Sorting
+            if (currentSort === "title") {
+                filtered.sort((a, b) => a.title.localeCompare(b.title));
+            } else if (currentSort === "newest") {
+                filtered.sort((a, b) => b.id - a.id);
+            }
+
+            // Summary UI
+            document.getElementById('resultsCountBadge').innerText = `${filtered.length} website${filtered.length === 1 ? '' : 's'}`;
+            
+            let summaryParts = [];
+            if (searchQuery) {
+                summaryParts.push(`Zoeken naar "${searchQuery}" (alle categorieën & doelgroepen)`);
+            } else {
+                if (selectedCategories.length > 0 && !selectedCategories.includes("__NONE__")) summaryParts.push(`${selectedCategories.length} categorieën`);
+                if (selectedDoelgroepen.length > 0 && !selectedDoelgroepen.includes("Alle")) summaryParts.push(`${selectedDoelgroepen.join(', ')}`);
+            }
+            if (favoritesOnly) summaryParts.push('Favorieten');
+
+            document.getElementById('activeFilterSummary').innerText = summaryParts.length > 0 ? summaryParts.join(" • ") : "Alle resultaten";
+
+            const container = document.getElementById('resultsList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (filtered.length === 0) {
+                container.innerHTML = "";
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            // Render Horizontal Result Cards
+            let html = "";
+            filtered.forEach(item => {
+                const isFav = favoritesList.includes(item.id);
+                const categoryObj = STRICT_CATEGORIES.find(c => c.name === item.category) || STRICT_CATEGORIES[0];
+                const audiences = item.targetAudiences || ["Alle"];
+
+                // WordPress mshots preview API
+                const screenshotUrl = `https://s.wordpress.com/mshots/v1/${encodeURIComponent(item.url)}?w=400&h=250`;
+                const cleanDomain = item.url.replace('https://', '').replace('http://', '').replace('www.', '').split('/')[0];
+
+                html += `
+                    <!-- HORIZONTAL RESULT CARD -->
+                    <div class="w-full bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 hover:border-sky-400 dark:hover:border-sky-500 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col md:flex-row group">
+                        
+                        <!-- Left Thumbnail Header / Screenshot -->
+                        <div class="w-full md:w-52 h-36 md:h-auto flex-shrink-0 relative bg-slate-100 dark:bg-slate-900 border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-700/60 overflow-hidden flex items-center justify-center">
+                            
+                            <!-- Live Screenshot Image -->
+                            <img src="${screenshotUrl}" alt="${item.title}" 
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                onerror="this.onerror=null; this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                            
+                            <!-- Fallback Container if Screenshot is loading or unavailable -->
+                            <div class="hidden absolute inset-0 bg-gradient-to-br from-sky-400 to-indigo-600 flex flex-col items-center justify-center p-3 text-white text-center">
+                                <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-1.5 shadow-inner">
+                                    <i class="fa-solid ${categoryObj.icon} text-lg"></i>
+                                </div>
+                                <span class="text-[10px] font-bold opacity-90 truncate max-w-[140px]">${cleanDomain}</span>
+                            </div>
+
+                            <!-- Domain Badge Overlay -->
+                            <div class="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-md">
+                                <i class="fa-solid fa-globe mr-1"></i>${cleanDomain}
+                            </div>
+                        </div>
+
+                        <!-- Right Content Area -->
+                        <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-2.5">
+                            <div>
+                                <!-- Title & Category Bar -->
+                                <div class="flex items-start justify-between gap-3 mb-1.5">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <h3 onclick="openDetailModal(${item.id})" class="text-base sm:text-lg font-bold text-slate-900 dark:text-white hover:text-sky-600 dark:hover:text-sky-400 cursor-pointer transition-colors line-clamp-1">
+                                            ${item.title}
+                                        </h3>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-100 dark:border-sky-900">
+                                            <i class="fa-solid ${categoryObj.icon} text-[9px] mr-1"></i>${item.category}
+                                        </span>
+                                    </div>
+
+                                    <!-- Favorite Button -->
+                                    <button onclick="toggleFavorite(${item.id})" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-rose-500 transition-all flex-shrink-0">
+                                        <i class="fa-${isFav ? 'solid text-rose-500' : 'regular'} fa-heart text-sm"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Doelgroep Badges -->
+                                <div class="flex flex-wrap items-center gap-1.5 mb-2">
+                                    <span class="text-[10px] font-semibold text-slate-400">Doelgroep:</span>
+                                    ${audiences.map(a => `
+                                        <span class="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold">
+                                            ${a}
+                                        </span>
+                                    `).join('')}
+                                </div>
+
+                                <!-- Description -->
+                                <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                                    ${item.description}
+                                </p>
+                            </div>
+
+                            <!-- Bottom Action Row -->
+                            <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-700/50">
+                                <!-- Tags -->
+                                <div class="flex flex-wrap gap-1">
+                                    ${(item.tags || []).slice(0, 3).map(t => `
+                                        <span class="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400 font-medium">#${t}</span>
+                                    `).join('')}
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex items-center gap-2 ml-auto">
+                                    ${isAdminLoggedIn ? `
+                                        <button onclick="openEditModal(${item.id})" class="px-2.5 py-1.5 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 hover:bg-amber-200 text-xs font-semibold" title="Bewerken">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+                                        <button onclick="confirmDeleteWebsite(${item.id})" class="px-2.5 py-1.5 rounded-xl bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 hover:bg-rose-200 text-xs font-semibold" title="Verwijderen">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    ` : ''}
+
+                                    <button onclick="openDetailModal(${item.id})" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all">
+                                        Details
+                                    </button>
+
+                                    <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
+                                        Bezoek Website <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // --- 5. FAVORITES SYSTEM ---
+        function toggleFavorite(id) {
+            if (favoritesList.includes(id)) {
+                favoritesList = favoritesList.filter(fId => fId !== id);
+            } else {
+                favoritesList.push(id);
+            }
+            localStorage.setItem('edu_favs_v4', JSON.stringify(favoritesList));
+            updateFavBadge();
+            applyFiltersAndRender();
+        }
+
+        function updateFavBadge() {
+            document.getElementById('favBadgeCount').innerText = favoritesList.length;
+        }
+
+        // --- 6. DETAIL MODAL ---
+        function openDetailModal(id) {
+            const item = websitesData.find(w => w.id === id);
+            if (!item) return;
+
+            const categoryObj = STRICT_CATEGORIES.find(c => c.name === item.category) || STRICT_CATEGORIES[0];
+            const isFav = favoritesList.includes(item.id);
+            const audiences = item.targetAudiences || ["Alle"];
+
+            const content = `
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center text-xl shadow-inner flex-shrink-0">
+                            <i class="fa-solid ${categoryObj.icon}"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-sky-600 dark:text-sky-400">${item.category}</span>
+                            <h2 class="text-xl font-bold text-slate-900 dark:text-white">${item.title}</h2>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 space-y-2 text-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-slate-500 dark:text-slate-400">Doelgroep(en):</span>
+                            <div class="flex flex-wrap gap-1">
+                                ${audiences.map(a => `<span class="px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-bold">${a}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-slate-500 dark:text-slate-400">Adres:</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200">${item.url}</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Beschrijving</h4>
+                        <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed">${item.description}</p>
+                    </div>
+
+                    ${item.tags && item.tags.length > 0 ? `
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Trefwoorden</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${item.tags.map(t => `<span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs">#${t}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
+                        <button onclick="toggleFavorite(${item.id}); openDetailModal(${item.id});" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 font-semibold text-xs flex items-center gap-2">
+                            <i class="fa-${isFav ? 'solid text-rose-500' : 'regular'} fa-heart"></i>
+                            ${isFav ? 'In Favorieten' : 'Toevoegen aan Favorieten'}
+                        </button>
+
+                        <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md flex items-center gap-2">
+                            Bezoek Website <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // --- 7. ADMIN AUTHENTICATION & CRUD ---
+        function handleAdminToggleClick() {
+            if (isAdminLoggedIn) {
+                isAdminLoggedIn = false;
+                document.getElementById('adminBtnLabel').innerText = "Beheer Login";
+                document.getElementById('adminToggleBtn').classList.remove('bg-indigo-600', 'text-white');
+                document.getElementById('adminPanelBox').classList.add('hidden');
+                applyFiltersAndRender();
+            } else {
+                document.getElementById('loginError').classList.add('hidden');
+                document.getElementById('loginModal').classList.remove('hidden');
+            }
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPassword').value.trim();
+
+            if (email === "admin@school.be" && pass === "admin123") {
+                isAdminLoggedIn = true;
+                closeModal('loginModal');
+                document.getElementById('adminBtnLabel').innerText = "Uitloggen";
+                document.getElementById('adminToggleBtn').classList.add('bg-indigo-600', 'text-white');
+                document.getElementById('adminPanelBox').classList.remove('hidden');
+                applyFiltersAndRender();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function renderCategoryFormSelect() {
+            const select = document.getElementById('formCategory');
+            select.innerHTML = STRICT_CATEGORIES.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        }
+
+        function renderFormDoelgroepCheckboxes(selectedArray = []) {
+            const container = document.getElementById('formDoelgroepCheckboxes');
+            container.innerHTML = DOELGROEP_OPTIONS.map(dg => {
+                const checked = selectedArray.includes(dg);
+                return `
+                    <label class="flex items-center gap-2 cursor-pointer text-xs font-medium">
+                        <input type="checkbox" value="${dg}" ${checked ? 'checked' : ''} class="form-dg-checkbox rounded text-indigo-600 focus:ring-indigo-500">
+                        <span>${dg}</span>
+                    </label>
+                `;
+            }).join('');
+        }
+
+        function openAddModal() {
+            document.getElementById('formModalTitle').innerText = "Website Toevoegen";
+            document.getElementById('editWebsiteId').value = "";
+            document.getElementById('websiteForm').reset();
+            renderFormDoelgroepCheckboxes([]);
+            document.getElementById('websiteModal').classList.remove('hidden');
+        }
+
+        function openEditModal(id) {
+            const item = websitesData.find(w => w.id === id);
+            if (!item) return;
+
+            document.getElementById('formModalTitle').innerText = "Website Bewerken";
+            document.getElementById('editWebsiteId').value = item.id;
+            document.getElementById('formTitle').value = item.title;
+            document.getElementById('formCategory').value = item.category;
+            document.getElementById('formUrl').value = item.url;
+            document.getElementById('formDesc').value = item.description;
+            document.getElementById('formTags').value = (item.tags || []).join(', ');
+
+            renderFormDoelgroepCheckboxes(item.targetAudiences || []);
+            document.getElementById('websiteModal').classList.remove('hidden');
+        }
+
+        function handleSaveWebsite(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editWebsiteId').value;
+            const title = document.getElementById('formTitle').value.trim();
+            const category = document.getElementById('formCategory').value;
+            const url = document.getElementById('formUrl').value.trim();
+            const description = document.getElementById('formDesc').value.trim();
+            const tags = document.getElementById('formTags').value.split(',').map(t => t.trim()).filter(Boolean);
+
+            const checkboxes = document.querySelectorAll('.form-dg-checkbox:checked');
+            let targetAudiences = Array.from(checkboxes).map(cb => cb.value);
+
+            if (targetAudiences.length === 0) targetAudiences = ["Alle"];
+
+            if (editId) {
+                const idx = websitesData.findIndex(w => w.id === parseInt(editId));
+                if (idx !== -1) {
+                    websitesData[idx] = {
+                        ...websitesData[idx],
+                        title, category, targetAudiences, url, description, tags
+                    };
+                }
+            } else {
+                const newItem = {
+                    id: Date.now(),
+                    title, category, targetAudiences, url, description, tags
+                };
+                websitesData.unshift(newItem);
+            }
+
+            saveWebsitesToStorage();
+            closeModal('websiteModal');
+            renderCategorySidebar();
+            applyFiltersAndRender();
+        }
+
+        function confirmDeleteWebsite(id) {
+            const item = websitesData.find(w => w.id === id);
+            if (!item) return;
+
+            document.getElementById('confirmModalTitle').innerText = "Website Verwijderen";
+            document.getElementById('confirmModalText').innerText = `Weet je zeker dat je "${item.title}" wilt verwijderen?`;
+            
+            const btn = document.getElementById('confirmModalBtn');
+            btn.onclick = function() {
+                websitesData = websitesData.filter(w => w.id !== id);
+                saveWebsitesToStorage();
+                closeModal('confirmModal');
+                renderCategorySidebar();
+                applyFiltersAndRender();
+            };
+
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+
+        // --- 8. DIRECT BRONCODE DOWNLOAD FUNCTION (BLOB) ---
+        function downloadCurrentPageHTML() {
+            // Genereer het volledige HTML-bestand inclusief doctype
+            const fullHTML = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            
+            // Maak een Blob aan met HTML type
+            const blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
+            const downloadUrl = URL.createObjectURL(blob);
+            
+            // Maak virtuele link aan en voer download uit
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = 'EduKompas_index.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            // Ruim URL-object op
+            URL.revokeObjectURL(downloadUrl);
+            
+            // Sluit eventuele export modal
+            closeModal('exportModal');
+        }
+
+        function openExportModal() {
+            document.getElementById('exportModal').classList.remove('hidden');
+        }
+
+        function exportDataJSON() {
+            const jsonStr = JSON.stringify(websitesData, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'edukompas-databank.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            closeModal('exportModal');
+        }
+
+        // --- 9. DARK MODE ---
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+    </script>
+</body>
+</html>
