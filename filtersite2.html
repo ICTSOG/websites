@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduKompas - Het Kindvriendelijke Schoolportaal</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              fredoka: ['Fredoka', 'sans-serif'],
+              sans: ['Plus Jakarta Sans', 'sans-serif']
+            },
+            colors: {
+              brand: {
+                50: '#f0fdf4',
+                100: '#dcfce7',
+                500: '#22c55e',
+                600: '#16a34a',
+                700: '#15803d',
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel Standalone -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+      .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      /* Custom smooth scrolling and scrollbar */
+      html { scroll-behavior: smooth; }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #f1f5f9; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect, useMemo } = React;
+
+      // 12 Exact Categories
+      const CATEGORIES = [
+        "1. Mediawijsheid & Veiligheid",
+        "2. ICT Basisvaardigheden",
+        "3. Creatief met Media (foto, video, audio)",
+        "4. Computationeel Denken & Coding",
+        "5. Digitale Geletterdheid (Vakoverschrijdend)",
+        "6. AI in de Klas",
+        "7. Onderwijsvisie & Methodieken",
+        "8. Platformen (ondersteunen bij leren)",
+        "9. Internet leerkrachten",
+        "10. ICT didactisch materiaal",
+        "11. Werken aan taal",
+        "12. Digibord tools"
+      ];
+
+      // Age Groups
+      const AGE_GROUPS = ["Alle leeftijden", "4-6 jaar", "6-8 jaar", "8-10 jaar", "10-12 jaar", "Leerkrachten"];
+
+      // Default Initial Dataset with 100+ Items across all 12 Categories
+      const INITIAL_SITES = [
+        // 1. Mediawijsheid & Veiligheid
+        { id: "site_101", title: "Mediawijsheid.nl", url: "https://www.mediawijsheid.nl", category: "1. Mediawijsheid & Veiligheid", description: "Hét netwerk voor mediawijsheid met praktische tips, lesmaterialen, dossiervorming en adviezen over veilig internet voor leerlingen en leraren.", ageRange: "Alle leeftijden", rating: 4.8, votes: 142, tags: ["mediawijsheid", "veiligheid", "dossiers"], isFavorite: true },
+        { id: "site_102", title: "HoeZoMediawijs", url: "https://www.hoezomediawijs.nl", category: "1. Mediawijsheid & Veiligheid", description: "Interactief lespakket voor het basisonderwijs over online privacy, cyberpesten, nepnieuws en verstandig schermgebruik.", ageRange: "8-10 jaar", rating: 4.7, votes: 98, tags: ["cyberpesten", "privacy", "nepnieuws"], isFavorite: false },
+        { id: "site_103", title: "CyberSimple.be", url: "https://www.cybersimple.be", category: "1. Mediawijsheid & Veiligheid", description: "Belgisch platform met e-learning en tips om jongeren en leerkrachten digitaal bewuster en veiliger te maken op internet.", ageRange: "10-12 jaar", rating: 4.6, votes: 76, tags: ["vlaanderen", "wachtwoorden", "phishing"], isFavorite: false },
+        { id: "site_104", title: "Child Focus - Veilig Online", url: "https://www.childfocus.be", category: "1. Mediawijsheid & Veiligheid", description: "Educatief materiaal en preventieprojecten rond online veiligheid, sexting, privacy en respectvol gedrag op sociale media.", ageRange: "Alle leeftijden", rating: 4.9, votes: 185, tags: ["childfocus", "preventie", "socialemedia"], isFavorite: true },
+        { id: "site_105", title: "HackShield Future Cyber Heroes", url: "https://www.joinhackshield.nl", category: "1. Mediawijsheid & Veiligheid", description: "Gamified platform waar kinderen worden opgeleid tot Cyber Agents die hun familie en school beschermen tegen cybercrime.", ageRange: "8-12 jaar", rating: 4.9, votes: 210, tags: ["game", "cybercrime", "hackshield"], isFavorite: true },
+        { id: "site_106", title: "MediaSmarties", url: "https://www.mediasmarties.nl", category: "1. Mediawijsheid & Veiligheid", description: "Online mediagids voor kinderen van 0 tot 12 jaar met onafhankelijke recensies van educatieve apps, films, games en boeken.", ageRange: "4-6 jaar", rating: 4.5, votes: 64, tags: ["recensies", "apps", "ontwikkeling"], isFavorite: false },
+        { id: "site_107", title: "Be Internet Awesome", url: "https://beinternetawesome.withgoogle.com", category: "1. Mediawijsheid & Veiligheid", description: "Spelenderwijs leren over online veiligheid met de 3D game Interland. Onderwerpen: slim delen, niet trappen in nep en beleefd zijn.", ageRange: "6-8 jaar", rating: 4.8, votes: 154, tags: ["interland", "google", "game"], isFavorite: false },
+        { id: "site_108", title: "NetSlim.be", url: "https://www.netslim.be", category: "1. Mediawijsheid & Veiligheid", description: "Vlaams portaal vol praktische tips en lesfiches rond mediaopvoeding en verstandig omgaan met digitale schermen.", ageRange: "Leerkrachten", rating: 4.4, votes: 52, tags: ["vlaanderen", "lesfiches", "schermtijd"], isFavorite: false },
+        { id: "site_109", title: "VeiligInternetten.nl", url: "https://www.veiliginternetten.nl", category: "1. Mediawijsheid & Veiligheid", description: "Onafhankelijk advies, checklists en handleidingen over beveiliging van apparaten, wifi-netwerken en persoonsgegevens.", ageRange: "Leerkrachten", rating: 4.6, votes: 89, tags: ["beveiliging", "wifi", "wachtwoorden"], isFavorite: false },
+        { id: "site_110", title: "Mediawijs Vlaanderen", url: "https://www.mediawijs.be", category: "1. Mediawijsheid & Veiligheid", description: "Het Vlaams Kenniscentrum Digitale Geletterdheid met onderzoeken, tools en methodieken voor scholen en verenigingen.", ageRange: "Leerkrachten", rating: 4.8, votes: 112, tags: ["kenniscentrum", "vlaanderen", "beleid"], isFavorite: false },
+
+        // 2. ICT Basisvaardigheden
+        { id: "site_201", title: "TypingClub", url: "https://www.typingclub.com", category: "2. ICT Basisvaardigheden", description: "Populaire en gratis online typcursus waarmee leerlingen stap-voor-stap blind leren typen met speelse oefeningen.", ageRange: "8-10 jaar", rating: 4.8, votes: 230, tags: ["typen", "blindtypen", "toetsenbord"], isFavorite: true },
+        { id: "site_202", title: "TypeTopia", url: "https://www.typetopia.com", category: "2. ICT Basisvaardigheden", description: "Interactief avonturengame-typecursus voor kinderen om op een spannende manier met 10 vingers blind te leren typen.", ageRange: "8-12 jaar", rating: 4.7, votes: 112, tags: ["avontuur", "diploma", "typtraining"], isFavorite: false },
+        { id: "site_203", title: "Gynzy Muisoefeningen", url: "https://www.gynzy.com", category: "2. ICT Basisvaardigheden", description: "Eenvoudige klik-, sleep- en dubbelklikspellen speciaal ontworpen voor kleuters die de computermuis leren gebruiken.", ageRange: "4-6 jaar", rating: 4.6, votes: 87, tags: ["kleuters", "muisoefeningen", "slepen"], isFavorite: false },
+        { id: "site_204", title: "Digivaardig in de Klas", url: "https://www.digivaardigindeklas.nl", category: "2. ICT Basisvaardigheden", description: "Lesmateriaal voor basisscholen om basisvaardigheden zoals bestandsbeheer, tekstverwerking en zoekstrategieën aan te leren.", ageRange: "6-8 jaar", rating: 4.5, votes: 73, tags: ["bestanden", "word", "zoeken"], isFavorite: false },
+        { id: "site_205", title: "Typen.nl", url: "https://www.typen.nl", category: "2. ICT Basisvaardigheden", description: "Nederlandse typemethode met directe feedback, snelheidstesten en gepersonaliseerde oefeningen voor basisscholen.", ageRange: "8-10 jaar", rating: 4.4, votes: 65, tags: ["snelheid", "oefenstof", "basisschool"], isFavorite: false },
+        { id: "site_206", title: "Keyboard Climber", url: "https://www.tvokids.com", category: "2. ICT Basisvaardigheden", description: "Vrolijk educatief spelletje waarin kinderen een aapje helpen klimmen door de juiste letters op het toetsenbord in te drukken.", ageRange: "4-6 jaar", rating: 4.7, votes: 94, tags: ["letters", "kleuters", "spel"], isFavorite: false },
+        { id: "site_207", title: "Muiswerk Online", url: "https://www.muiswerk.nl", category: "2. ICT Basisvaardigheden", description: "Adaptieve oefenprogramma's voor computer- en taalvaardigheid met automatische analyse van leerresultaten.", ageRange: "8-10 jaar", rating: 4.3, votes: 58, tags: ["adaptief", "toetsen", "analyse"], isFavorite: false },
+        { id: "site_208", title: "Dance Mat Typing (BBC)", url: "https://www.bbc.co.uk/bitesize/topics/zf2f9j6/articles/z3c6tfr", category: "2. ICT Basisvaardigheden", description: "Kleurrijke en humoristische typemethode van de BBC met muzikale dieren die kinderen begeleiden door 4 niveaus.", ageRange: "6-8 jaar", rating: 4.8, votes: 120, tags: ["bbc", "muziek", "dieren"], isFavorite: true },
+        { id: "site_209", title: "Chromebooks in de Klas", url: "https://www.google.com/chromebook/education/", category: "2. ICT Basisvaardigheden", description: "Handleidingen en sneltoetsen over het effectief beheren en gebruiken van Chromebooks in de basisschoolomgeving.", ageRange: "Leerkrachten", rating: 4.5, votes: 49, tags: ["chromebook", "sneltoetsen", "beheer"], isFavorite: false },
+
+        // 3. Creatief met Media (foto, video, audio)
+        { id: "site_301", title: "Canva for Education", url: "https://www.canva.com/education/", category: "3. Creatief met Media (foto, video, audio)", description: "Gratis premium grafische ontwerptool voor scholen. Maak posters, presentaties, infographics en stripverhalen.", ageRange: "8-12 jaar", rating: 4.9, votes: 310, tags: ["ontwerpen", "posters", "presentaties"], isFavorite: true },
+        { id: "site_302", title: "Book Creator", url: "https://bookcreator.com", category: "3. Creatief met Media (foto, video, audio)", description: "Geweldige tool om digitale prentenboeken, e-books en multimediale verslagen te maken met tekst, audio en video.", ageRange: "Alle leeftijden", rating: 4.9, votes: 245, tags: ["ebooks", "verhalen", "prentenboek"], isFavorite: true },
+        { id: "site_303", title: "ScratchJr", url: "https://www.scratchjr.org", category: "3. Creatief met Media (foto, video, audio)", description: "Visuele programmeertaal speciaal ontworpen voor jonge kinderen (5-7 jaar) om hun eigen verhalen en animaties te maken.", ageRange: "4-6 jaar", rating: 4.8, votes: 180, tags: ["animatie", "verhalen", "kleuters"], isFavorite: true },
+        { id: "site_304", title: "Chrome Music Lab", url: "https://musiclab.chromeexperiments.com", category: "3. Creatief met Media (foto, video, audio)", description: "Interactieve Google experimenten waarmee leerlingen op een visuele manier muziek, ritmes en geluidsgolven verkennen.", ageRange: "Alle leeftijden", rating: 4.9, votes: 290, tags: ["muziek", "ritme", "geluid"], isFavorite: true },
+        { id: "site_305", title: "Soundtrap for Education", url: "https://www.soundtrap.com/edu", category: "3. Creatief met Media (foto, video, audio)", description: "Online muziek- en podcaststudio waar leerlingen samen nummers kunnen opnemen, bewerken en podcasts maken.", ageRange: "10-12 jaar", rating: 4.7, votes: 115, tags: ["podcast", "muziek", "audio"], isFavorite: false },
+        { id: "site_306", title: "Stop Motion Studio", url: "https://www.cateater.com", category: "3. Creatief met Media (foto, video, audio)", description: "Eenvoudige app om prachtige stop-motion animatiefilms te maken met klei, lego of getekende figuren.", ageRange: "6-8 jaar", rating: 4.8, votes: 162, tags: ["stopmotion", "film", "lego"], isFavorite: false },
+        { id: "site_307", title: "Tinkercad 3D Design", url: "https://www.tinkercad.com", category: "3. Creatief met Media (foto, video, audio)", description: "Toegankelijke browser-gebaseerde 3D ontwerptool waarmee leerlingen 3D-modellen maken voor 3D-printers.", ageRange: "8-10 jaar", rating: 4.8, votes: 205, tags: ["3dprinten", "cad", "ontwerpen"], isFavorite: false },
+        { id: "site_308", title: "Pixlr Express", url: "https://pixlr.com/express/", category: "3. Creatief met Media (foto, video, audio)", description: "Gratis online fotobewerker met filters, effecten, stickers en tekstopties voor snelle creatieve fotobewerking.", ageRange: "8-10 jaar", rating: 4.5, votes: 88, tags: ["fotobewerking", "filters", "images"], isFavorite: false },
+        { id: "site_309", title: "BandLab for Education", url: "https://www.bandlab.com/edu", category: "3. Creatief met Media (foto, video, audio)", description: "Samenwerkend muziekplatform op de cloud waar leerlingen virtuele instrumenten en sporen componeren.", ageRange: "10-12 jaar", rating: 4.6, votes: 94, tags: ["componeren", "muziekstudio", "cloud"], isFavorite: false },
+
+        // 4. Computationeel Denken & Coding
+        { id: "site_401", title: "Scratch MIT", url: "https://scratch.mit.edu", category: "4. Computationeel Denken & Coding", description: "De bekendste programmeeromgeving ter wereld voor kinderen. Bouw spellen, animaties en interactieve kunst met blokjes.", ageRange: "8-10 jaar", rating: 5.0, votes: 420, tags: ["scratch", "programmeren", "blokken"], isFavorite: true },
+        { id: "site_402", title: "Code.org", url: "https://code.org", category: "4. Computationeel Denken & Coding", description: "Wereldwijd platform met 'Hour of Code' lessen waarin kinderen programmeren leren met Minecraft, Frozen en Star Wars.", ageRange: "Alle leeftijden", rating: 4.9, votes: 380, tags: ["hourofcode", "minecraft", "puzzels"], isFavorite: true },
+        { id: "site_403", title: "Micro:bit MakeCode", url: "https://makecode.microbit.org", category: "4. Computationeel Denken & Coding", description: "Programmeer de zakcomputer Micro:bit met blokken of JavaScript. Bouw kompassen, games en LED-animaties.", ageRange: "8-10 jaar", rating: 4.9, votes: 215, tags: ["microbit", "hardware", "robots"], isFavorite: true },
+        { id: "site_404", title: "Lightbot", url: "https://lightbot.com", category: "4. Computationeel Denken & Coding", description: "Puzzelgame waarin kinderen een robotje programmeren om lampjes te verlichten. Leert lussen, functies en logica.", ageRange: "6-8 jaar", rating: 4.7, votes: 132, tags: ["puzzel", "robot", "logica"], isFavorite: false },
+        { id: "site_405", title: "Blockly Games", url: "https://blockly.games", category: "4. Computationeel Denken & Coding", description: "Reeks educatieve spellen van Google die de basisprincipes van programmeren en logisch denken aanleren.", ageRange: "8-10 jaar", rating: 4.6, votes: 98, tags: ["google", "blockly", "doolhof"], isFavorite: false },
+        { id: "site_406", title: "RoboMind", url: "https://www.robomind.net", category: "4. Computationeel Denken & Coding", description: "Programmeeromgeving met een eigen duidelijke scripttaal om een virtuele robot opdrachten te laten uitvoeren.", ageRange: "10-12 jaar", rating: 4.5, votes: 79, tags: ["robomind", "robotica", "scripten"], isFavorite: false },
+        { id: "site_407", title: "Turtle Academy", url: "https://turtleacademy.com", category: "4. Computationeel Denken & Coding", description: "Leren programmeren in Logo. Bestuur de schildpad en teken prachtige geometrische figuren op het scherm.", ageRange: "8-10 jaar", rating: 4.4, votes: 62, tags: ["logo", "schildpad", "geometrie"], isFavorite: false },
+        { id: "site_408", title: "Tynker for Schools", url: "https://www.tynker.com", category: "4. Computationeel Denken & Coding", description: "Kleurrijke programmeermethode voor scholen met interactieve cursussen, STEM-projecten en game design.", ageRange: "6-8 jaar", rating: 4.7, votes: 110, tags: ["tynker", "stem", "gamedesign"], isFavorite: false },
+        { id: "site_409", title: "CodinGame", url: "https://www.codingame.com", category: "4. Computationeel Denken & Coding", description: "Uitdagend platform om programmeertalen (Python, JavaScript) te leren door het spelen van multiplayer games.", ageRange: "10-12 jaar", rating: 4.7, votes: 85, tags: ["python", "javascript", "gaming"], isFavorite: false },
+
+        // 5. Digitale Geletterdheid (Vakoverschrijdend)
+        { id: "site_501", title: "WikiKids.nl", url: "https://wikikids.nl", category: "5. Digitale Geletterdheid (Vakoverschrijdend)", description: "De online encyclopedie voor en door kinderen. Veilige bron voor spreekbeurten, werkstukken en opzoekopdrachten.", ageRange: "6-8 jaar", rating: 4.9, votes: 350, tags: ["encyclopedie", "spreekbeurt", "opzoeken"], isFavorite: true },
+        { id: "site_502", title: "SchoolTV", url: "https://schooltv.nl", category: "5. Digitale Geletterdheid (Vakoverschrijdend)", description: "Educatieve videoclips, uitzendingen en lespakketten gerangschikt op leeftijd en vakgebied voor het hele onderwijs.", ageRange: "Alle leeftijden", rating: 5.0, votes: 480, tags: ["video", "tv", "documentaires"], isFavorite: true },
+        { id: "site_503", title: "Het Klokhuis", url: "https://hetklokhuis.nl", category: "5. Digitale Geletterdheid (Vakoverschrijdend)", description: "Informatieve filmpjes, artikelen en spellen over wetenschap, techniek, samenleving en kunst voor kinderen.", ageRange: "6-8 jaar", rating: 4.9, votes: 310, tags: ["klokhuis", "wetenschap", "techniek"], isFavorite: true },
+        { id: "site_504", title: "NOS Jeugdjournaal", url: "https://jeugdjournaal.nl", category: "5. Digitale Geletterdheid (Vakoverschrijdend)", description: "Dagelijks actueel nieuws, stellingen, reportages en achtergrondinformatie op maat gemaakt voor basisschoolleerlingen.", ageRange: "8-10 jaar", rating: 4.9, votes: 390, tags: ["nieuws", "actueel", "stelling"], isFavorite: true },
+        { id: "site_505", title: "NEMO Kennislink Junior", url: "https://www.nemokennislink.nl", category: "5. Digitale Geletterdheid (Vakoverschrijdend)", description: "Populair-wetenschappelijke artikelen en proefjes die ingewikkelde onderwerpen begrijpelijk maken voor jongeren.", ageRange: "8-10 jaar", rating: 4.7, votes: 118, tags: ["nemo", "wetenschap", "proefjes"], isFavorite: false },
+        { id: "site_506", title: "Beeld en Geluid op School", url: "https://www.beeldengeluid.nl", category: "5. Digitale Geletterdheid (Vakoverschrijdend)", description: "Historische en actuele mediabronnen, audiofragmenten en videoarchief voor geschiedenis en maatschappijleer.", ageRange: "8-10 jaar", rating: 4.6, votes: 84, tags: ["archief", "historie", "bronnen"], isFavorite: false },
+        { id: "site_507", title: "Kennisnet Digitale Geletterdheid", url: "https://www.kennisnet.nl", category: "5. Digitale Geletterdheid (Vakoverschrijdend)", description: "Handreikingen, leerlijnen en praktijkvoorbeelden om digitale geletterdheid structureel in het curriculum in te bedden.", ageRange: "Leerkrachten", rating: 4.8, votes: 165, tags: ["kennisnet", "leerlijn", "curriculum"], isFavorite: false },
+        { id: "site_508", title: "NatGeo Kids NL", url: "https://www.natgeokids.com/nl/", category: "5. Digitale Geletterdheid (Vakoverschrijdend)", description: "Alles over dieren, natuur, ruimtevaart en de aarde met adembenemend fotomateriaal en interactieve quizzen.", ageRange: "6-8 jaar", rating: 4.8, votes: 204, tags: ["dieren", "natuur", "ruimte"], isFavorite: false },
+        { id: "site_509", title: "Docukids.nl", url: "https://www.docukids.nl", category: "5. Digitale Geletterdheid (Vakoverschrijdend)", description: "Informatieve documentaires, boekbesprekingen en werkstuk-onderwerpen speciaal geselecteerd voor de basisschool.", ageRange: "8-10 jaar", rating: 4.5, votes: 77, tags: ["werkstuk", "documentaire", "onderzoek"], isFavorite: false },
+
+        // 6. AI in de Klas
+        { id: "site_601", title: "Teachable Machine (Google)", url: "https://teachablemachine.withgoogle.com", category: "6. AI in de Klas", description: "Laagdrempelige webtool waarmee leerlingen zelf een AI-model kunnen trainen op basis van afbeeldingen, geluiden of poses.", ageRange: "8-10 jaar", rating: 4.9, votes: 275, tags: ["ai", "machinelearning", "google"], isFavorite: true },
+        { id: "site_602", title: "MagicSchool.ai", url: "https://www.magicschool.ai", category: "6. AI in de Klas", description: "Toonaangevend AI-assistentenplatform voor leerkrachten: genereer lesplannen, toetsvragen, differentiatie en rubrics.", ageRange: "Leerkrachten", rating: 4.9, votes: 310, tags: ["ai-assistent", "lesvoorbereiding", "toetsen"], isFavorite: true },
+        { id: "site_603", title: "Curipod AI", url: "https://curipod.com", category: "6. AI in de Klas", description: "Maak in seconden interactieve presentaties met AI-gegenereerde peilingen, woordwolken en tekenopdrachten.", ageRange: "Leerkrachten", rating: 4.8, votes: 195, tags: ["presentaties", "interactief", "ai"], isFavorite: true },
+        { id: "site_604", title: "Quick, Draw! (Google AI)", url: "https://quickdraw.withgoogle.com", category: "6. AI in de Klas", description: "Spel waarin een neuraal netwerk probeert te raden wat jij tekent. Perfect om de basis van AI-herkenning uit te leggen.", ageRange: "Alle leeftijden", rating: 4.8, votes: 230, tags: ["tekenen", "neuraalnetwerk", "spel"], isFavorite: false },
+        { id: "site_605", title: "Machine Learning for Kids", url: "https://machinelearningforkids.co.uk", category: "6. AI in de Klas", description: "Bouw AI-modellen en gebruik ze direct in Scratch-projecten en Python. Inclusief kant-en-klare lesboeken.", ageRange: "8-10 jaar", rating: 4.7, votes: 140, tags: ["scratch", "ai", "datasets"], isFavorite: false },
+        { id: "site_606", title: "Diffit for Teachers", url: "https://web.diffit.me", category: "6. AI in de Klas", description: "AI-tool die leesteksten en opdrachten direct aanpast aan het specifieke leesniveau van individuele leerlingen.", ageRange: "Leerkrachten", rating: 4.8, votes: 168, tags: ["differentiatie", "leesniveau", "ai"], isFavorite: false },
+        { id: "site_607", title: "AutoDraw", url: "https://www.autodraw.com", category: "6. AI in de Klas", description: "Slimme tekentool van Google die jouw snelle krabbels herkent en direct omzet in strakke illustraties.", ageRange: "Alle leeftijden", rating: 4.7, votes: 185, tags: ["tekenen", "autodraw", "illustraties"], isFavorite: false },
+        { id: "site_608", title: "AI for K12", url: "https://aifork12.org", category: "6. AI in de Klas", description: "Richtlijnen en 5 grote ideeën over hoe Kunstmatige Intelligentie veilig onderwezen kan worden in het funderend onderwijs.", ageRange: "Leerkrachten", rating: 4.6, votes: 92, tags: ["richtlijnen", "ethiek", "k12"], isFavorite: false },
+        { id: "site_609", title: "Craiyon AI Generator", url: "https://www.craiyon.com", category: "6. AI in de Klas", description: "Gratis AI-afbeeldingen generator op basis van tekstprompts. Ideaal voor creatieve verwerkingsopdrachten.", ageRange: "8-10 jaar", rating: 4.5, votes: 110, tags: ["prompts", "afbeeldingen", "creatief"], isFavorite: false },
+
+        // 7. Onderwijsvisie & Methodieken
+        { id: "site_701", title: "KlasCement.be", url: "https://www.klascement.be", category: "7. Onderwijsvisie & Methodieken", description: "Het grootste Belgische netwerk voor en door leerkrachten met tienduizenden gratis lesmaterialen, werkbladen en inspiratie.", ageRange: "Leerkrachten", rating: 5.0, votes: 510, tags: ["vlaanderen", "lesmateriaal", "delen"], isFavorite: true },
+        { id: "site_702", title: "Klasse.be", url: "https://www.klasse.be", category: "7. Onderwijsvisie & Methodieken", description: "Onafhankelijk onderwijs-magazine met verdiepende artikelen, praktijkverhalen, tips voor klasbeheer en innovatie.", ageRange: "Leerkrachten", rating: 4.9, votes: 340, tags: ["magazine", "artikelen", "vlaanderen"], isFavorite: true },
+        { id: "site_703", title: "Leraar24", url: "https://www.leraar24.nl", category: "7. Onderwijsvisie & Methodieken", description: "Online platform met praktische video's, artikelen en onderzoeksresultaten over didactiek en onderwijsontwikkeling.", ageRange: "Leerkrachten", rating: 4.7, votes: 175, tags: ["video", "didactiek", "onderzoek"], isFavorite: false },
+        { id: "site_704", title: "Vernieuwingsonderwijs.nl", url: "https://www.vernieuwingsonderwijs.nl", category: "7. Onderwijsvisie & Methodieken", description: "Inspiratiebron voor Dalton, Jenaplan, Montessori, Freinet en eigentijds gepersonaliseerd onderwijs.", ageRange: "Leerkrachten", rating: 4.5, votes: 92, tags: ["dalton", "montessori", "freinet"], isFavorite: false },
+        { id: "site_705", title: "Onderwijs van Morgen", url: "https://www.onderwijsvanmorgen.nl", category: "7. Onderwijsvisie & Methodieken", description: "Blog en inspiratiesite over innovatie in het onderwijs, digitalisering, actuele trends en vakdidactiek.", ageRange: "Leerkrachten", rating: 4.6, votes: 110, tags: ["innovatie", "blog", "trends"], isFavorite: false },
+        { id: "site_706", title: "Canon van Nederland", url: "https://www.canonvannederland.nl", category: "7. Onderwijsvisie & Methodieken", description: "De 50 vensters van de geschiedenis en cultuur, verrijkt met filmpjes, opdrachten en interactieve kaarten.", ageRange: "Alle leeftijden", rating: 4.8, votes: 210, tags: ["canon", "geschiedenis", "vensters"], isFavorite: false },
+        { id: "site_707", title: "Onderwijsinspectie Vlaanderen", url: "https://www.onderwijsinspectie.be", category: "7. Onderwijsvisie & Methodieken", description: "Officiële kwaliteitsframes, leerplandoelen en inspectieleidraden voor het Vlaamse onderwijslandschap.", ageRange: "Leerkrachten", rating: 4.4, votes: 60, tags: ["inspectie", "leerplannen", "kwaliteit"], isFavorite: false },
+        { id: "site_708", title: "Vernieuwend Onderwijs Platform", url: "https://www.vernieuwendonderwijs.be", category: "7. Onderwijsvisie & Methodieken", description: "Netwerk ter ondersteuning van scholen die experimenteren met vakoverschrijdend projectonderwijs en talentateliers.", ageRange: "Leerkrachten", rating: 4.6, votes: 81, tags: ["projecten", "talent", "ateliers"], isFavorite: false },
+        { id: "site_709", title: "Wij-Leren.nl", url: "https://wij-leren.nl", category: "7. Onderwijsvisie & Methodieken", description: "Onderwijskundige kennisbank voor leraren en schoolleiders over pedagogiek, didactiek en onderwijspsychologie.", ageRange: "Leerkrachten", rating: 4.7, votes: 130, tags: ["kennisbank", "pedagogiek", "didactiek"], isFavorite: false },
+
+        // 8. Platformen (ondersteunen bij leren)
+        { id: "site_801", title: "Bingel.be", url: "https://www.bingel.be", category: "8. Platformen (ondersteunen bij leren)", description: "Het online leerplatform van Uitgeverij VAN IN voor het basisonderwijs in Vlaanderen met adaptieve oefeningen.", ageRange: "6-8 jaar", rating: 4.8, votes: 430, tags: ["bingel", "vlaanderen", "vanin"], isFavorite: true },
+        { id: "site_802", title: "Scoodle.be", url: "https://www.scoodle.be", category: "8. Platformen (ondersteunen bij leren)", description: "Digitale bordboeken, lerarenplatform en online oefenomgeving van Plantyn voor basisonderwijs en secundair.", ageRange: "Alle leeftijden", rating: 4.7, votes: 280, tags: ["scoodle", "bordboeken", "plantyn"], isFavorite: false },
+        { id: "site_803", title: "ClassDojo", url: "https://www.classdojo.com", category: "8. Platformen (ondersteunen bij leren)", description: "Communicatie- en beloningsplatform dat leraren, leerlingen en ouders verbindt met een positief klasklimaat.", ageRange: "Alle leeftijden", rating: 4.9, votes: 390, tags: ["classdojo", "ouders", "klasklimaat"], isFavorite: true },
+        { id: "site_804", title: "Kahoot!", url: "https://kahoot.com", category: "8. Platformen (ondersteunen bij leren)", description: "Speel en maak uitdagende spelshows en quizzen. Verhoogt de betrokkenheid en het plezier in de klas dramatisch.", ageRange: "Alle leeftijden", rating: 4.9, votes: 520, tags: ["kahoot", "quiz", "competitie"], isFavorite: true },
+        { id: "site_805", title: "Blooket", url: "https://www.blooket.com", category: "8. Platformen (ondersteunen bij leren)", description: "Innovatief quizplatform dat actievolle gamemodes (tower defense, gold quest) combineert met leerstofherhaling.", ageRange: "6-8 jaar", rating: 4.9, votes: 340, tags: ["blooket", "games", "quiz"], isFavorite: true },
+        { id: "site_806", title: "Gimkit", url: "https://www.gimkit.com", category: "8. Platformen (ondersteunen bij leren)", description: "Quizgame gemaakt door een student waarin leerlingen virtueel geld verdienen met goede antwoorden en upgrades kopen.", ageRange: "8-10 jaar", rating: 4.8, votes: 210, tags: ["gimkit", "upgrades", "strategie"], isFavorite: false },
+        { id: "site_807", title: "Quizlet", url: "https://quizlet.com", category: "8. Platformen (ondersteunen bij leren)", description: "Maak en bestudeer digitale flitskaarten, begrippenlijsten en speel Quizlet Live in teams in de klas.", ageRange: "8-10 jaar", rating: 4.7, votes: 260, tags: ["flitskaarten", "begrippen", "quizletlive"], isFavorite: false },
+        { id: "site_808", title: "Nearpod", url: "https://nearpod.com", category: "8. Platformen (ondersteunen bij leren)", description: "Interactieve lessen met 3D-objecten, VR-veldtrips, quizzen en live stellingen op apparaten van leerlingen.", ageRange: "6-8 jaar", rating: 4.8, votes: 175, tags: ["nearpod", "vr", "interactief"], isFavorite: false },
+        { id: "site_809", title: "Google Classroom", url: "https://classroom.google.com", category: "8. Platformen (ondersteunen bij leren)", description: "Centrale digitale leeromgeving voor het uitdelen, innemen en beoordelen van opdrachten en communicatie.", ageRange: "Alle leeftijden", rating: 4.8, votes: 410, tags: ["google", "opdrachten", "lms"], isFavorite: false },
+
+        // 9. Internet leerkrachten
+        { id: "site_901", title: "Meester Sander", url: "https://meestersander.nl", category: "9. Internet leerkrachten", description: "Inspirierende tips, reviews van educatieve apps, ICT-ideeën voor kleuters en praktische workshops door Meester Sander.", ageRange: "Leerkrachten", rating: 4.9, votes: 320, tags: ["kleuters", "apps", "meestersander"], isFavorite: true },
+        { id: "site_902", title: "Juf Maike", url: "https://jufmaike.nl", category: "9. Internet leerkrachten", description: "Bekend onderwijsblog boordevol gratis downloads, lesideeën, boekentips en ervaringen uit de klaspraktijk.", ageRange: "Leerkrachten", rating: 4.9, votes: 290, tags: ["jufmaike", "downloads", "lesideeen"], isFavorite: true },
+        { id: "site_903", title: "Juf Janie", url: "https://www.jufjanie.nl", category: "9. Internet leerkrachten", description: "Focus op digitaal onderwijs, app-aanbevelingen, iPad in de klas en educatieve spellen voor kleuters en onderbouw.", ageRange: "Leerkrachten", rating: 4.8, votes: 180, tags: ["jufjanie", "ipad", "kleuters"], isFavorite: false },
+        { id: "site_904", title: "Juffrouw Femke", url: "https://juffrouwfemke.com", category: "9. Internet leerkrachten", description: "Creatieve en thematische lesideeën, klassenmanagement, organisatie en feestdagen-activiteiten voor de basisschool.", ageRange: "Leerkrachten", rating: 4.7, votes: 145, tags: ["thema", "klassenmanagement", "feestdagen"], isFavorite: false },
+        { id: "site_905", title: "Onderwijswereld PO", url: "https://onderwijswereld-po.nl", category: "9. Internet leerkrachten", description: "Platform voor en door leerkrachten met vakinhoudelijke blogs, gratis downloads, e-books en nascholing.", ageRange: "Leerkrachten", rating: 4.6, votes: 110, tags: ["blogs", "nascholing", "po"], isFavorite: false },
+        { id: "site_906", title: "Meester Sjoerd", url: "https://www.meestersjoerd.nl", category: "9. Internet leerkrachten", description: "Tips rond bewegend leren, meesterlijke energizers, ICT-tools en organisatorische handigheidjes voor de klas.", ageRange: "Leerkrachten", rating: 4.8, votes: 155, tags: ["bewegendleren", "energizers", "organisatie"], isFavorite: false },
+        { id: "site_907", title: "Juf Anke", url: "https://www.jufanke.nl", category: "9. Internet leerkrachten", description: "Uitgebreide themapagina's, doelenkaarten en lesvoorbereidingen voor de kleuterbouw (groep 1 en 2).", ageRange: "Leerkrachten", rating: 4.7, votes: 130, tags: ["kleuterbouw", "thema", "doelen"], isFavorite: false },
+        { id: "site_908", title: "Juf Inger", url: "https://jufinger.nl", category: "9. Internet leerkrachten", description: "Inspiratie over kinderboeken, leesbevordering, rekenen en creatieve handvaardigheid in de bovenbouw.", ageRange: "Leerkrachten", rating: 4.6, votes: 98, tags: ["lezen", "boeken", "bovenbouw"], isFavorite: false },
+        { id: "site_909", title: "Klas van Juf Eva", url: "https://klasvanjufeva.nl", category: "9. Internet leerkrachten", description: "Praktische tips voor beginnende en ervaren leerkrachten over taakborden, dagritmekaarten en structuur.", ageRange: "Leerkrachten", rating: 4.5, votes: 82, tags: ["dagritme", "structuur", "taakbord"], isFavorite: false },
+
+        // 10. ICT didactisch materiaal
+        { id: "site_1001", title: "LessonUp", url: "https://www.lessonup.com", category: "10. ICT didactisch materiaal", description: "Maak en geef interactieve digitale lessen met video's, quizvragen, open vragen en sleepvragen op het digibord.", ageRange: "Alle leeftijden", rating: 4.9, votes: 380, tags: ["lessonup", "interactief", "digibord"], isFavorite: true },
+        { id: "site_1002", title: "Wordwall", url: "https://wordwall.net", category: "10. ICT didactisch materiaal", description: "Maak in een paar minuten je eigen interactieve spellen: draaiwielen, dwalende mollen, machten en koppelpuzzels.", ageRange: "Alle leeftijden", rating: 4.9, votes: 410, tags: ["wordwall", "draaiwiel", "spellen"], isFavorite: true },
+        { id: "site_1003", title: "Genially", url: "https://genial.ly", category: "10. ICT didactisch materiaal", description: "Maak adembenemende interactieve presentaties, digitale escape rooms, infografieken en gamification kaarten.", ageRange: "6-8 jaar", rating: 4.9, votes: 295, tags: ["escaperoom", "interactief", "genially"], isFavorite: true },
+        { id: "site_1004", title: "Edpuzzle", url: "https://edpuzzle.com", category: "10. ICT didactisch materiaal", description: "Maak van elke video een actieve les door vragen, audio-opmerkingen en toetsmomenten toe te voegen aan YouTube.", ageRange: "8-10 jaar", rating: 4.8, votes: 210, tags: ["video", "youtube", "vragen"], isFavorite: false },
+        { id: "site_1005", title: "Liveworksheets", url: "https://www.liveworksheets.com", category: "10. ICT didactisch materiaal", description: "Zet je traditionele werkbladen (PDF of Word) om in interactieve zelfcorrigerende online oefeningen.", ageRange: "6-8 jaar", rating: 4.6, votes: 185, tags: ["werkbladen", "automatisch", "pdf"], isFavorite: false },
+        { id: "site_1006", title: "Wheel of Names", url: "https://wheelofnames.com", category: "10. ICT didactisch materiaal", description: "Handig en willekeurig keuzewiel voor het kiezen van beurten, namen, opdrachten of onderwerpen in de klas.", ageRange: "Alle leeftijden", rating: 4.9, votes: 310, tags: ["radvanfortuin", "namen", "willekeurig"], isFavorite: false },
+        { id: "site_1007", title: "Padlet", url: "https://padlet.com", category: "10. ICT didactisch materiaal", description: "Digitaal prikbord waar leerlingen en leerkrachten snel opmerkingen, afbeeldingen, links en documenten delen.", ageRange: "Alle leeftijden", rating: 4.8, votes: 270, tags: ["prikbord", "samenwerken", "padlet"], isFavorite: false },
+        { id: "site_1008", title: "TeacherMade", url: "https://teachermade.com", category: "10. ICT didactisch materiaal", description: "Transformeer gedrukte papieren werkbladen direct naar digitale, zelfnakijkende opdrachten voor Google Classroom.", ageRange: "Leerkrachten", rating: 4.7, votes: 115, tags: ["nakijken", "digitaliseren", "werkbladen"], isFavorite: false },
+        { id: "site_1009", title: "Canva Educational Templates", url: "https://www.canva.com/templates/education/", category: "10. ICT didactisch materiaal", description: "Duizenden kant-en-klare sjablonen voor werkbladen, klassenregels, certificaten en nieuwsbrieven.", ageRange: "Leerkrachten", rating: 4.8, votes: 210, tags: ["sjablonen", "werkbladen", "nieuwsbrief"], isFavorite: false },
+
+        // 11. Werken aan taal
+        { id: "site_1101", title: "Spellingsoefenen.nl", url: "https://www.spellingsoefenen.nl", category: "11. Werken aan taal", description: "Gratis online spellen om spelling en woordpakketten van alle leerjaren spelenderwijs en gericht te oefenen.", ageRange: "6-8 jaar", rating: 4.9, votes: 360, tags: ["spelling", "woordpakket", "games"], isFavorite: true },
+        { id: "site_1102", title: "Woordkasteel", url: "https://www.woordkasteel.nl", category: "11. Werken aan taal", description: "Beproefd educatief programma met tientallen taal- en spelletjesmodi voor woordenschat en werkwoordspelling.", ageRange: "6-8 jaar", rating: 4.6, votes: 130, tags: ["woordenschat", "werkwoorden", "kasteel"], isFavorite: false },
+        { id: "site_1103", title: "Bereslim (Prentenboeken)", url: "https://www.bereslim.nl", category: "11. Werken aan taal", description: "Geanimeerde prentenboeken en taalstimulerende spellen voor kleuters ter bevordering van de woordenschat.", ageRange: "4-6 jaar", rating: 4.9, votes: 240, tags: ["prentenboeken", "kleuters", "animatie"], isFavorite: true },
+        { id: "site_1104", title: "Nieuwsbegrip", url: "https://www.nieuwsbegrip.nl", category: "11. Werken aan taal", description: "Begrijpend lezen aan de hand van de actuele weekthema's met interactieve lessen en digitale verwerking.", ageRange: "8-10 jaar", rating: 4.7, votes: 290, tags: ["begrijpendlezen", "nieuws", "actueel"], isFavorite: false },
+        { id: "site_1105", title: "Letterprins", url: "https://www.letterprins.nl", category: "11. Werken aan taal", description: "Wetenschappelijk onderbouwde game om beginnende lezers (groep 3/4) op een speelse manier vlot te leren lezen.", ageRange: "6-8 jaar", rating: 4.8, votes: 160, tags: ["lezen", "beginselen", "letterprins"], isFavorite: false },
+        { id: "site_1106", title: "Squla Taal & Woordenschat", url: "https://www.squla.nl", category: "11. Werken aan taal", description: "Uitgebreid oefenplatform met duizenden quizvragen en video's aangesloten bij alle basisschool methodes.", ageRange: "4-6 jaar", rating: 4.7, votes: 220, tags: ["squla", "quiz", "taal"], isFavorite: false },
+        { id: "site_1107", title: "Leesmeester.nl", url: "https://www.leesmeester.nl", category: "11. Werken aan taal", description: "Digitaal leesonderwijs met avi-gecertificeerde teksten, auditieve ondersteuning en begrijpend lezen vragen.", ageRange: "6-8 jaar", rating: 4.6, votes: 105, tags: ["avi", "leesniveaus", "begrijpendlezen"], isFavorite: false },
+        { id: "site_1108", title: "Taalzee", url: "https://www.taalzee.nl", category: "11. Werken aan taal", description: "Adaptief webspel waarin kinderen via mini-games taal, spelling, grammatica en ontleden op eigen niveau oefenen.", ageRange: "8-10 jaar", rating: 4.8, votes: 175, tags: ["adaptief", "grammatica", "ontleden"], isFavorite: false },
+        { id: "site_1109", title: "Kabouter Zope Taal", url: "https://www.kabouterzope.nl", category: "11. Werken aan taal", description: "Interactieve spellen rond rijmen, hakken en plakken en beginklanken voor kleuters.", ageRange: "4-6 jaar", rating: 4.5, votes: 71, tags: ["rijmen", "fonetisch", "kleuters"], isFavorite: false },
+
+        // 12. Digibord tools
+        { id: "site_1201", title: "Gynzy Digibord", url: "https://www.gynzy.com/nl/", category: "12. Digibord tools", description: "Het complete digibord-platform met duizenden kant-en-klare tools, klokken, timers, achtergronden en didactische spellen.", ageRange: "Alle leeftijden", rating: 5.0, votes: 540, tags: ["gynzy", "digibord", "timers"], isFavorite: true },
+        { id: "site_1202", title: "Classroom Screen", url: "https://classroomscreen.com", category: "12. Digibord tools", description: "Onmisbare tool voor elke leerkracht: stel in een handomdraai timers, geluidsmeters, verkeerslichten en instructie-iconen in.", ageRange: "Alle leeftijden", rating: 5.0, votes: 590, tags: ["classroomscreen", "timer", "geluidsmeter"], isFavorite: true },
+        { id: "site_1203", title: "Digibordbord.nl", url: "https://www.digibordbord.nl", category: "12. Digibord tools", description: "Eenvoudig en snel digitaal schoolbord met lijntjes, ruitjes, stempels en schrijfpatronen voor het klaslokaal.", ageRange: "Alle leeftijden", rating: 4.7, votes: 180, tags: ["schoolbord", "schrijven", "ruitjes"], isFavorite: false },
+        { id: "site_1204", title: "Prowise Presenter", url: "https://www.prowise.com/nl/presenter/", category: "12. Digibord tools", description: "Gratis educatieve software vol 3D-modellen, interactieve gereedschappen, quizzen en bordboeken.", ageRange: "Alle leeftijden", rating: 4.8, votes: 230, tags: ["prowise", "presenter", "3d"], isFavorite: false },
+        { id: "site_1205", title: "FigJam for Education", url: "https://www.figma.com/education/figjam/", category: "12. Digibord tools", description: "Oneindig digitaal whiteboard van Figma voor brainstorms, mindmaps, planningsmuren en interactieve groepssessies.", ageRange: "8-10 jaar", rating: 4.8, votes: 165, tags: ["whiteboard", "mindmap", "brainstorm"], isFavorite: false },
+        { id: "site_1206", title: "ClassTools.net", url: "https://www.classtools.net", category: "12. Digibord tools", description: "Verzameling van gratis klashandigheidjes: fruitautomaten, fake sms-generators, raddraaiers en tijdlijnen.", ageRange: "Leerkrachten", rating: 4.6, votes: 140, tags: ["classtools", "fruitautomaat", "tijdlijn"], isFavorite: false },
+        { id: "site_1207", title: "Bordwerk.nl", url: "https://www.bordwerk.nl", category: "12. Digibord tools", description: "Interactieve klokken, breukencirkels, getallenlijnen en eierdozen voor het digibord tijdens de rekenles.", ageRange: "6-8 jaar", rating: 4.7, votes: 112, tags: ["rekenen", "klokkijken", "breuken"], isFavorite: false },
+        { id: "site_1208", title: "Explaining Outcome", url: "https://explaineverything.com", category: "12. Digibord tools", description: "Interactief screencasting- en whiteboardplatform om dynamische instructievideo's voor het digibord op te nemen.", ageRange: "Leerkrachten", rating: 4.8, votes: 128, tags: ["screencast", "whiteboard", "instructie"], isFavorite: false },
+        { id: "site_1209", title: "Stopwatch-Timer.nl", url: "https://www.online-stopwatch.com", category: "12. Digibord tools", description: "Leuke geanimeerde zandlopers, bomtimers en race-stopwatches om op te zetten tijdens zelfstandig werken.", ageRange: "Alle leeftijden", rating: 4.6, votes: 150, tags: ["stopwatch", "zandloper", "tijd"], isFavorite: false }
+      ];
+
+      // Safe domain extractor helper
+      const getDomain = (url) => {
+        try {
+          const parsed = new URL(url);
+          return parsed.hostname.replace(/^www\./, '');
+        } catch (e) {
+          return url || '';
+        }
+      };
+
+      // -------------------------------------------------------------
+      // Component: TileScreenshotHeader
+      // Renders real-time homepage screenshot header + fallback gradient
+      // -------------------------------------------------------------
+      function TileScreenshotHeader({ site, isFavorite, onToggleFavorite }) {
+        const [imgLoaded, setImgLoaded] = useState(false);
+        const [imgError, setImgError] = useState(false);
+
+        const domain = getDomain(site.url);
+        const screenshotUrl = `https://s.wordpress.com/mshots/v1/${encodeURIComponent(site.url)}?w=600`;
+        const faviconUrl = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`;
+
+        // Generate consistent background gradient based on category name
+        const getGradient = (catStr) => {
+          const gradients = [
+            'from-blue-500 to-indigo-600',
+            'from-emerald-500 to-teal-700',
+            'from-purple-500 to-pink-600',
+            'from-amber-400 to-orange-600',
+            'from-cyan-500 to-blue-700',
+            'from-rose-500 to-red-600',
+            'from-violet-500 to-purple-700',
+            'from-teal-500 to-emerald-700'
+          ];
+          let hash = 0;
+          for (let i = 0; i < catStr.length; i++) {
+            hash = catStr.charCodeAt(i) + ((hash << 5) - hash);
+          }
+          const index = Math.abs(hash) % gradients.length;
+          return gradients[index];
+        };
+
+        return (
+          <div className="relative h-44 w-full overflow-hidden bg-slate-100 rounded-t-2xl group">
+            {/* Fallback Display if image fails or is loading */}
+            {(!imgLoaded || imgError) && (
+              <div className={`absolute inset-0 bg-gradient-to-br ${getGradient(site.category)} flex flex-col items-center justify-center p-4 text-white text-center shadow-inner`}>
+                <img 
+                  src={faviconUrl} 
+                  alt="" 
+                  className="w-12 h-12 rounded-xl bg-white/90 p-2 shadow-md mb-2 object-contain"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+                <span className="font-fredoka font-bold text-lg leading-tight drop-shadow-sm px-2 truncate w-full">
+                  {site.title}
+                </span>
+                <span className="text-[11px] opacity-90 font-mono mt-1 bg-black/20 px-2 py-0.5 rounded-full">
+                  {domain}
+                </span>
+              </div>
+            )}
+
+            {/* Real-Time Homepage Screenshot Image */}
+            {!imgError && (
+              <img
+                src={screenshotUrl}
+                alt={`Screenshot van ${site.title}`}
+                className={`w-full h-44 object-cover object-top transition-transform duration-500 group-hover:scale-105 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+                onLoad={() => setImgLoaded(true)}
+                onError={() => setImgError(true)}
+              />
+            )}
+
+            {/* Top Badges Overlay */}
+            <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+              {/* Category Badge */}
+              <span className="px-2.5 py-1 bg-white/95 backdrop-blur-md text-slate-800 font-bold text-[11px] rounded-full shadow-md border border-white/60 truncate max-w-[70%]">
+                {site.category.replace(/^\d+\.\s*/, '')}
+              </span>
+
+              {/* Interactive Favorite Heart Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite(site.id);
+                }}
+                className={`pointer-events-auto w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 shadow-md ${
+                  isFavorite 
+                    ? 'bg-rose-500 text-white hover:bg-rose-600 scale-105' 
+                    : 'bg-white/90 text-slate-400 hover:text-rose-500 hover:bg-white'
+                }`}
+                title={isFavorite ? "Verwijder uit favorieten" : "Toevoegen aan favorieten"}
+              >
+                <i className={`fa-solid fa-heart text-sm ${isFavorite ? 'scale-110' : ''}`}></i>
+              </button>
+            </div>
+
+            {/* Vignette Overlay */}
+            <div className="absolute inset-0 ring-1 ring-black/5 rounded-t-2xl pointer-events-none"></div>
+          </div>
+        );
+      }
+
+      // -------------------------------------------------------------
+      // Component: WebsiteTile ("Tegel")
+      // -------------------------------------------------------------
+      function WebsiteTile({ site, onToggleFavorite, onUpvote, onRate, onEdit, onDelete, isAdmin }) {
+        const domain = getDomain(site.url);
+        const faviconUrl = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
+
+        return (
+          <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-slate-200/80 transition-all duration-300 flex flex-col justify-between overflow-hidden group">
+            {/* Header Screenshot */}
+            <TileScreenshotHeader 
+              site={site} 
+              isFavorite={site.isFavorite} 
+              onToggleFavorite={onToggleFavorite} 
+            />
+
+            {/* Body Content */}
+            <div className="p-5 flex-1 flex flex-col justify-between">
+              <div>
+                {/* Title & Favicon Row */}
+                <div className="flex items-start gap-3 mb-2">
+                  <img 
+                    src={faviconUrl} 
+                    alt="" 
+                    className="w-7 h-7 rounded-lg mt-0.5 object-contain bg-slate-50 border border-slate-100 p-0.5 flex-shrink-0"
+                    onError={(e) => { e.target.src = 'https://placehold.co/32x32/22c55e/ffffff?text=E'; }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-fredoka font-bold text-lg text-slate-800 leading-snug truncate group-hover:text-emerald-600 transition-colors">
+                      {site.title}
+                    </h3>
+                    
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md truncate max-w-[130px]">
+                        {domain}
+                      </span>
+                      <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <i className="fa-solid fa-child text-[10px]"></i>
+                        {site.ageRange}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description 3-line truncated */}
+                <p className="text-slate-600 text-xs sm:text-sm mt-3 leading-relaxed line-clamp-3 min-h-[3.9rem]">
+                  {site.description}
+                </p>
+
+                {/* Tag Pills */}
+                {site.tags && site.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {site.tags.slice(0, 3).map((tag, idx) => (
+                      <span key={idx} className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom Actions: Rating, Upvote & Visit Button */}
+              <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  {/* Interactive Star Rating */}
+                  <div className="flex items-center gap-1" title="Klik om je beoordeling te geven">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => onRate(site.id, star)}
+                        className="text-amber-400 hover:scale-125 transition-transform text-xs focus:outline-none"
+                      >
+                        <i className={`fa-star ${star <= Math.round(site.rating) ? 'fa-solid' : 'fa-regular text-slate-300'}`}></i>
+                      </button>
+                    ))}
+                    <span className="text-xs font-bold text-slate-700 ml-1">
+                      {Number(site.rating).toFixed(1)}
+                    </span>
+                  </div>
+
+                  {/* Upvote Button */}
+                  <button
+                    onClick={() => onUpvote(site.id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 font-semibold text-xs transition-colors active:scale-95"
+                    title="Stem op deze website"
+                  >
+                    <i className="fa-solid fa-thumbs-up text-emerald-500"></i>
+                    <span>{site.votes || 0}</span>
+                  </button>
+                </div>
+
+                {/* Primary Action Button + Admin Options */}
+                <div className="flex items-center gap-2">
+                  <a
+                    href={site.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-emerald-500/20 hover:shadow-lg transition-all active:scale-98"
+                  >
+                    <span>Bezoek Website</span>
+                    <i className="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                  </a>
+
+                  {isAdmin && (
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => onEdit(site)}
+                        className="p-2.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+                        title="Bewerken"
+                      >
+                        <i className="fa-solid fa-pen-to-square"></i>
+                      </button>
+                      <button
+                        onClick={() => onDelete(site.id)}
+                        className="p-2.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                        title="Verwijderen"
+                      >
+                        <i className="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // -------------------------------------------------------------
+      // Main EduKompas Application
+      // -------------------------------------------------------------
+      function App() {
+        // State Initialization with LocalStorage Persistence
+        const [sites, setSites] = useState(() => {
+          try {
+            const saved = localStorage.getItem("edukompas_sites_v3");
+            return saved ? JSON.parse(saved) : INITIAL_SITES;
+          } catch (e) {
+            return INITIAL_SITES;
+          }
+        });
+
+        // Filter & UI States
+        const [searchQuery, setSearchQuery] = useState("");
+        const [selectedCategory, setSelectedCategory] = useState("Alle");
+        const [selectedAge, setSelectedAge] = useState("Alle");
+        const [minRating, setMinRating] = useState(0);
+        const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+        const [sortBy, setSortBy] = useState("popular"); // popular, rating, az, newest
+        
+        // Admin & Modal States
+        const [isAdmin, setIsAdmin] = useState(false);
+        const [showAdminModal, setShowAdminModal] = useState(false);
+        const [adminEmail, setAdminEmail] = useState("");
+        const [adminPass, setAdminPass] = useState("");
+        const [adminError, setAdminError] = useState("");
+
+        const [showAddModal, setShowAddModal] = useState(false);
+        const [editingSite, setEditingSite] = useState(null);
+        const [showFirebaseModal, setShowFirebaseModal] = useState(false);
+
+        // Mobile Filter Drawer State
+        const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+        // Site Form Data for Add/Edit
+        const [formData, setFormData] = useState({
+          title: "",
+          url: "",
+          category: CATEGORIES[0],
+          description: "",
+          ageRange: "Alle leeftijden",
+          rating: 4.5,
+          tags: ""
+        });
+
+        // Save Sites to LocalStorage
+        useEffect(() => {
+          try {
+            localStorage.setItem("edukompas_sites_v3", JSON.stringify(sites));
+          } catch (e) {
+            console.error("Fout bij opslaan in localStorage", e);
+          }
+        }, [sites]);
+
+        // Toggle Favorite
+        const handleToggleFavorite = (id) => {
+          setSites(prev => prev.map(s => s.id === id ? { ...s, isFavorite: !s.isFavorite } : s));
+        };
+
+        // Upvote Site
+        const handleUpvote = (id) => {
+          setSites(prev => prev.map(s => s.id === id ? { ...s, votes: (s.votes || 0) + 1 } : s));
+        };
+
+        // Rate Site
+        const handleRate = (id, newRating) => {
+          setSites(prev => prev.map(s => {
+            if (s.id === id) {
+              const updated = ((s.rating * 4) + newRating) / 5; // Blend rating
+              return { ...s, rating: Math.round(updated * 10) / 10 };
+            }
+            return s;
+          }));
+        };
+
+        // Admin Login
+        const handleAdminLogin = (e) => {
+          e.preventDefault();
+          if (adminEmail === "admin@school.be" && adminPass === "admin123") {
+            setIsAdmin(true);
+            setShowAdminModal(false);
+            setAdminError("");
+            setAdminPass("");
+          } else {
+            setAdminError("Ongeldige inloggegevens. Gebruik demo: admin@school.be / admin123");
+          }
+        };
+
+        // Open Modal for Editing
+        const handleOpenEdit = (site) => {
+          setEditingSite(site);
+          setFormData({
+            title: site.title,
+            url: site.url,
+            category: site.category,
+            description: site.description,
+            ageRange: site.ageRange,
+            rating: site.rating,
+            tags: site.tags ? site.tags.join(", ") : ""
+          });
+          setShowAddModal(true);
+        };
+
+        // Open Modal for Adding
+        const handleOpenAdd = () => {
+          setEditingSite(null);
+          setFormData({
+            title: "",
+            url: "",
+            category: CATEGORIES[0],
+            description: "",
+            ageRange: "Alle leeftijden",
+            rating: 4.5,
+            tags: ""
+          });
+          setShowAddModal(true);
+        };
+
+        // Save Form (Add or Edit)
+        const handleSaveSite = (e) => {
+          e.preventDefault();
+          if (!formData.title || !formData.url) return;
+
+          const tagsArray = formData.tags.split(",").map(t => t.trim().toLowerCase()).filter(Boolean);
+
+          if (editingSite) {
+            setSites(prev => prev.map(s => s.id === editingSite.id ? {
+              ...s,
+              title: formData.title,
+              url: formData.url,
+              category: formData.category,
+              description: formData.description,
+              ageRange: formData.ageRange,
+              rating: Number(formData.rating),
+              tags: tagsArray
+            } : s));
+          } else {
+            const newSite = {
+              id: "site_" + Date.now(),
+              title: formData.title,
+              url: formData.url,
+              category: formData.category,
+              description: formData.description,
+              ageRange: formData.ageRange,
+              rating: Number(formData.rating),
+              votes: 1,
+              tags: tagsArray,
+              isFavorite: false
+            };
+            setSites(prev => [newSite, ...prev]);
+          }
+          setShowAddModal(false);
+        };
+
+        // Delete Site
+        const handleDeleteSite = (id) => {
+          if (window.confirm("Weet je zeker dat je deze tegel wilt verwijderen?")) {
+            setSites(prev => prev.filter(s => s.id !== id));
+          }
+        };
+
+        // Reset Data to Default
+        const handleResetDataset = () => {
+          if (window.confirm("Herstel de standaard dataset met 100+ websites?")) {
+            setSites(INITIAL_SITES);
+            localStorage.removeItem("edukompas_sites_v3");
+          }
+        };
+
+        // Category Counts map
+        const categoryCounts = useMemo(() => {
+          const counts = {};
+          CATEGORIES.forEach(c => counts[c] = 0);
+          sites.forEach(s => {
+            if (counts[s.category] !== undefined) {
+              counts[s.category]++;
+            }
+          });
+          return counts;
+        }, [sites]);
+
+        // Filter and Sort Logic
+        const filteredSites = useMemo(() => {
+          return sites.filter(site => {
+            // Search query filter
+            if (searchQuery.trim()) {
+              const q = searchQuery.toLowerCase();
+              const matchTitle = site.title.toLowerCase().includes(q);
+              const matchDesc = site.description.toLowerCase().includes(q);
+              const matchUrl = site.url.toLowerCase().includes(q);
+              const matchTags = site.tags && site.tags.some(t => t.toLowerCase().includes(q));
+              if (!matchTitle && !matchDesc && !matchUrl && !matchTags) return false;
+            }
+
+            // Category filter
+            if (selectedCategory !== "Alle" && site.category !== selectedCategory) {
+              return false;
+            }
+
+            // Age filter
+            if (selectedAge !== "Alle" && site.ageRange !== selectedAge && site.ageRange !== "Alle leeftijden") {
+              return false;
+            }
+
+            // Min Rating filter
+            if (minRating > 0 && site.rating < minRating) {
+              return false;
+            }
+
+            // Favorites filter
+            if (showOnlyFavorites && !site.isFavorite) {
+              return false;
+            }
+
+            return true;
+          }).sort((a, b) => {
+            if (sortBy === "popular") return (b.votes || 0) - (a.votes || 0);
+            if (sortBy === "rating") return b.rating - a.rating;
+            if (sortBy === "az") return a.title.localeCompare(b.title);
+            if (sortBy === "newest") return b.id.localeCompare(a.id);
+            return 0;
+          });
+        }, [sites, searchQuery, selectedCategory, selectedAge, minRating, showOnlyFavorites, sortBy]);
+
+        return (
+          <div className="flex-1 flex flex-col min-h-screen">
+            {/* Header / Navbar */}
+            <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
+                {/* Brand Logo */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+                    <i className="fa-solid fa-compass text-xl animate-spin-slow"></i>
+                  </div>
+                  <div>
+                    <h1 className="font-fredoka font-bold text-2xl text-slate-800 leading-tight">
+                      Edu<span className="text-emerald-600">Kompas</span>
+                    </h1>
+                    <p className="text-[11px] text-slate-500 font-semibold hidden sm:block">
+                      Het Kindvriendelijke Schoolportaal
+                    </p>
+                  </div>
+                </div>
+
+                {/* Top Search Bar */}
+                <div className="flex-1 max-w-xl mx-2">
+                  <div className="relative">
+                    <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input
+                      type="text"
+                      placeholder="Zoek op naam, onderwerp, tag of url..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-10 py-2 bg-slate-100 hover:bg-slate-200/70 focus:bg-white text-slate-800 text-sm rounded-xl border border-transparent focus:border-emerald-500 focus:outline-none transition-all shadow-inner"
+                    />
+                    {searchQuery && (
+                      <button 
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm"
+                      >
+                        <i className="fa-solid fa-xmark"></i>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Admin Mode Controls & Buttons */}
+                <div className="flex items-center gap-2">
+                  {isAdmin ? (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleOpenAdd}
+                        className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center gap-1.5"
+                      >
+                        <i className="fa-solid fa-plus"></i>
+                        <span className="hidden md:inline">Website Toevoegen</span>
+                      </button>
+
+                      <button
+                        onClick={() => setIsAdmin(false)}
+                        className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                        title="Uitloggen Admin"
+                      >
+                        <i className="fa-solid fa-right-from-bracket"></i>
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowAdminModal(true)}
+                      className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm rounded-xl transition-colors flex items-center gap-1.5"
+                    >
+                      <i className="fa-solid fa-lock text-slate-400"></i>
+                      <span>Beheer Login</span>
+                    </button>
+                  )}
+
+                  {/* Mobile Filters Toggle Button */}
+                  <button
+                    onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+                    className="lg:hidden p-2 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200"
+                    title="Filters"
+                  >
+                    <i className="fa-solid fa-sliders"></i>
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            {/* Quick Stats Hero Banner */}
+            <section className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white py-6 shadow-inner">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                  <h2 className="font-fredoka font-bold text-2xl sm:text-3xl text-white">
+                    Ontdek de beste digitale leermiddelen! 🚀
+                  </h2>
+                  <p className="text-emerald-100 text-xs sm:text-sm mt-1 max-w-2xl">
+                    Visueel schoolportaal met real-time screenshots, direct toegankelijk voor leerlingen, leraren en ouders.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 sm:gap-6 bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center">
+                  <div>
+                    <span className="font-fredoka font-bold text-xl sm:text-2xl text-white block">{sites.length}</span>
+                    <span className="text-[10px] text-emerald-100 uppercase tracking-wider font-semibold">Websites</span>
+                  </div>
+                  <div className="h-8 w-px bg-white/20"></div>
+                  <div>
+                    <span className="font-fredoka font-bold text-xl sm:text-2xl text-white block">12</span>
+                    <span className="text-[10px] text-emerald-100 uppercase tracking-wider font-semibold">Categorieën</span>
+                  </div>
+                  <div className="h-8 w-px bg-white/20"></div>
+                  <div>
+                    <span className="font-fredoka font-bold text-xl sm:text-2xl text-white block">
+                      {sites.filter(s => s.isFavorite).length}
+                    </span>
+                    <span className="text-[10px] text-emerald-100 uppercase tracking-wider font-semibold">Favorieten</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Main Content Layout */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 flex flex-col lg:flex-row gap-8 w-full">
+              
+              {/* Sidebar Filters Component */}
+              <aside className={`lg:w-72 flex-shrink-0 ${mobileFiltersOpen ? 'block' : 'hidden lg:block'}`}>
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 sticky top-24 space-y-6">
+                  
+                  {/* Category Filter */}
+                  <div>
+                    <h3 className="font-fredoka font-bold text-base text-slate-800 mb-3 flex items-center justify-between">
+                      <span>Categorieën</span>
+                      <span className="text-xs font-normal text-slate-400">12 Exact</span>
+                    </h3>
+                    <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
+                      <button
+                        onClick={() => setSelectedCategory("Alle")}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors ${
+                          selectedCategory === "Alle" 
+                            ? 'bg-emerald-500 text-white' 
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        <span>Alle Categorieën</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] ${selectedCategory === "Alle" ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                          {sites.length}
+                        </span>
+                      </button>
+
+                      {CATEGORIES.map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => setSelectedCategory(cat)}
+                          className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors ${
+                            selectedCategory === cat 
+                              ? 'bg-emerald-500 text-white shadow-sm' 
+                              : 'text-slate-600 hover:bg-slate-100'
+                          }`}
+                        >
+                          <span className="truncate pr-2">{cat.replace(/^\d+\.\s*/, '')}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] flex-shrink-0 ${selectedCategory === cat ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                            {categoryCounts[cat] || 0}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <hr className="border-slate-100" />
+
+                  {/* Target Age Group Filter */}
+                  <div>
+                    <h3 className="font-fredoka font-bold text-base text-slate-800 mb-3">
+                      Doelgroep & Leeftijd
+                    </h3>
+                    <div className="flex flex-wrap gap-1.5">
+                      {AGE_GROUPS.map((age) => (
+                        <button
+                          key={age}
+                          onClick={() => setSelectedAge(age)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+                            selectedAge === age 
+                              ? 'bg-slate-800 text-white shadow-sm' 
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {age}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <hr className="border-slate-100" />
+
+                  {/* Rating & Favorites Filters */}
+                  <div className="space-y-3">
+                    <h3 className="font-fredoka font-bold text-base text-slate-800">
+                      Beoordeling & Favorieten
+                    </h3>
+
+                    {/* Favorites Only Toggle */}
+                    <button
+                      onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                      className={`w-full px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between border transition-all ${
+                        showOnlyFavorites 
+                          ? 'bg-rose-50 border-rose-300 text-rose-600' 
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <i className={`fa-solid fa-heart ${showOnlyFavorites ? 'text-rose-500' : 'text-slate-400'}`}></i>
+                        Alleen Favorieten
+                      </span>
+                      <i className={`fa-solid ${showOnlyFavorites ? 'fa-check text-rose-600' : 'fa-plus text-slate-400'}`}></i>
+                    </button>
+
+                    {/* Rating Selector */}
+                    <div>
+                      <label className="text-xs text-slate-500 font-semibold block mb-1">
+                        Minimale beoordeling: {minRating > 0 ? `${minRating}+ Sterren` : 'Alle ratings'}
+                      </label>
+                      <div className="flex items-center gap-1">
+                        {[0, 3, 4, 4.5].map((stars) => (
+                          <button
+                            key={stars}
+                            onClick={() => setMinRating(stars)}
+                            className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                              minRating === stars 
+                                ? 'bg-amber-400 text-slate-900 shadow-sm' 
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            {stars === 0 ? 'Alle' : `${stars}★`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr className="border-slate-100" />
+
+                  {/* System & Data Actions */}
+                  <div className="pt-1 space-y-2">
+                    <button
+                      onClick={handleResetDataset}
+                      className="w-full py-2 px-3 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors flex items-center justify-center gap-2"
+                    >
+                      <i className="fa-solid fa-rotate"></i>
+                      <span>Herstel Standaard Dataset</span>
+                    </button>
+
+                    <button
+                      onClick={() => setShowFirebaseModal(true)}
+                      className="w-full py-2 px-3 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors flex items-center justify-center gap-2"
+                    >
+                      <i className="fa-solid fa-cloud"></i>
+                      <span>Firebase Synchronisatie</span>
+                    </button>
+                  </div>
+
+                </div>
+              </aside>
+
+              {/* Main Content Area */}
+              <main className="flex-1 flex flex-col min-w-0">
+                
+                {/* Controls Bar: Results Count & Sorting */}
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="font-fredoka font-bold text-lg text-slate-800">
+                      {filteredSites.length} {filteredSites.length === 1 ? 'Website' : 'Websites'}
+                    </span>
+                    {selectedCategory !== "Alle" && (
+                      <span className="text-xs font-semibold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full truncate max-w-[200px]">
+                        {selectedCategory.replace(/^\d+\.\s*/, '')}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Sort Selector */}
+                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <span className="text-xs text-slate-500 font-semibold whitespace-nowrap">Sorteer op:</span>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="bg-slate-100 text-slate-800 font-semibold text-xs px-3 py-2 rounded-xl border border-transparent focus:border-emerald-500 focus:outline-none cursor-pointer"
+                    >
+                      <option value="popular">Meest Populair (Stemmen)</option>
+                      <option value="rating">Hoogste Beoordeling</option>
+                      <option value="az">Alphabetisch (A-Z)</option>
+                      <option value="newest">Nieuwst Toegevoegd</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Tile Grid ("Tegels") */}
+                {filteredSites.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredSites.map((site) => (
+                      <WebsiteTile
+                        key={site.id}
+                        site={site}
+                        onToggleFavorite={handleToggleFavorite}
+                        onUpvote={handleUpvote}
+                        onRate={handleRate}
+                        onEdit={handleOpenEdit}
+                        onDelete={handleDeleteSite}
+                        isAdmin={isAdmin}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  /* Empty State */
+                  <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center my-8">
+                    <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                      <i className="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <h3 className="font-fredoka font-bold text-xl text-slate-800">
+                      Geen resultaten gevonden
+                    </h3>
+                    <p className="text-slate-500 text-sm mt-1 max-w-md mx-auto">
+                      Er zijn geen websites die voldoen aan je huidige zoekopdracht of filterinstellingen.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setSelectedCategory("Alle");
+                        setSelectedAge("Alle");
+                        setMinRating(0);
+                        setShowOnlyFavorites(false);
+                      }}
+                      className="mt-4 px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 transition-colors"
+                    >
+                      Reset alle filters
+                    </button>
+                  </div>
+                )}
+
+              </main>
+            </div>
+
+            {/* Footer */}
+            <footer className="bg-white border-t border-slate-200 mt-auto py-6 text-center text-xs text-slate-500">
+              <div className="max-w-7xl mx-auto px-4">
+                <p className="font-semibold text-slate-600">
+                  EduKompas © {new Date().getFullYear()} — Kindvriendelijk Schoolportaal met real-time tegels.
+                </p>
+                <p className="mt-1 text-[11px] text-slate-400">
+                  Ontworpen voor basisscholen in Vlaanderen & Nederland • Integratie van 12 vakgebieden & screenshots.
+                </p>
+              </div>
+            </footer>
+
+            {/* ------------------------------------------------------------- */}
+            {/* Modal: Admin Login */}
+            {/* ------------------------------------------------------------- */}
+            {showAdminModal && (
+              <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-emerald-600">
+                      <i className="fa-solid fa-user-shield text-xl"></i>
+                      <h3 className="font-fredoka font-bold text-xl text-slate-800">Beheer Login</h3>
+                    </div>
+                    <button 
+                      onClick={() => setShowAdminModal(false)}
+                      className="p-1 text-slate-400 hover:text-slate-600 text-lg"
+                    >
+                      <i className="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleAdminLogin} className="space-y-4">
+                    {adminError && (
+                      <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-semibold">
+                        {adminError}
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">E-mailadres</label>
+                      <input
+                        type="email"
+                        required
+                        placeholder="admin@school.be"
+                        value={adminEmail}
+                        onChange={(e) => setAdminEmail(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-100 rounded-xl text-sm border focus:bg-white focus:border-emerald-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Wachtwoord</label>
+                      <input
+                        type="password"
+                        required
+                        placeholder="••••••••"
+                        value={adminPass}
+                        onChange={(e) => setAdminPass(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-100 rounded-xl text-sm border focus:bg-white focus:border-emerald-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-0.5">
+                      <p className="font-bold text-slate-700">Demo Beheerder Gegevens:</p>
+                      <p>• E-mail: <code className="text-emerald-700 font-bold">admin@school.be</code></p>
+                      <p>• Wachtwoord: <code className="text-emerald-700 font-bold">admin123</code></p>
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowAdminModal(false)}
+                        className="flex-1 py-2.5 bg-slate-100 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-200"
+                      >
+                        Annuleren
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-2.5 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-md shadow-emerald-500/20"
+                      >
+                        Inloggen
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* ------------------------------------------------------------- */}
+            {/* Modal: Add / Edit Website */}
+            {/* ------------------------------------------------------------- */}
+            {showAddModal && (
+              <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-fredoka font-bold text-xl text-slate-800">
+                      {editingSite ? 'Website Bewerken' : 'Nieuwe Website Toevoegen'}
+                    </h3>
+                    <button 
+                      onClick={() => setShowAddModal(false)}
+                      className="p-1 text-slate-400 hover:text-slate-600 text-lg"
+                    >
+                      <i className="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSaveSite} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Website Titel</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="bijv. Canva for Education"
+                        value={formData.title}
+                        onChange={(e) => setFormData({...formData, title: e.target.value})}
+                        className="w-full px-3 py-2 bg-slate-100 rounded-xl text-sm border focus:bg-white focus:border-emerald-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Website URL</label>
+                      <input
+                        type="url"
+                        required
+                        placeholder="https://www.voorbeeld.be"
+                        value={formData.url}
+                        onChange={(e) => setFormData({...formData, url: e.target.value})}
+                        className="w-full px-3 py-2 bg-slate-100 rounded-xl text-sm border focus:bg-white focus:border-emerald-500 focus:outline-none"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-0.5">Real-time homepage screenshot wordt automatisch gegenereerd via de URL.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Categorie (12 Vaste Categorieën)</label>
+                      <select
+                        value={formData.category}
+                        onChange={(e) => setFormData({...formData, category: e.target.value})}
+                        className="w-full px-3 py-2 bg-slate-100 rounded-xl text-sm border focus:bg-white focus:border-emerald-500 focus:outline-none"
+                      >
+                        {CATEGORIES.map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Omschrijving</label>
+                      <textarea
+                        rows="3"
+                        required
+                        placeholder="Korte, heldere omschrijving van het leermiddel..."
+                        value={formData.description}
+                        onChange={(e) => setFormData({...formData, description: e.target.value})}
+                        className="w-full px-3 py-2 bg-slate-100 rounded-xl text-sm border focus:bg-white focus:border-emerald-500 focus:outline-none"
+                      ></textarea>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Doelgroep / Leeftijd</label>
+                        <select
+                          value={formData.ageRange}
+                          onChange={(e) => setFormData({...formData, ageRange: e.target.value})}
+                          className="w-full px-3 py-2 bg-slate-100 rounded-xl text-sm border focus:bg-white focus:border-emerald-500 focus:outline-none"
+                        >
+                          {AGE_GROUPS.map(age => (
+                            <option key={age} value={age}>{age}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Beoordeling (1-5)</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="1"
+                          max="5"
+                          value={formData.rating}
+                          onChange={(e) => setFormData({...formData, rating: e.target.value})}
+                          className="w-full px-3 py-2 bg-slate-100 rounded-xl text-sm border focus:bg-white focus:border-emerald-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Tags (gescheiden door komma's)</label>
+                      <input
+                        type="text"
+                        placeholder="mediawijsheid, games, vlaanderen"
+                        value={formData.tags}
+                        onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                        className="w-full px-3 py-2 bg-slate-100 rounded-xl text-sm border focus:bg-white focus:border-emerald-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="flex gap-2 pt-3">
+                      <button
+                        type="button"
+                        onClick={() => setShowAddModal(false)}
+                        className="flex-1 py-2.5 bg-slate-100 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-200"
+                      >
+                        Annuleren
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-2.5 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-md shadow-emerald-500/20"
+                      >
+                        Opslaan
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* ------------------------------------------------------------- */}
+            {/* Modal: Firebase Firestore Configuration Setup */}
+            {/* ------------------------------------------------------------- */}
+            {showFirebaseModal && (
+              <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-emerald-600">
+                      <i className="fa-solid fa-cloud-arrow-up text-xl"></i>
+                      <h3 className="font-fredoka font-bold text-xl text-slate-800">Firebase Firestore Sync</h3>
+                    </div>
+                    <button 
+                      onClick={() => setShowFirebaseModal(false)}
+                      className="p-1 text-slate-400 hover:text-slate-600 text-lg"
+                    >
+                      <i className="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                    Momenteel worden alle wijzigingen, stemmen en nieuwe tegels automatisch lokaal opgeslagen via <code className="bg-slate-100 text-emerald-700 px-1 py-0.5 rounded font-mono">localStorage</code>.
+                  </p>
+
+                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2 mb-4 text-xs text-slate-700">
+                    <p className="font-bold">Live Cloud Koppeling:</p>
+                    <p>Koppel je eigen Firebase Firestore project om stemmen en favorieten realtime te synchroniseren over alle klaslokaal-computers.</p>
+                  </div>
+
+                  <button
+                    onClick={() => setShowFirebaseModal(false)}
+                    className="w-full py-2.5 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700"
+                  >
+                    Begrepen
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
+        );
+      }
+
+      // Render Application to DOM
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    </script>
+</body>
+</html>
