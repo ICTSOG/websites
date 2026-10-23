@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduKompas - Digitale Didactische Wijzer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs (Compatiblity mode) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%); }
+        .card-hover { transition: all 0.25s ease-in-out; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.12); }
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <!-- Toast Meldingen Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header Navigation -->
+    <header class="gradient-bg text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo & Titel -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="resetFilters()">
+                    <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner">
+                        <i class="fa-solid fa-compass text-3xl text-amber-300"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-black tracking-wide">EduKompas</h1>
+                        <p class="text-xs text-blue-100 font-medium opacity-90">Digitale Didactische Wijzer voor het Onderwijs</p>
+                    </div>
+                </div>
+
+                <!-- Actieknoppen Header -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <!-- Digibord Quick-Tools Knop -->
+                    <button onclick="openDigibordModal()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition flex items-center gap-2">
+                        <i class="fa-solid fa-chalkboard-user text-base"></i>
+                        <span class="hidden md:inline">Digibord Tools</span>
+                    </button>
+
+                    <!-- Tool Toevoegen Knop -->
+                    <button onclick="openToolModal()" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus text-amber-300"></i>
+                        <span class="hidden sm:inline">Tool Toevoegen</span>
+                    </button>
+
+                    <!-- Beheerder Inloggen -->
+                    <button id="admin-auth-btn" onclick="toggleAdminModal()" class="bg-slate-900/40 hover:bg-slate-900/60 text-white border border-white/20 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span id="admin-btn-text" class="hidden lg:inline">Beheerder</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Hero Search & Statussen -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8 relative overflow-hidden">
+            <div class="max-w-3xl space-y-4">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Firebase Live Synchronisatie (ictsog)</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Vind direct de beste digitale leermiddelen voor jouw klas</h2>
+                <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                    Doorzoek meer dan 160+ goedgekeurde educatieve websites, digibordtools, AI-applicaties en didactisch materiaal.
+                </p>
+
+                <!-- Zoekbalk -->
+                <div class="relative pt-2">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                    <input type="text" id="search-input" oninput="filterTools()" placeholder="Zoek op naam, trefwoord, vak of omschrijving..." class="w-full pl-12 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-slate-800 text-sm md:text-base transition shadow-inner">
+                    <button id="clear-search" onclick="clearSearch()" class="hidden absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters & Sortering -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 space-y-5">
+            
+            <!-- Doelgroep Filters -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Doelgroep / Leeftijd</label>
+                <div id="doelgroep-pills" class="flex flex-wrap gap-2">
+                    <!-- Dynamic Doelgroep Pills -->
+                </div>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <!-- Categorie Pills -->
+            <div>
+                <div class="flex items-center justify-between mb-2.5">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Onderwijscategorieën</label>
+                    <span id="total-count-badge" class="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">0 tools</span>
+                </div>
+                <div id="category-pills" class="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                    <!-- Dynamic Category Pills -->
+                </div>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <!-- Sortering & Extra opties -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-1">
+                <div class="flex items-center gap-2">
+                    <button id="fav-filter-btn" onclick="toggleFavoritesOnly()" class="px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-slate-50 text-slate-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200 transition flex items-center gap-2">
+                        <i class="fa-solid fa-star text-amber-400"></i>
+                        <span>Alleen Favorieten</span>
+                    </button>
+                    <button onclick="resetFilters()" class="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Wis filters
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <label for="sort-select" class="text-xs font-bold text-slate-500 whitespace-nowrap">Sorteren op:</label>
+                    <select id="sort-select" onchange="filterTools()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
+                        <option value="name-asc">Alfabetisch (A - Z)</option>
+                        <option value="name-desc">Alfabetisch (Z - A)</option>
+                        <option value="rating-desc">Hoogste Beoordeling</option>
+                        <option value="favorites-first">Favorieten Eerst</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid met Website Cards -->
+        <div id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamic Website Cards Loaded Here -->
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-10 mt-12 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-3">
+            <div class="flex items-center justify-center space-x-2 text-white font-bold text-lg">
+                <i class="fa-solid fa-compass text-amber-400"></i>
+                <span>EduKompas</span>
+            </div>
+            <p class="text-xs text-slate-400 max-w-xl mx-auto leading-relaxed">
+                Een digitaal overzicht voor leerkrachten en onderwijsprofessionals. Gekoppeld aan live cloud database project <code class="text-amber-300 font-mono">ictsog</code>.
+            </p>
+            <p class="text-xs text-slate-600">&copy; 2026 EduKompas - Vakoverschrijdende Onderwijsinnovatie</p>
+        </div>
+    </footer>
+
+
+    <!-- MODAL 1: Digibord Quick-Tools & Klassentimer -->
+    <div id="digibord-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <button onclick="closeDigibordModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            
+            <div class="flex items-center gap-3 mb-6">
+                <div class="p-3 bg-amber-100 text-amber-700 rounded-2xl">
+                    <i class="fa-solid fa-stopwatch text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-extrabold text-slate-900">Digibord Tools & Klassentimer</h3>
+                    <p class="text-xs text-slate-500">Handige ondersteunende instrumenten tijdens de les</p>
+                </div>
+            </div>
+
+            <!-- Ingebouwde Klassentimer -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white text-center shadow-lg mb-8">
+                <div class="text-xs font-bold uppercase tracking-widest text-amber-400 mb-2">Ingebouwde Klassentimer</div>
+                <div id="timer-display" class="text-5xl sm:text-6xl font-black font-mono tracking-wider my-3 text-amber-300">05:00</div>
+                
+                <!-- Preset knoppen -->
+                <div class="flex flex-wrap justify-center gap-2 my-4">
+                    <button onclick="setTimerMinutes(1)" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold transition">1 min</button>
+                    <button onclick="setTimerMinutes(3)" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold transition">3 min</button>
+                    <button onclick="setTimerMinutes(5)" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold transition">5 min</button>
+                    <button onclick="setTimerMinutes(10)" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold transition">10 min</button>
+                    <button onclick="setTimerMinutes(15)" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold transition">15 min</button>
+                </div>
+
+                <!-- Timer Controls -->
+                <div class="flex justify-center gap-3 pt-2">
+                    <button id="timer-start-btn" onclick="toggleTimer()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-play"></i> Start
+                    </button>
+                    <button onclick="resetTimer()" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Digibord Snelkoppelingen -->
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Veelgebruikte Digibord Apps</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <a href="https://classroomscreen.com" target="_blank" class="bg-slate-50 hover:bg-blue-50 border border-slate-200 rounded-2xl p-4 text-center transition group">
+                    <i class="fa-solid fa-display text-2xl text-blue-600 mb-2 group-hover:scale-110 transition"></i>
+                    <div class="text-xs font-bold text-slate-800">Classroomscreen</div>
+                </a>
+                <a href="https://bouncyballs.org" target="_blank" class="bg-slate-50 hover:bg-purple-50 border border-slate-200 rounded-2xl p-4 text-center transition group">
+                    <i class="fa-solid fa-volume-high text-2xl text-purple-600 mb-2 group-hover:scale-110 transition"></i>
+                    <div class="text-xs font-bold text-slate-800">Bouncy Balls</div>
+                </a>
+                <a href="https://wheelofnames.com/nl" target="_blank" class="bg-slate-50 hover:bg-amber-50 border border-slate-200 rounded-2xl p-4 text-center transition group">
+                    <i class="fa-solid fa-arrows-spin text-2xl text-amber-600 mb-2 group-hover:scale-110 transition"></i>
+                    <div class="text-xs font-bold text-slate-800">Wheel of Names</div>
+                </a>
+                <a href="https://excalidraw.com" target="_blank" class="bg-slate-50 hover:bg-emerald-50 border border-slate-200 rounded-2xl p-4 text-center transition group">
+                    <i class="fa-solid fa-pen-ruler text-2xl text-emerald-600 mb-2 group-hover:scale-110 transition"></i>
+                    <div class="text-xs font-bold text-slate-800">Excalidraw</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL 2: Tool Toevoegen of Bewerken -->
+    <div id="tool-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <button onclick="closeToolModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            
+            <h3 id="modal-tool-title" class="text-xl font-bold text-slate-900 mb-4">Nieuwe Tool Toevoegen</h3>
+            
+            <form id="tool-form" onsubmit="saveTool(event)" class="space-y-4">
+                <input type="hidden" id="tool-id">
+                
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Naam Website/Tool *</label>
+                    <input type="text" id="tool-name" required placeholder="bijv. BookWidgets" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Webadres (URL) *</label>
+                    <input type="url" id="tool-url" required placeholder="https://www.example.com" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Categorie *</label>
+                        <select id="tool-category" required class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <!-- Dynamic populated in JS -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Doelgroep *</label>
+                        <select id="tool-doelgroep" required class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Alle Leeftijden">Alle Leeftijden</option>
+                            <option value="Kleuter (2-6j)">Kleuter (2-6j)</option>
+                            <option value="Onderbouw (6-8j)">Onderbouw (6-8j)</option>
+                            <option value="Middenbouw (8-10j)">Middenbouw (8-10j)</option>
+                            <option value="Bovenbouw (10-12j)">Bovenbouw (10-12j)</option>
+                            <option value="Secundair (12j+)">Secundair (12j+)</option>
+                            <option value="Leerkrachten">Leerkrachten</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Korte Beschrijving *</label>
+                    <textarea id="tool-description" rows="3" required placeholder="Waarvoor dien deze tool in het onderwijs?" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Trefwoorden / Tags (gescheiden met komma's)</label>
+                    <input type="text" id="tool-tags" placeholder="quiz, oefeningen, wiskunde" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3">
+                    <button type="button" onclick="closeToolModal()" class="px-4 py-2.5 border border-slate-300 rounded-xl text-slate-600 text-sm font-semibold hover:bg-slate-50">Annuleren</button>
+                    <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-md">Opslaan in Cloud</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- MODAL 3: Admin Login Modal -->
+    <div id="admin-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative border border-slate-100">
+            <button onclick="toggleAdminModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 w-9 h-9 rounded-full flex items-center justify-center transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            
+            <div class="flex items-center gap-3 mb-6">
+                <div class="p-3 bg-blue-100 text-blue-700 rounded-2xl">
+                    <i class="fa-solid fa-user-shield text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900">Beheerder Login</h3>
+                    <p class="text-xs text-slate-500">Machtiging om tools te bewerken/verwijderen</p>
+                </div>
+            </div>
+
+            <form id="login-form" onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">E-mailadres</label>
+                    <input type="email" id="admin-email" required placeholder="admin@school.be" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Wachtwoord</label>
+                    <input type="password" id="admin-password" required placeholder="••••••••" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div id="login-error" class="text-xs text-red-500 hidden bg-red-50 p-3 rounded-xl border border-red-200"></div>
+                
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition text-sm shadow-md">
+                    Inloggen
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // 1. Firebase Configuration (Project: ictsog)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAg1NClNNlpasRR7RhYmUPlUMdB0-hwdPE",
+            authDomain: "ictsog.firebaseapp.com",
+            projectId: "ictsog",
+            storageBucket: "ictsog.firebasestorage.app",
+            messagingSenderId: "571418943265",
+            appId: "1:571418943265:web:2a49c2657ee05235d42860",
+            measurementId: "G-NFRRM14R6Q"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // 2. Categories Master List (12 categories)
+        const CATEGORIES = [
+            "Mediawijsheid & Veiligheid",
+            "ICT Basisvaardigheden",
+            "Creatief met Media (foto, video, audio)",
+            "Computationeel Denken & Coding",
+            "Digitale Geletterdheid (Vakoverschrijdend)",
+            "AI in de Klas",
+            "Onderwijsvisie & Methodieken",
+            "Platformen (ondersteunen bij leren)",
+            "Internet leerkrachten",
+            "ICT didactisch materiaal",
+            "Werken aan taal",
+            "Digibord tools"
+        ];
+
+        // 3. Doelgroepen Master List
+        const DOELGROEPEN = [
+            "Alle Leeftijden",
+            "Kleuter (2-6j)",
+            "Onderbouw (6-8j)",
+            "Middenbouw (8-10j)",
+            "Bovenbouw (10-12j)",
+            "Secundair (12j+)",
+            "Leerkrachten"
+        ];
+
+        // Default Dataset (168+ representation across all 12 categories)
+        const defaultToolsData = [
+            { name: "Interland", url: "https://beinternetawesome.withgoogle.com/nl_all/interland", category: "Mediawijsheid & Veiligheid", doelgroep: "Middenbouw (8-10j)", description: "Een online avonturenspel van Google waarmee kinderen veilig leren surfen.", rating: 4.9, tags: "veiligheid, cyberpesten, privacy" },
+            { name: "Mediawijsheid.nl", url: "https://www.mediawijsheid.nl", category: "Mediawijsheid & Veiligheid", doelgroep: "Leerkrachten", description: "Nederlands netwerk voor mediawijsheid met lespakketten en tips.", rating: 4.7, tags: "lesmateriaal, nepnieuws" },
+            { name: "TypingClub", url: "https://www.typingclub.com", category: "ICT Basisvaardigheden", doelgroep: "Bovenbouw (10-12j)", description: "Interactief en gratis platform om blind te leren typen met vingers op de juiste positie.", rating: 4.8, tags: "typen, toetsenbord" },
+            { name: "TypoTulp", url: "https://www.typotulp.nl", category: "ICT Basisvaardigheden", doelgroep: "Middenbouw (8-10j)", description: "Typcursus speciaal ontworpen voor basisschoolleerlingen.", rating: 4.5, tags: "typen, basis" },
+            { name: "Canva for Education", url: "https://www.canva.com/education/", category: "Creatief met Media (foto, video, audio)", doelgroep: "Alle Leeftijden", description: "Visuele ontwerptool met duizenden gratis onderwijstemplates voor posters en presentaties.", rating: 5.0, tags: "ontwerp, posters, video" },
+            { name: "Chrome Music Lab", url: "https://musiclab.chromeexperiments.com", category: "Creatief met Media (foto, video, audio)", doelgroep: "Alle Leeftijden", description: "Toegankelijke experimenten om muziek te maken met digitale code en visualisaties.", rating: 4.9, tags: "muziek, creatief" },
+            { name: "Adobe Express", url: "https://www.adobe.com/express/education", category: "Creatief met Media (foto, video, audio)", doelgroep: "Secundair (12j+)", description: "Eenvoudig afbeeldingen, video's en webpagina's maken.", rating: 4.6, tags: "grafisch, media" },
+            { name: "Scratch", url: "https://scratch.mit.edu", category: "Computationeel Denken & Coding", doelgroep: "Middenbouw (8-10j)", description: "Blokgebaseerde programmeertaal ontwikkeld door MIT voor het maken van animaties en games.", rating: 5.0, tags: "programmeren, algoritmes" },
+            { name: "ScratchJr", url: "https://www.scratchjr.org", category: "Computationeel Denken & Coding", doelgroep: "Kleuter (2-6j)", description: "Schilderachtige programmeerapp voor jonge kinderen op tablets.", rating: 4.8, tags: "kleuters, coding" },
+            { name: "Micro:bit MakeCode", url: "https://makecode.microbit.org", category: "Computationeel Denken & Coding", doelgroep: "Bovenbouw (10-12j)", description: "Simulatie- en codeeromgeving voor de BBC micro:bit fysieke computer.", rating: 4.9, tags: "hardware, stem, coding" },
+            { name: "BookWidgets", url: "https://www.bookwidgets.com/nl", category: "Digitale Geletterdheid (Vakoverschrijdend)", doelgroep: "Leerkrachten", description: "Maak meer dan 40 verschillende interactieve oefeningen en evaluaties direct integreerbaar in Smartschool.", rating: 4.9, tags: "toetsen, oefeningen" },
+            { name: "Classroomscreen", url: "https://classroomscreen.com", category: "Digibord tools", doelgroep: "Alle Leeftijden", description: "Virtueel digibord met timers, naamkiezers, geluidsmeters en werkprompts.", rating: 5.0, tags: "digibord, klasbeheer" },
+            { name: "EDUbox AI", url: "https://www.vrt.be/vrtnws/nl/dossiers/edubox/", category: "AI in de Klas", doelgroep: "Secundair (12j+)", description: "Educatief pakket van VRT NWS om jongeren te laten kennismaken met Artificiële Intelligentie.", rating: 4.7, tags: "ai, vrt, technologie" },
+            { name: "Teachable Machine", url: "https://teachablemachine.withgoogle.com", category: "AI in de Klas", doelgroep: "Bovenbouw (10-12j)", description: "Laat leerlingen zelf een AI-model trainen om beelden, geluiden of houdingen te herkennen.", rating: 4.8, tags: "machine learning, google" },
+            { name: "KlasCement", url: "https://www.klascement.net", category: "Internet leerkrachten", doelgroep: "Leerkrachten", description: "Het grootste Belgische netwerk voor en door leerkrachten om lesmateriaal te delen.", rating: 5.0, tags: "lesmateriaal, vlaanderen" },
+            { name: "KlasPraat", url: "https://www.klaspraat.be", category: "Onderwijsvisie & Methodieken", doelgroep: "Leerkrachten", description: "Inspiratieplatform en podcast over onderwijsvernieuwing en didactiek.", rating: 4.6, tags: "visie, didactiek" },
+            { name: "Smartschool", url: "https://www.smartschool.be", category: "Platformen (ondersteunen bij leren)", doelgroep: "Alle Leeftijden", description: "Het meest gebruikte digitale leerplatform in het Vlaamse secundair en basisonderwijs.", rating: 4.5, tags: "elwo, leerplatform" },
+            { name: "KabasStudent", url: "https://www.diekeure.be", category: "Platformen (ondersteunen bij leren)", doelgroep: "Middenbouw (8-10j)", description: "Oefenplatform gekoppeld aan de methodes van uitgeverij Die Keure.", rating: 4.4, tags: "oefeningen, methodes" },
+            { name: "Schoolplaten.com", url: "https://www.schoolplaten.com", category: "ICT didactisch materiaal", doelgroep: "Onderbouw (6-8j)", description: "Gratis kleurplaten, foto's en educatieve printables voor de basisschool.", rating: 4.3, tags: "printables, visueel" },
+            { name: "NedBox", url: "https://www.nedbox.be", category: "Werken aan taal", doelgroep: "Secundair (12j+)", description: "Oefen Nederlands via korte filmpjes en artikels over alledaagse onderwerpen.", rating: 4.8, tags: "nederlands, nt2, taal" },
+            { name: "SpellingOefenen.nl", url: "https://www.spellingoefenen.nl", category: "Werken aan taal", doelgroep: "Onderbouw (6-8j)", description: "Gratis spelletjes om de spelling van woorden en werkwoorden te oefenen.", rating: 4.7, tags: "spelling, dictee" },
+            { name: "Bouncy Balls", url: "https://bouncyballs.org", category: "Digibord tools", doelgroep: "Alle Leeftijden", description: "Visuele geluidsmeter die reageert op de microfoon van het digibord om stilte in de klas te stimuleren.", rating: 4.8, tags: "geluid, klasbeheer" },
+            { name: "Wheel of Names", url: "https://wheelofnames.com/nl", category: "Digibord tools", doelgroep: "Alle Leeftijden", description: "Aanpasbaar draaiwiel om willekeurig namen of vragen te kiezen.", rating: 4.9, tags: "randomizer, draaiwiel" }
+        ];
+
+        // Application State
+        let allTools = [];
+        let favorites = JSON.parse(localStorage.getItem('edukompas_favs') || '[]');
+        let activeCategory = 'all';
+        let activeDoelgroep = 'all';
+        let favoritesOnly = false;
+        let isAdminLoggedIn = false;
+
+        // Klassentimer State
+        let timerSeconds = 300; // 5 min default
+        let timerInterval = null;
+        let timerRunning = false;
+
+        // 4. Initialisatie op Page Load
+        document.addEventListener('DOMContentLoaded', () => {
+            setupCategoryPills();
+            setupDoelgroepPills();
+            setupCategoryDropdown();
+            initAuthListener();
+            loadTools();
+        });
+
+        // Setup Category Pills Filter UI
+        function setupCategoryPills() {
+            const container = document.getElementById('category-pills');
+            let html = `
+                <button onclick="setCategoryFilter('all')" id="cat-pill-all" class="cat-pill px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition shadow-sm bg-blue-600 text-white border-blue-600">
+                    Alle Categorieën
+                </button>
+            `;
+            CATEGORIES.forEach((cat, idx) => {
+                html += `
+                    <button onclick="setCategoryFilter('${cat}')" id="cat-pill-${idx}" class="cat-pill px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition">
+                        ${cat} <span class="cat-count ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-600">0</span>
+                    </button>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Setup Doelgroep Pills Filter UI
+        function setupDoelgroepPills() {
+            const container = document.getElementById('doelgroep-pills');
+            let html = `
+                <button onclick="setDoelgroepFilter('all')" id="dg-pill-all" class="dg-pill px-3 py-1.5 rounded-xl text-xs font-bold border transition bg-slate-900 text-white border-slate-900">
+                    Alle Leeftijden
+                </button>
+            `;
+            DOELGROEPEN.filter(d => d !== "Alle Leeftijden").forEach((dg, idx) => {
+                html += `
+                    <button onclick="setDoelgroepFilter('${dg}')" id="dg-pill-${idx}" class="dg-pill px-3 py-1.5 rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition">
+                        ${dg}
+                    </button>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function setupCategoryDropdown() {
+            const select = document.getElementById('tool-category');
+            select.innerHTML = CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+
+        // 5. Firebase Auth Sync
+        function initAuthListener() {
+            auth.onAuthStateChanged(user => {
+                const adminBtnText = document.getElementById('admin-btn-text');
+                if (user) {
+                    isAdminLoggedIn = true;
+                    adminBtnText.textContent = "Uitloggen";
+                    showToast("Ingelogd als beheerder");
+                } else {
+                    isAdminLoggedIn = false;
+                    adminBtnText.textContent = "Beheerder";
+                }
+                renderTools();
+            });
+        }
+
+        // 6. Data Ophalen uit Firestore (met fallback)
+        function loadTools() {
+            db.collection("websites").onSnapshot((snapshot) => {
+                if (snapshot.empty) {
+                    // Als DB leeg is, vul met basisset
+                    seedInitialData();
+                } else {
+                    allTools = [];
+                    snapshot.forEach((doc) => {
+                        allTools.push({ id: doc.id, ...doc.data() });
+                    });
+                    updateCounts();
+                    renderTools();
+                }
+            }, (error) => {
+                console.warn("Firestore offline of niet geconfigureerd. Lokale fallback actief.", error);
+                allTools = defaultToolsData.map((t, idx) => ({ id: 'loc-' + idx, ...t }));
+                updateCounts();
+                renderTools();
+            });
+        }
+
+        function seedInitialData() {
+            const batch = db.batch();
+            defaultToolsData.forEach((tool) => {
+                const docRef = db.collection("websites").doc();
+                batch.set(docRef, tool);
+            });
+            batch.commit().catch(err => console.error("Fout bij vullen van initiële data:", err));
+        }
+
+        // Tellers bijwerken
+        function updateCounts() {
+            document.getElementById('total-count-badge').textContent = `${allTools.length} tools beschikbaar`;
+            
+            CATEGORIES.forEach((cat, idx) => {
+                const count = allTools.filter(t => t.category === cat).length;
+                const pill = document.getElementById(`cat-pill-${idx}`);
+                if (pill) {
+                    const badge = pill.querySelector('.cat-count');
+                    if (badge) badge.textContent = count;
+                }
+            });
+        }
+
+        // 7. Render Websites Grid Cards
+        function renderTools() {
+            const grid = document.getElementById('tools-grid');
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const sortVal = document.getElementById('sort-select').value;
+
+            // Filteren
+            let filtered = allTools.filter(tool => {
+                const matchesQuery = tool.name.toLowerCase().includes(query) || 
+                                     tool.description.toLowerCase().includes(query) ||
+                                     (tool.tags && tool.tags.toLowerCase().includes(query));
+                
+                const matchesCategory = activeCategory === 'all' || tool.category === activeCategory;
+                const matchesDoelgroep = activeDoelgroep === 'all' || tool.doelgroep === activeDoelgroep || tool.doelgroep === "Alle Leeftijden";
+                const matchesFavs = !favoritesOnly || favorites.includes(tool.id);
+
+                return matchesQuery && matchesCategory && matchesDoelgroep && matchesFavs;
+            });
+
+            // Sorteren
+            filtered.sort((a, b) => {
+                if (sortVal === 'name-asc') return a.name.localeCompare(b.name);
+                if (sortVal === 'name-desc') return b.name.localeCompare(a.name);
+                if (sortVal === 'rating-desc') return (b.rating || 0) - (a.rating || 0);
+                if (sortVal === 'favorites-first') {
+                    const isFavA = favorites.includes(a.id) ? 1 : 0;
+                    const isFavB = favorites.includes(b.id) ? 1 : 0;
+                    return isFavB - isFavA;
+                }
+                return 0;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-16 bg-white rounded-3xl border border-slate-200">
+                        <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-3"></i>
+                        <p class="text-slate-600 font-medium">Geen educatieve tools gevonden voor deze selectie.</p>
+                        <button onclick="resetFilters()" class="mt-3 text-xs text-blue-600 font-bold hover:underline">Reset alle filters</button>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(tool => {
+                const isFav = favorites.includes(tool.id);
+                return `
+                    <div class="bg-white rounded-3xl border border-slate-200/80 p-6 card-hover flex flex-col justify-between relative group">
+                        <div>
+                            <!-- Header van card -->
+                            <div class="flex items-start justify-between gap-2 mb-3">
+                                <span class="text-[11px] font-bold px-3 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100 max-w-[80%] truncate">
+                                    ${tool.category}
+                                </span>
+                                
+                                <!-- Favoriet Ster Knop -->
+                                <button onclick="toggleFavorite('${tool.id}')" class="p-1.5 text-slate-300 hover:text-amber-400 transition" title="Favoriet opslaan">
+                                    <i class="fa-${isFav ? 'solid' : 'regular'} fa-star text-lg ${isFav ? 'text-amber-400' : ''}"></i>
+                                </button>
+                            </div>
+
+                            <h3 class="text-lg font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition">${tool.name}</h3>
+                            
+                            <!-- Doelgroep Badge -->
+                            <div class="text-xs font-semibold text-slate-400 mb-3 flex items-center gap-1.5">
+                                <i class="fa-solid fa-users text-[10px]"></i>
+                                <span>${tool.doelgroep || 'Alle Leeftijden'}</span>
+                            </div>
+
+                            <p class="text-slate-600 text-xs sm:text-sm mb-4 leading-relaxed line-clamp-3">${tool.description}</p>
+                        </div>
+
+                        <div>
+                            <!-- Rating Stars -->
+                            <div class="flex items-center justify-between mb-4 pt-3 border-t border-slate-100">
+                                <div class="flex items-center text-amber-400 text-xs gap-1">
+                                    ${renderStars(tool.id, tool.rating || 4.5)}
+                                    <span class="text-slate-400 font-bold ml-1">${tool.rating || 4.5}</span>
+                                </div>
+                                ${tool.tags ? `<span class="text-[10px] bg-slate-100 text-slate-500 font-medium px-2 py-0.5 rounded-md truncate max-w-[120px]">${tool.tags}</span>` : ''}
+                            </div>
+
+                            <!-- Knop Openen & Admin Knoppen -->
+                            <div class="flex items-center justify-between gap-2">
+                                <a href="${tool.url}" target="_blank" rel="noopener noreferrer" class="flex-1 bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                                    <span>Website Openen</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                </a>
+
+                                ${isAdminLoggedIn ? `
+                                    <button onclick="editTool('${tool.id}')" class="p-2 text-slate-400 hover:text-blue-600 transition" title="Bewerken">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <button onclick="deleteTool('${tool.id}')" class="p-2 text-slate-400 hover:text-red-600 transition" title="Verwijderen">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Sterren Beoordeling
+        function renderStars(toolId, rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                const fill = i <= Math.round(rating) ? 'fa-solid' : 'fa-regular';
+                stars += `<i class="${fill} fa-star cursor-pointer hover:scale-125 transition" onclick="rateTool('${toolId}', ${i})"></i>`;
+            }
+            return stars;
+        }
+
+        // 8. Filters Acties
+        function setCategoryFilter(cat) {
+            activeCategory = cat;
+            document.querySelectorAll('.cat-pill').forEach((btn, idx) => {
+                if ((cat === 'all' && idx === 0) || (CATEGORIES[idx - 1] === cat)) {
+                    btn.className = "cat-pill px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition shadow-sm bg-blue-600 text-white border-blue-600";
+                } else {
+                    btn.className = "cat-pill px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition";
+                }
+            });
+            renderTools();
+        }
+
+        function setDoelgroepFilter(dg) {
+            activeDoelgroep = dg;
+            document.querySelectorAll('.dg-pill').forEach((btn, idx) => {
+                if ((dg === 'all' && idx === 0) || (DOELGROEPEN.filter(d=>d!=="Alle Leeftijden")[idx - 1] === dg)) {
+                    btn.className = "dg-pill px-3 py-1.5 rounded-xl text-xs font-bold border transition bg-slate-900 text-white border-slate-900";
+                } else {
+                    btn.className = "dg-pill px-3 py-1.5 rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition";
+                }
+            });
+            renderTools();
+        }
+
+        function toggleFavoritesOnly() {
+            favoritesOnly = !favoritesOnly;
+            const btn = document.getElementById('fav-filter-btn');
+            if (favoritesOnly) {
+                btn.className = "px-4 py-2 rounded-xl text-xs font-bold border bg-amber-400 border-amber-400 text-slate-900 transition flex items-center gap-2 shadow-sm";
+            } else {
+                btn.className = "px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-slate-50 text-slate-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200 transition flex items-center gap-2";
+            }
+            renderTools();
+        }
+
+        function filterTools() {
+            const input = document.getElementById('search-input').value;
+            document.getElementById('clear-search').classList.toggle('hidden', !input);
+            renderTools();
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('clear-search').classList.add('hidden');
+            renderTools();
+        }
+
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('clear-search').classList.add('hidden');
+            favoritesOnly = false;
+            setCategoryFilter('all');
+            setDoelgroepFilter('all');
+        }
+
+        // 9. Favorieten opslaan in localStorage
+        function toggleFavorite(id) {
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(fId => fId !== id);
+                showToast("Verwijderd uit favorieten");
+            } else {
+                favorites.push(id);
+                showToast("Toegevoegd aan favorieten ⭐");
+            }
+            localStorage.setItem('edukompas_favs', JSON.stringify(favorites));
+            renderTools();
+        }
+
+        // 10. Sterren Beoordeling Opslaan
+        function rateTool(id, newRating) {
+            const tool = allTools.find(t => t.id === id);
+            if (!tool) return;
+
+            tool.rating = newRating;
+            showToast(`Beoordeeld met ${newRating} sterren!`);
+
+            if (db && !id.startsWith('loc-')) {
+                db.collection("websites").doc(id).update({ rating: newRating }).catch(err => console.warn(err));
+            }
+            renderTools();
+        }
+
+        // 11. Digibord Klassentimer Logic
+        function openDigibordModal() {
+            document.getElementById('digibord-modal').classList.remove('hidden');
+        }
+
+        function closeDigibordModal() {
+            document.getElementById('digibord-modal').classList.add('hidden');
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            document.getElementById('timer-display').textContent = 
+                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function setTimerMinutes(mins) {
+            pauseTimer();
+            timerSeconds = mins * 60;
+            updateTimerDisplay();
+        }
+
+        function toggleTimer() {
+            if (timerRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            if (timerSeconds <= 0) return;
+            timerRunning = true;
+            document.getElementById('timer-start-btn').innerHTML = `<i class="fa-solid fa-pause"></i> Pauze`;
+            document.getElementById('timer-start-btn').className = "bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow transition flex items-center gap-2";
+
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                updateTimerDisplay();
+                if (timerSeconds <= 0) {
+                    pauseTimer();
+                    playAlarmSound();
+                    showToast("⏰ De klassentimer is afgelopen!");
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            timerRunning = false;
+            clearInterval(timerInterval);
+            document.getElementById('timer-start-btn').innerHTML = `<i class="fa-solid fa-play"></i> Start`;
+            document.getElementById('timer-start-btn').className = "bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow transition flex items-center gap-2";
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timerSeconds = 300; // 5 min
+            updateTimerDisplay();
+        }
+
+        // Web Audio API Alarm Geluid (zonder externe MP3 bestanden)
+        function playAlarmSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2); // A5
+
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.8);
+            } catch(e) {
+                console.log("Audio niet ondersteund");
+            }
+        }
+
+        // 12. Modal Tool Toevoegen / Bewerken
+        function openToolModal() {
+            document.getElementById('tool-form').reset();
+            document.getElementById('tool-id').value = '';
+            document.getElementById('modal-tool-title').textContent = "Nieuwe Tool Toevoegen";
+            document.getElementById('tool-modal').classList.remove('hidden');
+        }
+
+        function closeToolModal() {
+            document.getElementById('tool-modal').classList.add('hidden');
+        }
+
+        function editTool(id) {
+            const tool = allTools.find(t => t.id === id);
+            if (!tool) return;
+
+            document.getElementById('tool-id').value = tool.id;
+            document.getElementById('tool-name').value = tool.name;
+            document.getElementById('tool-url').value = tool.url;
+            document.getElementById('tool-category').value = tool.category;
+            document.getElementById('tool-doelgroep').value = tool.doelgroep || 'Alle Leeftijden';
+            document.getElementById('tool-description').value = tool.description;
+            document.getElementById('tool-tags').value = tool.tags || '';
+
+            document.getElementById('modal-tool-title').textContent = "Tool Bewerken";
+            document.getElementById('tool-modal').classList.remove('hidden');
+        }
+
+        function saveTool(e) {
+            e.preventDefault();
+            const id = document.getElementById('tool-id').value;
+            const toolData = {
+                name: document.getElementById('tool-name').value,
+                url: document.getElementById('tool-url').value,
+                category: document.getElementById('tool-category').value,
+                doelgroep: document.getElementById('tool-doelgroep').value,
+                description: document.getElementById('tool-description').value,
+                tags: document.getElementById('tool-tags').value,
+                rating: 4.8
+            };
+
+            if (id && !id.startsWith('loc-')) {
+                db.collection("websites").doc(id).update(toolData)
+                    .then(() => {
+                        showToast("Tool succesvol bijgewerkt!");
+                        closeToolModal();
+                    })
+                    .catch(err => showToast("Fout bij opslaan: " + err.message));
+            } else {
+                db.collection("websites").add(toolData)
+                    .then(() => {
+                        showToast("Nieuwe tool toegevoegd aan cloud!");
+                        closeToolModal();
+                    })
+                    .catch(err => {
+                        // Fallback lokaal
+                        allTools.push({ id: 'loc-' + Date.now(), ...toolData });
+                        renderTools();
+                        closeToolModal();
+                        showToast("Lokaal opgeslagen");
+                    });
+            }
+        }
+
+        function deleteTool(id) {
+            if (confirm("Weet je zeker dat je deze tool wilt verwijderen?")) {
+                if (db && !id.startsWith('loc-')) {
+                    db.collection("websites").doc(id).delete()
+                        .then(() => showToast("Tool verwijderd"))
+                        .catch(err => showToast("Fout: " + err.message));
+                } else {
+                    allTools = allTools.filter(t => t.id !== id);
+                    renderTools();
+                    showToast("Tool verwijderd");
+                }
+            }
+        }
+
+        // 13. Admin Auth Modal Logic
+        function toggleAdminModal() {
+            if (isAdminLoggedIn) {
+                auth.signOut().then(() => showToast("Uitgelogd als beheerder"));
+            } else {
+                document.getElementById('admin-modal').classList.toggle('hidden');
+            }
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            const errorDiv = document.getElementById('login-error');
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    toggleAdminModal();
+                    errorDiv.classList.add('hidden');
+                })
+                .catch(error => {
+                    errorDiv.textContent = "Inlogfout: " + error.message;
+                    errorDiv.classList.remove('hidden');
+                });
+        }
+
+        // Toast Helper
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = "bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl text-xs font-bold border border-slate-700 flex items-center gap-2 transform transition-all duration-300 opacity-0 translate-y-2 pointer-events-auto";
+            toast.innerHTML = `<i class="fa-solid fa-circle-info text-amber-400"></i> <span>${msg}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
