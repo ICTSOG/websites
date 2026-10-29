@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduKompas - Live Firebase Portaal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="resetAllFilters()">
+                <div class="bg-amber-400 p-2 rounded-lg text-indigo-950 font-bold">
+                    <i class="fa-solid fa-compass text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide flex items-center gap-2">
+                        EduKompas 
+                        <span id="syncBadge" class="text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full font-semibold uppercase flex items-center gap-1">
+                            <i class="fa-solid fa-wifi text-[10px]"></i> Live Firebase
+                        </span>
+                    </h1>
+                    <p class="text-xs text-indigo-200">Jouw ICT-inspiratie</p>
+                </div>
+            </div>
+
+            <!-- Header Action Buttons -->
+            <div class="flex items-center space-x-3">
+                
+                <button id="adminBtn" onclick="toggleAdminModal()" class="bg-indigo-800 hover:bg-indigo-700 text-indigo-100 text-sm px-3.5 py-1.5 rounded-lg font-medium border border-indigo-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-lock text-amber-400"></i>
+                    <span id="adminBtnText">Beheerdersmodus</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO BANNER WITH SEARCH BAR -->
+    <section class="bg-gradient-to-r from-indigo-800 via-indigo-700 to-purple-800 text-white py-8 px-4 shadow-inner">
+        <div class="max-w-4xl mx-auto text-center space-y-4">
+            <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Interessante websites voor het basisonderwijs</h2>
+            <p class="text-indigo-100 text-sm md:text-base max-w-2xl mx-auto">
+                Ontdek hieronder educatieve websites, digitale tools en lesmateriaal.
+            </p>
+            
+            <!-- CENTRAL SEARCH BAR -->
+            <div class="relative max-w-2xl mx-auto mt-4">
+                <div class="relative flex items-center">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 text-slate-400 text-lg"></i>
+                    <input type="text" id="searchInput" oninput="handleSearch()" 
+                        placeholder="Zoek direct in alle categorieën & doelgroepen (bijv. 'Scratch', 'Taal', 'Typen')..." 
+                        class="w-full pl-12 pr-10 py-3.5 text-slate-800 bg-white rounded-xl shadow-lg border-2 border-transparent focus:border-amber-400 focus:outline-none text-base">
+                    <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-4 text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-circle-xmark text-lg"></i>
+                    </button>
+                </div>
+                <p id="searchModeNotice" class="hidden text-xs text-amber-200 mt-2 font-medium bg-indigo-900/60 py-1 px-3 rounded-full inline-block">
+                    <i class="fa-solid fa-circle-info mr-1"></i> Zoekmodus actief: Alle categorie- en doelgroepfilters worden automatisch omzeild.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <div class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full flex flex-col md:flex-row gap-6">
+
+        <!-- LEFT SIDEBAR: CATEGORIES -->
+        <aside class="w-full md:w-72 flex-shrink-0">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sticky top-20">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-indigo-600"></i>
+                        Categorieën
+                    </h3>
+                    <button onclick="clearCategoryFilter()" class="text-xs text-indigo-600 hover:underline font-medium">Herstel</button>
+                </div>
+                
+                <p class="text-xs text-slate-500 mb-2">Selecteer één of meerdere categorieën:</p>
+
+                <!-- 12 STRICT CATEGORIES LIST -->
+                <div id="categoryList" class="space-y-1 text-xs">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- RIGHT MAIN AREA: TARGET AUDIENCE BAR + RESULTS -->
+        <main class="flex-1 min-w-0">
+            
+            <!-- TARGET AUDIENCE MULTI-SELECT BAR -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-users text-indigo-600"></i>
+                        Doelgroep / Leeftijd Filter
+                    </h3>
+                    <button onclick="clearAudienceFilter()" class="text-xs text-indigo-600 hover:underline">Wis doelgroepen</button>
+                </div>
+                
+                <div id="audienceList" class="flex flex-wrap gap-2">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- FILTER STATUS BAR, SORTING & ITEM COUNTER -->
+            <div class="flex flex-wrap justify-between items-center bg-indigo-50/50 border border-indigo-100 rounded-lg px-4 py-2.5 mb-4 text-xs text-indigo-900 gap-3">
+                <div id="activeFiltersSummary" class="font-medium flex-1 min-w-[200px]">
+                    Verbinden met Firebase database...
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <!-- SORT SELECTION DROPDOWN -->
+                    <div class="flex items-center gap-1.5 bg-white border border-indigo-200 rounded-lg px-2.5 py-1 shadow-xs">
+                        <i class="fa-solid fa-arrow-down-short-wide text-indigo-600"></i>
+                        <label for="sortSelect" class="font-semibold text-slate-700 text-[11px] whitespace-nowrap">Sortering:</label>
+                        <select id="sortSelect" onchange="handleSortChange()" class="bg-transparent text-xs font-medium text-slate-800 focus:outline-none cursor-pointer">
+                            <option value="newest" selected>Nieuwste eerst (Laatst toegevoegd)</option>
+                            <option value="az">A - Z (Titel)</option>
+                            <option value="za">Z - A (Titel)</option>
+                            <option value="oldest">Oudste eerst</option>
+                        </select>
+                    </div>
+
+                    <div id="itemCounter" class="font-semibold text-indigo-700 bg-indigo-100/80 px-2.5 py-1 rounded-md whitespace-nowrap">
+                        0 resultaten
+                    </div>
+                </div>
+            </div>
+
+            <!-- HORIZONTAL RESULTS LIST CONTAINER -->
+            <div id="websiteGrid" class="space-y-4">
+                <!-- Website horizontal cards generated dynamically -->
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div id="noResults" class="hidden bg-white border border-dashed border-slate-300 rounded-xl p-12 text-center my-6">
+                <i class="fa-solid fa-compass-drafting text-4xl text-slate-300 mb-3"></i>
+                <h4 class="text-lg font-bold text-slate-700 mb-1">Geen websites gevonden</h4>
+                <p class="text-sm text-slate-500 max-w-md mx-auto mb-4">Er werden geen zoekresultaten gevonden voor je huidige zoekopdracht of filtercombinatie.</p>
+                <button onclick="resetAllFilters()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 py-2 rounded-lg font-medium transition">
+                    Herstel alle filters
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 mt-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <p class="font-semibold text-slate-300">EduKompas &copy; 2026 - Jouw ICT-inspiratie</p>
+                <p class="text-slate-500 mt-0.5">Database: Live Cloud Firestore & Storage (Project: ictsog)</p>
+            </div>
+            <div class="flex space-x-4">
+                <button onclick="downloadStandaloneHTML()" class="hover:text-amber-400 transition">Download HTML</button>
+                <button onclick="toggleAdminModal()" class="hover:text-amber-400 transition">Beheerder Login</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ADMIN MODAL -->
+    <div id="adminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 md:p-6">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-7xl w-full h-[90vh] flex flex-col overflow-hidden border border-slate-200">
+            <!-- HEADER -->
+            <div class="bg-indigo-900 text-white p-4 flex justify-between items-center flex-shrink-0">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-amber-400"></i>
+                    Beheerderspaneel (Live Firebase Sync)
+                </h3>
+                <button onclick="toggleAdminModal()" class="text-slate-300 hover:text-white text-lg px-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-6 flex-1 bg-slate-50">
+                <!-- LOGIN FORM -->
+                <div id="loginSection" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                    <p class="text-xs text-slate-600">Log in met de beheerdersgegevens om direct live kaarten toe te voegen, te bewerken of in bulk aan te passen in Firebase.</p>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">E-mailadres</label>
+                        <input type="email" id="loginEmail" value="gebruiker" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Wachtwoord</label>
+                        <input type="password" id="loginPassword" value="admin123" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                    <button onclick="loginAdmin()" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">
+                        Inloggen via Firebase Auth
+                    </button>
+                </div>
+
+                <!-- ADMIN PANEL CONTENT -->
+                <div id="adminContentSection" class="hidden space-y-6">
+                    <!-- TOP USER BAR & TAB NAVIGATION -->
+                    <div class="flex flex-wrap justify-between items-center bg-white p-3 rounded-xl border border-slate-200 gap-3 shadow-2xs">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold text-indigo-900">Ingelogd als <strong id="activeUserDisplay" class="underline">Administrator</strong></span>
+                            <button onclick="logoutAdmin()" class="text-xs text-red-600 font-semibold hover:underline ml-2">Uitloggen</button>
+                        </div>
+
+                        <!-- TABS SWITCHER -->
+                        <div class="flex gap-2 bg-slate-100 p-1 rounded-lg">
+                            <button id="adminTabSingleBtn" onclick="switchAdminTab('single')" class="px-3.5 py-1.5 rounded-md text-xs font-bold transition bg-indigo-600 text-white shadow-xs">
+                                <i class="fa-solid fa-plus mr-1"></i> Nieuwe Website & Beheer
+                            </button>
+                            <button id="adminTabBulkBtn" onclick="switchAdminTab('bulk')" class="px-3.5 py-1.5 rounded-md text-xs font-bold transition text-slate-600 hover:text-indigo-900">
+                                <i class="fa-solid fa-table-cells mr-1"></i> Bulk Raster Bewerken
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TAB 1: SINGLE ADD & BACKUP MANAGEMENT -->
+                    <div id="adminSingleView" class="space-y-6">
+                        <!-- ADD NEW SITE FORM -->
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 space-y-3 shadow-2xs">
+                            <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <span>Nieuwe Website Toevoegen</span>
+                                <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-normal">Opslaan in Cloud Firestore</span>
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-700 mb-1">Titel</label>
+                                    <input type="text" id="newTitle" placeholder="Bijv. Typeles Online" class="w-full px-3 py-1.5 border rounded text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-700 mb-1">URL (Website link)</label>
+                                    <input type="url" id="newUrl" placeholder="https://www.example.com" class="w-full px-3 py-1.5 border rounded text-xs">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Categorie</label>
+                                <select id="newCategory" class="w-full px-3 py-1.5 border rounded text-xs bg-white">
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Doelgroepen (Meerdere selecteerbaar)</label>
+                                <div id="newAudienceCheckboxes" class="flex flex-wrap gap-2 pt-1">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Korte Beschrijving</label>
+                                <textarea id="newDescription" rows="2" placeholder="Beschrijf kort het doel van de website..." class="w-full px-3 py-1.5 border rounded text-xs"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Afbeelding / Screenshot Uploaden (Optioneel)</label>
+                                <input type="file" id="newImageFile" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                                <p class="text-[10px] text-slate-400 mt-1">Upload je eigen afbeelding of screenshot. Indien leeg, wordt er automatisch een preview gegenereerd.</p>
+                            </div>
+                            <button id="addWebsiteBtn" onclick="addNewWebsite()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2 rounded font-semibold transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <span>Website Toevoegen aan Firebase</span>
+                            </button>
+                        </div>
+
+                        <!-- BACKUP & DATABASE MANAGEMENT -->
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 space-y-3 shadow-2xs">
+                            <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-box-archive text-indigo-600"></i>
+                                <span>Backup & Database Beheer</span>
+                            </h4>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="exportBackupJSON()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3.5 py-2 rounded-lg font-medium shadow-xs transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-download"></i>
+                                    <span>Reservekopie Maken (.json met tijdstempel)</span>
+                                </button>
+                                
+                                <label class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-medium shadow-xs transition cursor-pointer flex items-center gap-1.5">
+                                    <i class="fa-solid fa-file-import"></i>
+                                    <span>Backup Herstellen / Importeren</span>
+                                    <input type="file" id="importFileInput" accept=".json" onchange="importBackupJSON(event)" class="hidden">
+                                </label>
+
+                                <button onclick="downloadStandaloneHTML()" class="bg-slate-700 hover:bg-slate-800 text-white text-xs px-3.5 py-2 rounded-lg font-medium transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-file-code"></i>
+                                    <span>Broncode (.html)</span>
+                                </button>
+                            </div>
+                            <p class="text-[11px] text-slate-500">
+                                <strong>Controle op dubbelen:</strong> Bij het importeren van een backup worden bestaande websites automatisch herkend en overgeslagen.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: BULK GRID EDITOR (RASTERWEERGAVE) -->
+                    <div id="adminBulkView" class="hidden space-y-4">
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 flex flex-wrap justify-between items-center gap-3 shadow-2xs">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-table-cells text-indigo-600"></i>
+                                    <span>Bulk Raster Bewerken</span>
+                                </h4>
+                                <p class="text-xs text-slate-500">Pas rechtstreeks titels, links, categorieën en doelgroepen aan in het onderstaande raster.</p>
+                            </div>
+                            <button onclick="saveAllBulkEdits()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 py-2 rounded-lg font-bold transition flex items-center gap-2 shadow-xs">
+                                <i class="fa-solid fa-floppy-disk text-amber-300"></i>
+                                <span>Alle Bulk Wijzigingen Opslaan</span>
+                            </button>
+                        </div>
+
+                        <!-- GRID CONTAINER FOR BULK EDITING -->
+                        <div id="adminBulkGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+                        <!-- DETAIL MODAL (POPUP SCHERM VOOR UITGEBREIDE TOELICHTING & EXTRA LINKS) -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="bg-indigo-900 text-white p-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-amber-400 text-lg"></i>
+                    <h3 id="detailModalTitle" class="font-bold text-base md:text-lg">Website Details & Toelichting</h3>
+                </div>
+                <button onclick="closeDetailModal()" class="text-slate-300 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-5 flex-1 text-slate-800">
+                <input type="hidden" id="detailSiteId">
+                
+                <!-- PREVIEW & HEADER -->
+                <div class="flex flex-col sm:flex-row gap-4 items-start bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <img id="detailImage" src="" alt="Preview" class="w-full sm:w-48 h-32 object-cover rounded-lg border border-slate-300 bg-white">
+                    <div class="flex-1 space-y-2">
+                        <span id="detailCategory" class="inline-block text-xs font-semibold text-indigo-700 bg-indigo-100 px-2.5 py-1 rounded-md border border-indigo-200"></span>
+                        <h4 id="detailTitleHeader" class="font-bold text-slate-900 text-lg"></h4>
+                        <div id="detailAudiences" class="flex flex-wrap gap-1.5 pt-1"></div>
+                        <div class="pt-2">
+                            <a id="detailVisitBtn" href="#" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition shadow-xs">
+                                <span>Bezoek Website</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KORTE OMSCHRIJVING -->
+                <div>
+                    <h5 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-align-left text-indigo-600"></i> Korte Omschrijving
+                    </h5>
+                    <p id="detailShortDesc" class="text-sm text-slate-700 bg-slate-50 p-3 rounded-lg border border-slate-200 leading-relaxed"></p>
+                </div>
+
+                <!-- UITGEBREIDE TOELICHTING / EXTRA LINKS & LESMATERIAAL (READ-ONLY FOR ALL USERS) -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-bold uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
+                            <i class="fa-solid fa-link text-amber-500"></i> Uitgebreide Toelichting, Lesideeën & Extra Links
+                        </label>
+                    </div>
+
+                    <!-- READ-ONLY VIEW AREA -->
+                    <div id="detailUserViewContainer">
+                        <div id="detailLinksDisplay" class="space-y-2">
+                            <!-- Clickable links rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="flex justify-end items-center pt-3 border-t border-slate-200 gap-3">
+                    <button onclick="closeDetailModal()" type="button" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-semibold transition">
+                        Sluiten
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT WEBSITE MODAL -->
+    <div id="editModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="bg-indigo-900 text-white p-4 flex justify-between items-center">
+                <h3 class="font-bold text-base flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-amber-400"></i>
+                    Websitekaart Bewerken
+                </h3>
+                <button onclick="closeEditModal()" class="text-slate-300 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-4 flex-1">
+                <input type="hidden" id="editSiteId">
+                
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Titel</label>
+                    <input type="text" id="editTitle" class="w-full px-3 py-1.5 border rounded text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">URL (Website link)</label>
+                    <input type="url" id="editUrl" class="w-full px-3 py-1.5 border rounded text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Categorie</label>
+                    <select id="editCategory" class="w-full px-3 py-1.5 border rounded text-xs bg-white">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Doelgroepen</label>
+                    <div id="editAudienceCheckboxes" class="flex flex-wrap gap-2 pt-1">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Korte Beschrijving</label>
+                    <textarea id="editDescription" rows="2" class="w-full px-3 py-1.5 border rounded text-xs"></textarea>
+                </div>
+
+                <!-- UITGEBREIDE TOELICHTING, LESIDEËN & EXTRA LINKS (BEHEERDER BEWERKEN) -->
+                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
+                    <label class="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                        <i class="fa-solid fa-link text-amber-500"></i> Uitgebreide Toelichting, Lesideeën & Extra Links
+                    </label>
+                    <p class="text-[11px] text-slate-600 font-medium">
+                        Voeg hieronder één of meerdere weblinks toe (bijv. extra lesmateriaal, starterkaart, handleiding):
+                    </p>
+                    
+                    <div id="editExtraLinksContainer" class="space-y-2">
+                        <!-- Dynamic link rows inserted here -->
+                    </div>
+
+                    <div class="pt-1">
+                        <button type="button" onclick="addExtraLinkRow('editExtraLinksContainer')" class="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold border border-indigo-200 flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>Extra link toevoegen</span>
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-500 italic">Tip: Elke link opent automatisch in een nieuw venster voor de gebruiker.</p>
+                </div>
+
+                <!-- IMAGE / SCREENSHOT EDIT & UPLOAD -->
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                    <label class="block text-xs font-semibold text-slate-800">Afbeelding / Screenshot Weergave</label>
+                    
+                    <div id="currentImagePreviewContainer" class="hidden flex items-center gap-3 p-2 bg-white rounded border border-slate-200">
+                        <img id="currentImagePreview" src="" class="w-20 h-14 object-cover rounded border">
+                        <div class="flex-1 text-[11px] text-slate-600">
+                            <span class="font-medium text-slate-800 block">Huidige Custom Afbeelding</span>
+                            <button onclick="removeCustomImage()" type="button" class="text-red-600 hover:underline text-[10px] font-semibold mt-0.5">
+                                <i class="fa-solid fa-trash mr-1"></i>Verwijder custom afbeelding (gebruik automatische preview)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-600 mb-1">Nieuwe afbeelding uploaden (Firebase Storage)</label>
+                        <input type="file" id="editImageFile" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-600 mb-1">Of voer een rechtstreekse Afbeelding URL in</label>
+                        <input type="url" id="editImageUrl" placeholder="https://voorbeeld.com/afbeelding.jpg" class="w-full px-3 py-1 border rounded text-xs bg-white">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button onclick="closeEditModal()" type="button" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-semibold transition">
+                        Annuleren
+                    </button>
+                    <button id="saveEditBtn" onclick="saveWebsiteEdit()" type="button" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Wijzigingen Opslaan in Firebase</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE SDKs & JAVASCRIPT LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { 
+            getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, writeBatch, getDocs, serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { 
+            getStorage, ref, uploadBytes, getDownloadURL 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+        // FIREBASE CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyAg1NClNNlpasRR7RhYmUPlUMdB0-hwdPE",
+            authDomain: "ictsog.firebaseapp.com",
+            projectId: "ictsog",
+            storageBucket: "ictsog.firebasestorage.app",
+            messagingSenderId: "571418943265",
+            appId: "1:571418943265:web:db86ffdd626604cfd42860",
+            measurementId: "G-VP3KN8W0DN"
+        };
+
+        // INITIALIZE FIREBASE & SERVICES
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        const websitesCollection = collection(db, "websites");
+
+        // CATEGORIES AND AUDIENCES
+        const CATEGORIES = [
+            "1. Mediawijsheid & Veiligheid",
+            "2. ICT Basisvaardigheden",
+            "3. Creatief met Media (foto, video, audio)",
+            "4. Computationeel Denken & Coding",
+            "5. Digitale Geletterdheid (Vakoverschrijdend)",
+            "6. AI in de Klas",
+            "7. Onderwijsvisie & Methodieken",
+            "8. Platformen (ondersteunen bij leren)",
+            "9. Internet leerkrachten",
+            "10. ICT didactisch materiaal",
+            "11. Werken aan taal",
+            "12. Digibord tools"
+        ];
+
+        const AUDIENCES = [
+            "Onderbouw (Kleuter / 1e graad)",
+            "Middenbouw (2de graad / 8-10 jaar)",
+            "Bovenbouw (3e graad / 10-12 jaar)",
+            "Lager (4-12 jaar)",
+            "Leerkracht",
+            "Ouders"
+        ];
+
+        // DEFAULT DATASET
+        const DEFAULT_WEBSITES = [
+            // Category 1
+            { title: "Leerlijn ICT (lager) – Inspira academy", url: "https://www.inspira.academy", category: "1. Mediawijsheid & Veiligheid", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Inspirerend ICT-leerpad en ondersteuning voor het basisonderwijs." },
+            { title: "My check-ins | Microsoft Reflect", url: "https://reflect.microsoft.com", category: "1. Mediawijsheid & Veiligheid", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Hulpmiddel voor welzijn, emoties en reflectie in de klas." },
+            { title: "Mediawijs wijst de weg in de digitale wereld | Mediawijs", url: "https://www.mediawijs.be", category: "1. Mediawijsheid & Veiligheid", audiences: ["Leerkracht", "Ouders", "Lager (4-12 jaar)"], desc: "Vlaams kenniscentrum voor mediawijsheid en digitale veiligheid." },
+            { title: "Info voor jongeren 11-24 jaar | WAT WAT", url: "https://www.watwat.be", category: "1. Mediawijsheid & Veiligheid", audiences: ["Bovenbouw (3e graad / 10-12 jaar)", "Lager (4-12 jaar)"], desc: "Betrouwbare antwoorden op vragen van jongeren en kinderen." },
+            { title: "Childfocus", url: "https://childfocus.be", category: "1. Mediawijsheid & Veiligheid", audiences: ["Leerkracht", "Ouders", "Lager (4-12 jaar)"], desc: "Stichting voor vermiste en seksueel uitgebuitde kinderen, preventie online veiligheid." },
+            { title: "Digisaurus", url: "https://www.digisaurus.be", category: "1. Mediawijsheid & Veiligheid", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Lager (4-12 jaar)"], desc: "Eerste digitale stappen en mediawijsheid voor jonge kinderen." },
+            { title: "Cyberhelden (Bibliotheken Zonder Grenzen)", url: "https://www.bibliothekenzondergrenzen.be/cyberhelden", category: "1. Mediawijsheid & Veiligheid", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Lager (4-12 jaar)"], desc: "Interactieve Cyberhelden missies voor kritisch en veilig internetgebruik." },
+            { title: "Cyberpesten: ken jij deze 6 vormen van online pesten al? – Klasse", url: "https://www.klasse.be", category: "1. Mediawijsheid & Veiligheid", audiences: ["Leerkracht", "Ouders"], desc: "Informatief artikel en handvaten van Klasse over cyberpesten." },
+            { title: "BARST! methode - BrainBugs", url: "https://www.brainbugs.be", category: "1. Mediawijsheid & Veiligheid", audiences: ["Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht"], desc: "Methode om jongeren kritisch te laten nadenken over online prikkels en breinbugs." },
+            { title: "VRT voor leerkrachten | VRT", url: "https://www.vrt.be/vrtnu/onderwijs", category: "1. Mediawijsheid & Veiligheid", audiences: ["Leerkracht"], desc: "Educatief aanbod van VRT speciaal samengesteld voor het onderwijs." },
+            { title: "Yodato | Kritische datageletterdheid bij kinderen", url: "https://yodato.be", category: "1. Mediawijsheid & Veiligheid", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Educatieve projecten rond privacy, data en kritisch denken voor kinderen." },
+            { title: "Opiniedossiers - Stampmedia", url: "https://www.stampmedia.be", category: "1. Mediawijsheid & Veiligheid", audiences: ["Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht"], desc: "Jongerenpersagentschap met duiding, nieuws en maatschappelijke thema's." },
+            { title: "De schaal van m", url: "https://www.deschaalvanm.be", category: "1. Mediawijsheid & Veiligheid", audiences: ["Bovenbouw (3e graad / 10-12 jaar)", "Lager (4-12 jaar)"], desc: "Klasse-initiatief en de spannendste mediawijsheidswedstrijd voor lagere scholen." },
+            { title: "Is het echt zo? | Mediawijs", url: "https://www.ishetechtzo.be", category: "1. Mediawijsheid & Veiligheid", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Website over nepnieuws, desinformatie en hoe je bronnen kunt checken." },
+            { title: "HoeZoo | Mediawijs", url: "https://www.hoezoo.be", category: "1. Mediawijsheid & Veiligheid", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)"], desc: "Mediawijze vragen en antwoorden voor nieuwsgierige kinderen." },
+            { title: "Kritikat | Mediawijs", url: "https://www.kritikat.be", category: "1. Mediawijsheid & Veiligheid", audiences: ["Onderbouw (Kleuter / 1e graad)"], desc: "Speelse introductie in kritisch kijken en media voor de allerkleinsten." },
+
+            // Category 2
+            { title: "Typeles Online - Gratis leren typen met 10 vingers!", url: "https://www.typelesonline.nl", category: "2. ICT Basisvaardigheden", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Lager (4-12 jaar)"], desc: "Gratis online typeles voor kinderen om snel blind te leren typen." },
+            { title: "Mind Express - Jabbla", url: "https://www.jabbla.com/mind-express", category: "2. ICT Basisvaardigheden", audiences: ["Leerkracht", "Lager (4-12 jaar)"], desc: "Ondersteunende communicatiesoftware en hulpmiddelen voor het onderwijs." },
+
+            // Category 3
+            { title: "Brightlab E-class Tinkercad", url: "https://www.brightlab.be", category: "3. Creatief met Media (foto, video, audio)", audiences: ["Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht"], desc: "STEM-lessen en 3D-ontwerpen in de klas." },
+            { title: "Book Creator | Book creator ideetjes", url: "https://bookcreator.com", category: "3. Creatief met Media (foto, video, audio)", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Eenvoudig digitale boeken en strips maken in de klas." },
+            { title: "Google SketchUp for Schools", url: "https://www.sketchup.com/products/sketchup-for-schools", category: "3. Creatief met Media (foto, video, audio)", audiences: ["Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht"], desc: "3D-modelleringsprogramma direct in de browser voor scholen." },
+            { title: "Tinkercad - 3D-ontwerpen met online CAD", url: "https://www.tinkercad.com", category: "3. Creatief met Media (foto, video, audio)", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Lager (4-12 jaar)"], desc: "Gratis, gebruiksvriendelijke app voor 3D-design, elektronica en codering." },
+            { title: "CAPCUT videobewerking", url: "https://www.capcut.com", category: "3. Creatief met Media (foto, video, audio)", audiences: ["Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht"], desc: "Toegankelijke video-editor voor creatieve schoolprojecten." },
+            { title: "Projecten - Canva", url: "https://www.canva.com", category: "3. Creatief met Media (foto, video, audio)", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Online grafische vormgeving voor posters, presentaties en werkbladen." },
+            { title: "AutoDraw", url: "https://www.autodraw.com", category: "3. Creatief met Media (foto, video, audio)", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)"], desc: "AI-getekende tekenhulpmiddel dat krabbels omzet in mooie illustraties." },
+            { title: "Chrome Music Lab - Song Maker", url: "https://musiclab.chromeexperiments.com/Song-Maker", category: "3. Creatief met Media (foto, video, audio)", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)"], desc: "Eenvoudig muziek maken en ritmes componeren in de browser." },
+            { title: "Tuttu | Professional Online Audio Recorder", url: "https://tuttu.io", category: "3. Creatief met Media (foto, video, audio)", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Direct audio en podcasts opnemen zonder installaties." },
+            { title: "Silk – Interactive Generative Art", url: "http://weavesilk.com", category: "3. Creatief met Media (foto, video, audio)", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)"], desc: "Creatief interactief kunstwerk maken met symmetrie en lichtstroom." },
+            { title: "FlipAnim - Tekening animeren", url: "https://flipanim.com", category: "3. Creatief met Media (foto, video, audio)", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)"], desc: "Maak je eigen digitale animaties en flipbooks." },
+            { title: "Speelgoedfotografie : storytelling through toys", url: "https://www.speelgoedfotografie.nl", category: "3. Creatief met Media (foto, video, audio)", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Inspiratie voor verhalen vertellen met foto's van speelgoed." },
+            { title: "Nieuws in de Klas", url: "https://www.nieuwsindeklas.be", category: "3. Creatief met Media (foto, video, audio)", audiences: ["Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht"], desc: "Nieuwsmedia inzetten in de klas en krantenprojecten." },
+
+            // Category 4
+            { title: "Bebras Belgium", url: "https://www.bebras.be", category: "4. Computationeel Denken & Coding", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Lager (4-12 jaar)"], desc: "Informatica- en denkpuzzels voor het basisonderwijs." },
+            { title: "Allcancode - Run Marco!", url: "https://www.allcancode.com/runmarco", category: "4. Computationeel Denken & Coding", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)"], desc: "Avonturenspel om de beginselen van programmeren te leren." },
+            { title: "Code.org", url: "https://code.org", category: "4. Computationeel Denken & Coding", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)"], desc: "Wereldwijd platform met Hour of Code en programmeercurricula." },
+            { title: "Blockly Spelletjes", url: "https://blockly.games/?lang=nl", category: "4. Computationeel Denken & Coding", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)"], desc: "Educatieve spelletjes die de basis van blokgebaseerd programmeren aanleren." },
+            { title: "Wat Nou? Ko de Kraker", url: "https://www.kodekraker.nl", category: "4. Computationeel Denken & Coding", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)"], desc: "Speelse programmeer-opdrachten voor de basisschool." },
+            { title: "Sprite Lab - Code Games", url: "https://code.org/spritelab", category: "4. Computationeel Denken & Coding", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)"], desc: "Maak je eigen interactieve personages en games op Code.org." },
+            { title: "Opdrachten – CoderDojo KopGroep", url: "https://coderdojo.be", category: "4. Computationeel Denken & Coding", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht"], desc: "Gratis oefeningen en fiches voor Scratch, Python en Micro:bit." },
+            { title: "Make Pixel Art", url: "https://makepixelart.com", category: "4. Computationeel Denken & Coding", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)"], desc: "Pixelkunst maken voor gameontwerp en creatieve opdrachten." },
+            { title: "Scratch - Imagine, Program, Share", url: "https://scratch.mit.edu", category: "4. Computationeel Denken & Coding", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Lager (4-12 jaar)"], desc: "De populairste programmeeromgeving voor kinderen ter wereld." },
+            { title: "Scratch - Starter Projects", url: "https://scratch.mit.edu/starter-projects", category: "4. Computationeel Denken & Coding", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)"], desc: "Handige startprojecten om direct aan de slag te gaan in Scratch." },
+            { title: "ScratchJr for web (Leeftijd 5-7)", url: "https://www.scratchjr.org", category: "4. Computationeel Denken & Coding", audiences: ["Onderbouw (Kleuter / 1e graad)"], desc: "Programmeren voor jonge kinderen (5-7 jaar)." },
+            { title: "CodeKinderen - Unplugged programmeren", url: "https://www.codekinderen.nl", category: "4. Computationeel Denken & Coding", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Leerkracht"], desc: "Programmeren zonder computer: Unplugged lesideeën voor de klas." },
+            { title: "Play - BotLogic.us", url: "http://botlogic.us", category: "4. Computationeel Denken & Coding", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)"], desc: "Puzzelgame die logisch denken en programmeren stimuleert." },
+            { title: "STEM - Makey Makey, MicroBIT", url: "https://makeymakey.com", category: "4. Computationeel Denken & Coding", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht"], desc: "Uitvinden en fysieke middelen koppelen aan de computer." },
+
+            // Category 5
+            { title: "WoordzoekerMaken.nl - Woordzoeker Maken", url: "https://www.woordzoekermaken.nl", category: "5. Digitale Geletterdheid (Vakoverschrijdend)", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Maak snel en eenvoudig je eigen educatieve woordzoekers." },
+            { title: "Thematische Qwhizzkids - Whizzkids", url: "https://www.whizzkids.be", category: "5. Digitale Geletterdheid (Vakoverschrijdend)", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Lager (4-12 jaar)"], desc: "De bekende ICT- en opzoekwedstrijd voor lagere scholen." },
+
+            // Category 6
+            { title: "Artificiële Intelligentie in het Stedelijk Onderwijs Gent", url: "https://onderwijs.gent.be", category: "6. AI in de Klas", audiences: ["Leerkracht"], desc: "Visie en praktijkvoorbeelden over AI in het onderwijs." },
+            { title: "De eerste brede AI-wet ter wereld", url: "https://www.europarl.europa.eu", category: "6. AI in de Klas", audiences: ["Leerkracht"], desc: "Achtergrondinformatie over de Europese regelgeving rond Kunstmatige Intelligentie." },
+            { title: "Odd One Out — Google Arts & Culture", url: "https://artsandculture.google.com/experiment/odd-one-out", category: "6. AI in de Klas", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Lager (4-12 jaar)"], desc: "AI-gebaseerde kunstgame om de 'vreemde eend in de bijt' te ontdekken." },
+            { title: "Diffit for Teachers", url: "https://web.diffit.me", category: "6. AI in de Klas", audiences: ["Leerkracht"], desc: "Genereer aangepaste leermiddelen en gedifferentieerde leesteksten met AI." },
+            { title: "SchoolHub.ai - Gratis AI voor scholen", url: "https://schoolhub.ai", category: "6. AI in de Klas", audiences: ["Leerkracht"], desc: "Toegankelijke AI-tools speciaal ontworpen voor leerkrachten." },
+            { title: "NotebookLM (AI Google)", url: "https://notebooklm.google.com", category: "6. AI in de Klas", audiences: ["Leerkracht"], desc: "Geavanceerde AI-notitieassistent die jouw eigen documenten analyseert." },
+            { title: "AI Test Kitchen", url: "https://aitestkitchen.withgoogle.com", category: "6. AI in de Klas", audiences: ["Leerkracht", "Bovenbouw (3e graad / 10-12 jaar)"], desc: "Experimenteer met de nieuwste AI-technologieën van Google." },
+            { title: "There's An AI For That (TAAFT)", url: "https://theresanaiforthat.com", category: "6. AI in de Klas", audiences: ["Leerkracht"], desc: "De grootste zoekmachine en verzameling van AI-toepassingen." },
+            { title: "Promptfabriek", url: "https://www.promptfabriek.nl", category: "6. AI in de Klas", audiences: ["Leerkracht"], desc: "Hulp en sjablonen bij het schrijven van effectieve AI-prompts voor het onderwijs." },
+            { title: "Suno - Make music", url: "https://suno.com", category: "6. AI in de Klas", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Genereer liedjes en muziekstijlen met eenvoudige tekst-prompts." },
+            { title: "Napkin AI - Visual AI for storytelling", url: "https://www.napkin.ai", category: "6. AI in de Klas", audiences: ["Leerkracht"], desc: "Zet geschreven tekst automatisch om in heldere visuele diagrammen." },
+            { title: "Remove Background from Image – remove.bg", url: "https://www.remove.bg", category: "6. AI in de Klas", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Verwijder met één klik de achtergrond van afbeeldingen." },
+            { title: "Lees Simpel App", url: "https://leessimpel.nl", category: "6. AI in de Klas", audiences: ["Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht", "Ouders"], desc: "Handige app die ingewikkelde brieven samenvat in eenvoudige taal." },
+
+            // Category 7
+            { title: "Wijzer Platform", url: "https://www.wijzerplatform.be", category: "7. Onderwijsvisie & Methodieken", audiences: ["Leerkracht"], desc: "Platform voor onderwijsinnovatie, visieontwikkeling en didactiek." },
+
+            // Category 8
+            { title: "ClassDojo", url: "https://www.classdojo.com", category: "8. Platformen (ondersteunen bij leren)", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Leerkracht", "Ouders"], desc: "Klasbeheer, beloningen en communicatie met ouders." },
+            { title: "Hét educatief videoplatform - Xnapda", url: "https://www.xnapda.be", category: "8. Platformen (ondersteunen bij leren)", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Korte en krachtige instructievideo's voor het basisonderwijs." },
+            { title: "Gynzy", url: "https://www.gynzy.com", category: "8. Platformen (ondersteunen bij leren)", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht"], desc: "Digibordsoftware, educatieve tools en verwerkingssoftware." },
+            { title: "Widgit Online (voor AN) picto maken", url: "https://widgitonline.com", category: "8. Platformen (ondersteunen bij leren)", audiences: ["Onderbouw (Kleuter / 1e graad)", "Leerkracht"], desc: "Pictogrammen maken voor ondersteunende communicatie en anderstaligen." },
+            { title: "Wordwall.net", url: "https://wordwall.net", category: "8. Platformen (ondersteunen bij leren)", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Maak snel je eigen interactieve klasactiviteiten en spellen." },
+            { title: "BookWidgets", url: "https://www.bookwidgets.com", category: "8. Platformen (ondersteunen bij leren)", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Maak interactieve oefeningen, testen en automatische evaluaties." },
+
+            // Category 9
+            { title: "Base6 – Meester Lars online", url: "https://meesterlars.nl", category: "9. Internet leerkrachten", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht"], desc: "Lesideeën, digitale tools en inspiratie van Meester Lars." },
+            { title: "Leermaterialen Digitale geletterdheid PO - Wikiwijs", url: "https://www.wikiwijs.nl", category: "9. Internet leerkrachten", audiences: ["Leerkracht"], desc: "Open onderwijsmateriaal voor digitale geletterdheid." },
+            { title: "Topics - CS Unplugged", url: "https://csunplugged.org", category: "9. Internet leerkrachten", audiences: ["Leerkracht"], desc: "Computerwetenschappen onderwijzen zonder computers." },
+            { title: "Computermeester: educatieve spelletjes", url: "https://www.computermeester.be", category: "9. Internet leerkrachten", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Lager (4-12 jaar)"], desc: "Educatieve online spelletjes voor rekenen en taal in België en Nederland." },
+            { title: "Digipuzzle.net - Leerspellen voor de basisschool", url: "https://www.digipuzzle.net", category: "9. Internet leerkrachten", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)"], desc: "Grote verzameling gratis educatieve puzzels en games." },
+            { title: "Digikriebels | Digitale educatieve spelletjes", url: "https://www.digikriebels.be", category: "9. Internet leerkrachten", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Lager (4-12 jaar)"], desc: "Geordende verzameling van educatieve oefeningen en links." },
+            { title: "Junior Einstein", url: "https://www.junioreinstein.nl", category: "9. Internet leerkrachten", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Lager (4-12 jaar)"], desc: "Online oefenen voor alle vakken van de basisschool." },
+            { title: "LearningApps.org - Interactieve leermodules", url: "https://learningapps.org", category: "9. Internet leerkrachten", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Interactieve en multimediale bouwstenen voor leerkrachten." },
+            { title: "Juf Milou Online", url: "https://www.jufmilou.nl", category: "9. Internet leerkrachten", audiences: ["Onderbouw (Kleuter / 1e graad)", "Leerkracht"], desc: "Onderwijsmateriaal, werkbladen en thema's voor jonge kinderen." },
+            { title: "Juf Anke | Lesideeën kleuters", url: "https://www.jufanke.nl", category: "9. Internet leerkrachten", audiences: ["Onderbouw (Kleuter / 1e graad)", "Leerkracht"], desc: "Lesideeën, hoeken en thema-uitwerkingen voor kleuters." },
+
+            // Category 10
+            { title: "Het Archief voor Onderwijs", url: "https://onderwijs.hetarchief.be", category: "10. ICT didactisch materiaal", audiences: ["Leerkracht"], desc: "Audiovisueel materiaal uit Vlaamse archieven klaar voor de klas." },
+            { title: "Leidraad Digitale technologie - Leerpunt", url: "https://www.leerpunt.be", category: "10. ICT didactisch materiaal", audiences: ["Leerkracht"], desc: "Wetenschappelijk onderbouwde inzichten over ICT in het onderwijs." },
+            { title: "WAI-NOT", url: "https://www.wai-not.org", category: "10. ICT didactisch materiaal", audiences: ["Onderbouw (Kleuter / 1e graad)", "Lager (4-12 jaar)"], desc: "Toegankelijke internetomgeving voor kinderen met een verstandelijke beperking." },
+            { title: "KlasCement Leermiddelennetwerk", url: "https://www.klascement.be", category: "10. ICT didactisch materiaal", audiences: ["Leerkracht"], desc: "Het officiële Vlaamse netwerk voor het delen van leermiddelen." },
+
+            // Category 11
+            { title: "AVI-lezen - Symbaloo Gallerij", url: "https://www.symbaloo.com", category: "11. Werken aan taal", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Lager (4-12 jaar)"], desc: "Verzameling van handige AVI-leeslinks en oefensites." },
+            { title: "Werkwoordspelling oefenen", url: "https://www.werkwoordspelling.nl", category: "11. Werken aan taal", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Lager (4-12 jaar)"], desc: "Gericht de regels van de werkwoordspelling oefenen." },
+            { title: "Jungle the Bungle - Spelenderwijs talen leren", url: "https://junglethebungle.com", category: "11. Werken aan taal", audiences: ["Onderbouw (Kleuter / 1e graad)"], desc: "Spelenderwijs vreemde talen ontdekken met prentenboeken." },
+            { title: "Iederéén kan lezen | Luisterpuntbibliotheek", url: "https://www.luisterpuntbibliotheek.be", category: "11. Werken aan taal", audiences: ["Lager (4-12 jaar)", "Leerkracht", "Ouders"], desc: "Luisterboeken en Daisy-boeken voor kinderen met leesbeperkingen." },
+            { title: "Immersive Reader - Microsoft", url: "https://www.microsoft.com/en-us/immersive-reader", category: "11. Werken aan taal", audiences: ["Lager (4-12 jaar)", "Leerkracht"], desc: "Gratis leeshulp die tekst voorleest en splitst in lettergrepen." },
+
+            // Category 12
+            { title: "Basisonderwijs.online", url: "https://www.basisonderwijs.online", category: "12. Digibord tools", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht"], desc: "Handige online widgets en digibordhulpen voor het basisonderwijs." },
+            { title: "Schooltv | Schooltv", url: "https://www.schooltv.nl", category: "12. Digibord tools", audiences: ["Onderbouw (Kleuter / 1e graad)", "Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht"], desc: "Educatieve videoclips voor alle vakken en leeftijden." },
+            { title: "Classroomscreen | Online whiteboard", url: "https://classroomscreen.com", category: "12. Digibord tools", audiences: ["Leerkracht"], desc: "De #1 online digibord-widgettool voor leerkrachten (timer, naamloting, pictogrammen)." },
+            { title: "Bouncy Balls – Manage classroom noise", url: "https://bouncyballs.org", category: "12. Digibord tools", audiences: ["Leerkracht", "Lager (4-12 jaar)"], desc: "Visuele geluidsmeter op het digibord met stuiterende ballen." },
+            { title: "Tools | Draairad (Wheel of Names)", url: "https://wheelofnames.com", category: "12. Digibord tools", audiences: ["Leerkracht", "Lager (4-12 jaar)"], desc: "Willekeurige naamloting en keuzerad voor in de klas." },
+            { title: "The True Size Of ...", url: "https://thetruesize.com", category: "12. Digibord tools", audiences: ["Middenbouw (2de graad / 8-10 jaar)", "Bovenbouw (3e graad / 10-12 jaar)", "Leerkracht"], desc: "Interactieve wereldkaart om de werkelijke grootte van landen te vergelijken." }
+        ];
+
+        // STATE MANAGERS
+        let websites = [];
+        let selectedCategories = [];
+        let selectedAudiences = [];
+        let searchQuery = "";
+        let currentSort = "newest";
+        let isAdminLoggedIn = false;
+
+        // INIT LIVE SNAPSHOT LISTENER
+        onSnapshot(websitesCollection, (snapshot) => {
+            const loaded = [];
+            snapshot.forEach((docSnap) => {
+                loaded.push({ id: docSnap.id, ...docSnap.data() });
+            });
+
+            // Update badge to online
+            const syncBadge = document.getElementById('syncBadge');
+            if (syncBadge) {
+                syncBadge.className = "text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full font-semibold uppercase flex items-center gap-1";
+                syncBadge.innerHTML = `<i class="fa-solid fa-wifi text-[10px]"></i> Live Firebase (${loaded.length})`;
+            }
+
+            // If Firebase Firestore is empty on first load, seed automatically
+            if (loaded.length === 0) {
+                console.log("Firebase database is leeg. Automatisch herstellen met standaard-databank...");
+                seedFirebaseDefaults();
+                return;
+            }
+
+            websites = loaded;
+            renderCategoryList();
+            renderWebsites();
+        }, (error) => {
+            console.error("Fout bij het ophalen van Firebase data:", error);
+            const syncBadge = document.getElementById('syncBadge');
+            if (syncBadge) {
+                syncBadge.className = "text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold uppercase flex items-center gap-1";
+                syncBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-[10px]"></i> Fallback / Geen Firebase`;
+            }
+            const filterSummary = document.getElementById('activeFiltersSummary');
+            if (filterSummary) {
+                filterSummary.innerHTML = `<span class="text-amber-700 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Kan niet verbinden met Firebase (${error.code || 'fout'}). Zorg dat Firestore Rules in Firebase Console gepubliceerd zijn ('allow read, write: if true;').</span>`;
+            }
+            websites = DEFAULT_WEBSITES.map((item, idx) => ({ id: "def_" + idx, ...item }));
+            renderCategoryList();
+            renderWebsites();
+        });
+
+        // LISTEN TO FIREBASE AUTH STATE CHANGES
+        onAuthStateChanged(auth, (user) => {
+            const loginSection = document.getElementById('loginSection');
+            const adminContentSection = document.getElementById('adminContentSection');
+            const adminBtnText = document.getElementById('adminBtnText');
+            const activeUserDisplay = document.getElementById('activeUserDisplay');
+
+            if (user) {
+                isAdminLoggedIn = true;
+                if (loginSection) loginSection.classList.add('hidden');
+                if (adminContentSection) adminContentSection.classList.remove('hidden');
+                if (adminBtnText) adminBtnText.textContent = "Beheerderspaneel (Ingelogd)";
+                if (activeUserDisplay) activeUserDisplay.textContent = user.email;
+            } else {
+                isAdminLoggedIn = false;
+                if (loginSection) loginSection.classList.remove('hidden');
+                if (adminContentSection) adminContentSection.classList.add('hidden');
+                if (adminBtnText) adminBtnText.textContent = "Beheerdersmodus";
+            }
+            renderWebsites();
+        });
+
+        // DOM LOADED INITIALIZATION
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+
+            renderCategoryList();
+            renderAudienceList();
+            renderAdminFormControls();
+            renderWebsites();
+        });
+
+        // HELPER FOR TIMESTAMP CONVERSION & SORTING
+        function getSiteTimestamp(site) {
+            if (!site) return 0;
+            if (site.createdAt) {
+                if (typeof site.createdAt.toMillis === 'function') {
+                    return site.createdAt.toMillis();
+                }
+                if (typeof site.createdAt.seconds === 'number') {
+                    return site.createdAt.seconds * 1000;
+                }
+                if (site.createdAt instanceof Date) {
+                    return site.createdAt.getTime();
+                }
+                if (typeof site.createdAt === 'number') {
+                    return site.createdAt;
+                }
+            }
+            if (site.updatedAt) {
+                if (typeof site.updatedAt.toMillis === 'function') {
+                    return site.updatedAt.toMillis();
+                }
+                if (typeof site.updatedAt.seconds === 'number') {
+                    return site.updatedAt.seconds * 1000;
+                }
+            }
+            // Fallback for default items: def_0 is oldest, def_N is newer
+            if (site.id && site.id.startsWith('def_')) {
+                const idx = parseInt(site.id.replace('def_', ''), 10);
+                return isNaN(idx) ? 0 : (10000 - idx);
+            }
+            return 0;
+        }
+
+        function handleSortChange() {
+            const sortSelect = document.getElementById('sortSelect');
+            if (sortSelect) {
+                currentSort = sortSelect.value;
+                renderWebsites();
+            }
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderCategoryList() {
+            const container = document.getElementById('categoryList');
+            if (!container) return;
+            container.innerHTML = CATEGORIES.map((cat) => {
+                const isChecked = selectedCategories.includes(cat);
+                const count = websites.filter(w => w.category === cat).length;
+                return `
+                    <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition ${isChecked ? 'bg-indigo-100 text-indigo-900 font-semibold' : 'hover:bg-slate-100 text-slate-700'}">
+                        <div class="flex items-center gap-2 truncate pr-1">
+                            <input type="checkbox" value="${cat}" ${isChecked ? 'checked' : ''} onchange="toggleCategory('${cat}')" class="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5">
+                            <span class="truncate">${cat}</span>
+                        </div>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded-full ${isChecked ? 'bg-indigo-200 text-indigo-900' : 'bg-slate-200 text-slate-600'}">${count}</span>
+                    </label>
+                `;
+            }).join('');
+        }
+
+        function renderAudienceList() {
+            const container = document.getElementById('audienceList');
+            if (!container) return;
+            container.innerHTML = AUDIENCES.map(aud => {
+                const isSelected = selectedAudiences.includes(aud);
+                return `
+                    <button onclick="toggleAudience('${aud}')" class="px-3 py-1.5 rounded-full text-xs font-medium transition flex items-center gap-1.5 ${isSelected ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                        <i class="fa-solid ${isSelected ? 'fa-circle-check' : 'fa-circle'} text-[10px]"></i>
+                        ${aud}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderWebsites() {
+            const container = document.getElementById('websiteGrid');
+            const noResults = document.getElementById('noResults');
+            const searchNotice = document.getElementById('searchModeNotice');
+            const filterSummary = document.getElementById('activeFiltersSummary');
+            const itemCounter = document.getElementById('itemCounter');
+
+            if (!container) return;
+
+            let filtered = [];
+            const isSearching = searchQuery.trim().length > 0;
+
+            if (isSearching) {
+                searchNotice.classList.remove('hidden');
+                const q = searchQuery.toLowerCase().trim();
+                filtered = websites.filter(w => 
+                    (w.title && w.title.toLowerCase().includes(q)) || 
+                    (w.desc && w.desc.toLowerCase().includes(q)) || 
+                    (w.category && w.category.toLowerCase().includes(q)) ||
+                    (w.url && w.url.toLowerCase().includes(q))
+                );
+
+                filterSummary.innerHTML = `
+                    <span class="text-amber-700 font-bold"><i class="fa-solid fa-magnifying-glass mr-1"></i> Zoeken naar: "${searchQuery}"</span>
+                    <span class="text-slate-500 font-normal ml-2">(Categorie- & Doelgroepfilters tijdelijk genegeerd)</span>
+                `;
+            } else {
+                searchNotice.classList.add('hidden');
+                
+                filtered = websites.filter(w => {
+                    const matchCat = selectedCategories.length === 0 || selectedCategories.includes(w.category);
+                    const matchAud = selectedAudiences.length === 0 || (w.audiences && w.audiences.some(a => selectedAudiences.includes(a)));
+                    return matchCat && matchAud;
+                });
+
+                let catText = selectedCategories.length > 0 ? `${selectedCategories.length} categorieën` : "Alle categorieën";
+                let audText = selectedAudiences.length > 0 ? `${selectedAudiences.length} doelgroepen` : "Alle doelgroepen";
+                filterSummary.innerHTML = `Actieve filter: <strong class="text-indigo-950">${catText}</strong> &bull; <strong class="text-indigo-950">${audText}</strong>`;
+            }
+
+            // APPLY SORTING
+            filtered.sort((a, b) => {
+                if (currentSort === 'az') {
+                    return (a.title || '').localeCompare(b.title || '', 'nl', { sensitivity: 'base' });
+                } else if (currentSort === 'za') {
+                    return (b.title || '').localeCompare(a.title || '', 'nl', { sensitivity: 'base' });
+                } else if (currentSort === 'oldest') {
+                    const tA = getSiteTimestamp(a);
+                    const tB = getSiteTimestamp(b);
+                    if (tA !== tB) return tA - tB;
+                    return (a.title || '').localeCompare(b.title || '', 'nl', { sensitivity: 'base' });
+                } else {
+                    // Default 'newest'
+                    const tA = getSiteTimestamp(a);
+                    const tB = getSiteTimestamp(b);
+                    if (tA !== tB) return tB - tA;
+                    return (a.title || '').localeCompare(b.title || '', 'nl', { sensitivity: 'base' });
+                }
+            });
+
+            itemCounter.textContent = `${filtered.length} website${filtered.length === 1 ? '' : 's'}`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            }
+
+            noResults.classList.add('hidden');
+
+            container.innerHTML = filtered.map(site => {
+                // Determine preview image: custom uploaded image or automated mshots screenshot
+                const screenshotUrl = site.imageUrl || (site.url ? `https://s0.wp.com/mshots/v1/${encodeURIComponent(site.url)}?w=400&h=250` : '');
+                let domain = 'website';
+                try {
+                    if (site.url) domain = new URL(site.url).hostname.replace('www.', '');
+                } catch(e) {}
+
+                return `
+                    <div onclick="openDetailModal('${site.id}')" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition flex flex-col sm:flex-row group cursor-pointer hover:border-indigo-300">
+                        
+                        <!-- PREVIEW SCREENSHOT -->
+                        <div class="sm:w-52 h-36 sm:h-auto bg-slate-100 flex-shrink-0 relative overflow-hidden border-b sm:border-b-0 sm:border-r border-slate-200">
+                            <img src="${screenshotUrl}" alt="${site.title}" 
+                                class="w-full h-full object-cover object-top group-hover:scale-105 transition duration-300"
+                                onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold p-4 text-center text-xs\'>${site.title}</div>';">
+                            <span class="absolute bottom-2 left-2 bg-slate-900/80 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-xs">
+                                <i class="fa-solid fa-globe mr-1"></i>${domain}
+                            </span>
+                            ${site.imageUrl ? `<span class="absolute top-2 left-2 bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow"><i class="fa-solid fa-image mr-1"></i>Custom</span>` : ''}
+                        </div>
+
+                        <!-- CARD DETAILS -->
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+                                    <span class="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-100">
+                                        ${site.category || 'Algemeen'}
+                                    </span>
+                                    
+                                    <div class="flex items-center space-x-1" onclick="event.stopPropagation()">
+                                        <button onclick="openDetailModal('${site.id}')" class="text-xs text-indigo-700 hover:text-indigo-900 px-2 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 flex items-center gap-1 font-medium">
+                                            <i class="fa-solid fa-circle-info text-amber-500"></i> Info & Toelichting
+                                        </button>
+                                        ${isAdminLoggedIn ? `
+                                            <button onclick="openEditModal('${site.id}')" class="text-xs text-indigo-700 hover:text-indigo-900 px-2 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 flex items-center gap-1 font-medium">
+                                                <i class="fa-solid fa-pen-to-square"></i> Bewerken
+                                            </button>
+                                            <button onclick="deleteWebsite('${site.id}')" class="text-xs text-red-500 hover:text-red-700 px-2 py-0.5 rounded bg-red-50 hover:bg-red-100 border border-red-200 flex items-center gap-1">
+                                                <i class="fa-solid fa-trash"></i> Wissen
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                </div>
+
+                                <h3 class="font-bold text-slate-800 text-base group-hover:text-indigo-600 transition">
+                                    <a href="${site.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="font-semibold">
+                                        ${site.title}
+                                    </a>
+                                </h3>
+
+                                <p class="text-xs text-slate-600 mt-1 line-clamp-2">
+                                    ${site.desc || 'Geen beschrijving beschikbaar.'}
+                                </p>
+                            </div>
+
+                            <!-- AUDIENCE BADGES + VISIT BUTTON -->
+                            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                                <div class="flex flex-wrap gap-1">
+                                    ${(site.audiences || []).map(aud => `
+                                        <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">
+                                            ${aud}
+                                        </span>
+                                    `).join('')}
+                                </div>
+
+                                <a href="${site.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" 
+                                    class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-xs">
+                                    <span>Bezoek Website</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- FILTER & SEARCH HANDLERS ---
+        function toggleCategory(cat) {
+            if (selectedCategories.includes(cat)) {
+                selectedCategories = selectedCategories.filter(c => c !== cat);
+            } else {
+                selectedCategories.push(cat);
+            }
+            renderCategoryList();
+            renderWebsites();
+        }
+
+        function clearCategoryFilter() {
+            selectedCategories = [];
+            renderCategoryList();
+            renderWebsites();
+        }
+
+        function toggleAudience(aud) {
+            if (selectedAudiences.includes(aud)) {
+                selectedAudiences = selectedAudiences.filter(a => a !== aud);
+            } else {
+                selectedAudiences.push(aud);
+            }
+            renderAudienceList();
+            renderWebsites();
+        }
+
+        function clearAudienceFilter() {
+            selectedAudiences = [];
+            renderAudienceList();
+            renderWebsites();
+        }
+
+        function handleSearch() {
+            const val = document.getElementById('searchInput').value;
+            searchQuery = val;
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (val.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            renderWebsites();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = "";
+            searchQuery = "";
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            renderWebsites();
+        }
+
+        function resetAllFilters() {
+            selectedCategories = [];
+            selectedAudiences = [];
+            clearSearch();
+            currentSort = "newest";
+            const sortSelect = document.getElementById('sortSelect');
+            if (sortSelect) sortSelect.value = "newest";
+            renderCategoryList();
+            renderAudienceList();
+            renderWebsites();
+        }
+
+        
+                                                // Helper function to escape HTML special characters
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        // Add input row for adding/editing a link (used in editModal)
+        function addExtraLinkRow(containerId = 'editExtraLinksContainer', title = '', url = '') {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const rowId = 'link_row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+            const row = document.createElement('div');
+            row.id = rowId;
+            row.className = 'flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs';
+
+            row.innerHTML = `
+                <div class="flex-1">
+                    <input type="text" placeholder="Omschrijving (bijv. Extra lesmateriaal, Starterkaart, Handleiding)" value="${escapeHtml(title)}" class="extra-link-title w-full p-2 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-2xs">
+                </div>
+                <div class="flex-1">
+                    <input type="url" placeholder="Weblink URL (https://...)" value="${escapeHtml(url)}" class="extra-link-url w-full p-2 border border-slate-300 rounded-lg text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-2xs">
+                </div>
+                <button type="button" onclick="document.getElementById('${rowId}').remove()" class="px-2.5 py-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg border border-transparent hover:border-red-200 text-xs transition self-end sm:self-center flex items-center gap-1" title="Verwijder link">
+                    <i class="fa-solid fa-trash"></i>
+                    <span class="sm:hidden text-xs">Wis</span>
+                </button>
+            `;
+            container.appendChild(row);
+        }
+
+        // --- DETAIL MODAL LOGIC (PURE READ-ONLY FOR ALL USERS) ---
+        function openDetailModal(siteId) {
+            const site = websites.find(w => w.id === siteId);
+            if (!site) return;
+
+            document.getElementById('detailSiteId').value = site.id;
+            document.getElementById('detailModalTitle').textContent = site.title || 'Website Details';
+            document.getElementById('detailTitleHeader').textContent = site.title || '';
+            document.getElementById('detailCategory').textContent = site.category || 'Algemeen';
+            document.getElementById('detailShortDesc').textContent = site.desc || 'Geen korte beschrijving beschikbaar.';
+
+            const screenshotUrl = site.imageUrl || (site.url ? `https://s0.wp.com/mshots/v1/${encodeURIComponent(site.url)}?w=400&h=250` : '');
+            const imgElem = document.getElementById('detailImage');
+            imgElem.src = screenshotUrl;
+
+            const audContainer = document.getElementById('detailAudiences');
+            audContainer.innerHTML = (site.audiences || []).map(a => `
+                <span class="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-medium">${a}</span>
+            `).join('');
+
+            const visitBtn = document.getElementById('detailVisitBtn');
+            visitBtn.href = site.url || '#';
+
+            const detailLinksDisplay = document.getElementById('detailLinksDisplay');
+
+            // Handle extraLinks array or fallback from longDesc
+            let links = Array.isArray(site.extraLinks) ? site.extraLinks : [];
+            if (links.length === 0 && site.longDesc && site.longDesc.trim()) {
+                links = [{ title: 'Toelichting / Handleiding', url: site.longDesc.startsWith('http') ? site.longDesc : '' }];
+                if (!links[0].url) {
+                    links = [{ title: site.longDesc, url: '' }];
+                }
+            }
+
+            if (detailLinksDisplay) {
+                const validLinks = links.filter(l => (l.title && l.title.trim()) || (l.url && l.url.trim()));
+                if (validLinks.length > 0) {
+                    detailLinksDisplay.innerHTML = validLinks.map(l => {
+                        const linkTitle = l.title || l.url;
+                        const linkUrl = l.url ? (l.url.startsWith('http') ? l.url : 'https://' + l.url) : '#';
+                        const hasUrl = l.url && l.url.trim().length > 0;
+
+                        if (hasUrl) {
+                            return `
+                                <a href="${linkUrl}" target="_blank" rel="noopener" class="flex items-center justify-between p-3 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/80 rounded-xl transition text-indigo-950 font-medium text-xs group shadow-2xs">
+                                    <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-indigo-600 text-sm flex-shrink-0"></i>
+                                        <span class="truncate font-semibold text-slate-800 group-hover:text-indigo-900">${escapeHtml(linkTitle)}</span>
+                                    </div>
+                                    <span class="inline-flex items-center gap-1.5 text-[11px] text-indigo-700 bg-white px-2.5 py-1 rounded-lg border border-indigo-200 shadow-2xs flex-shrink-0 font-semibold group-hover:bg-indigo-600 group-hover:text-white transition">
+                                        <span>Openen</span>
+                                        <i class="fa-solid fa-external-link text-[10px]"></i>
+                                    </span>
+                                </a>
+                            `;
+                        } else {
+                            return `
+                                <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 leading-relaxed">
+                                    <i class="fa-solid fa-circle-info text-amber-500 mr-1.5"></i>
+                                    ${escapeHtml(linkTitle)}
+                                </div>
+                            `;
+                        }
+                    }).join('');
+                } else {
+                    detailLinksDisplay.innerHTML = `
+                        <p class="text-xs text-slate-400 italic bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                            Geen extra links, starterkaarten of lesmateriaal beschikbaar voor deze website.
+                        </p>
+                    `;
+                }
+            }
+
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+        }
+
+// --- ADMIN & FIREBASE ACTIONS ---
+        function toggleAdminModal() {
+            document.getElementById('adminModal').classList.toggle('hidden');
+        }
+
+        async function loginAdmin() {
+            const e = document.getElementById('loginEmail').value.trim();
+            const p = document.getElementById('loginPassword').value.trim();
+
+            if (!e || !p) {
+                alert('Vul een e-mailadres en wachtwoord in.');
+                return;
+            }
+
+            const loginBtn = document.querySelector("#loginSection button");
+            if (loginBtn) {
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Bezig met inloggen...`;
+            }
+
+            try {
+                await signInWithEmailAndPassword(auth, e, p);
+                document.getElementById('loginPassword').value = '';
+            } catch (err) {
+                console.error("Firebase Auth fout:", err);
+                let msg = "Inloggen mislukt: " + err.message;
+                if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+                    msg = "Ongeldig e-mailadres of wachtwoord. Controleer of de gebruiker is aangemaakt in Firebase Console > Authentication.";
+                } else if (err.code === 'auth/invalid-email') {
+                    msg = "Ongeldig e-mailformaat.";
+                }
+                alert(msg);
+            } finally {
+                if (loginBtn) {
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = "Inloggen via Firebase Auth";
+                }
+            }
+        }
+
+        async function logoutAdmin() {
+            try {
+                await signOut(auth);
+                alert("U bent succesvol uitgelogd.");
+            } catch (err) {
+                console.error("Fout bij uitloggen:", err);
+            }
+        }
+
+        function renderAdminFormControls() {
+            const catSelect = document.getElementById('newCategory');
+            if (catSelect) catSelect.innerHTML = CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            const editCatSelect = document.getElementById('editCategory');
+            if (editCatSelect) editCatSelect.innerHTML = CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            const audContainer = document.getElementById('newAudienceCheckboxes');
+            if (audContainer) audContainer.innerHTML = AUDIENCES.map(a => `
+                <label class="inline-flex items-center gap-1 text-xs text-slate-700 bg-white px-2 py-1 border rounded cursor-pointer">
+                    <input type="checkbox" value="${a}" class="new-aud-check">
+                    <span>${a}</span>
+                </label>
+            `).join('');
+        }
+
+        // HELPER TO UPLOAD IMAGE TO FIREBASE STORAGE OR CONVERT TO BASE64
+        async function uploadImageFile(file) {
+            if (!file) return null;
+            try {
+                const storageRef = ref(storage, 'website-screenshots/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '_'));
+                const snapshot = await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                return downloadURL;
+            } catch (err) {
+                console.warn("Firebase Storage upload mislukt, valt terug op Base64 encoding:", err);
+                // Fallback to Base64 data URL if Firebase Storage rules block upload
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+        }
+
+        // ADD NEW WEBSITE DIRECTLY TO FIREBASE FIRESTORE
+        async function addNewWebsite() {
+            const title = document.getElementById('newTitle').value.trim();
+            const url = document.getElementById('newUrl').value.trim();
+            const category = document.getElementById('newCategory').value;
+            const desc = document.getElementById('newDescription').value.trim();
+            const fileInput = document.getElementById('newImageFile');
+
+            const audCheckboxes = document.querySelectorAll('.new-aud-check:checked');
+            const selectedAuds = Array.from(audCheckboxes).map(cb => cb.value);
+
+            if (!title || !url) {
+                alert('Vul minimaal de titel en URL in.');
+                return;
+            }
+
+            const btn = document.getElementById('addWebsiteBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Bezig met opslaan...`;
+
+            try {
+                let uploadedImageUrl = null;
+                if (fileInput && fileInput.files.length > 0) {
+                    uploadedImageUrl = await uploadImageFile(fileInput.files[0]);
+                }
+
+                await addDoc(websitesCollection, {
+                    title,
+                    url: url.startsWith('http') ? url : 'https://' + url,
+                    category,
+                    audiences: selectedAuds.length > 0 ? selectedAuds : ["Lager (4-12 jaar)"],
+                    desc,
+                    imageUrl: uploadedImageUrl || null,
+                    createdAt: serverTimestamp()
+                });
+
+                document.getElementById('newTitle').value = '';
+                document.getElementById('newUrl').value = '';
+                document.getElementById('newDescription').value = '';
+                if (fileInput) fileInput.value = '';
+                alert('✅ Website live opgeslagen in Firebase!');
+            } catch (err) {
+                console.error("Fout bij toevoegen aan Firebase:", err);
+                alert("Er is een fout opgetreden bij het opslaan in Firebase: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i><span>Website Toevoegen aan Firebase</span>`;
+            }
+        }
+
+        // --- EDIT WEBSITE MODAL LOGIC ---
+        let currentEditingSite = null;
+
+        function openEditModal(siteId) {
+            const site = websites.find(w => w.id === siteId);
+            if (!site) return;
+
+            currentEditingSite = site;
+            document.getElementById('editSiteId').value = site.id;
+            document.getElementById('editTitle').value = site.title || '';
+            document.getElementById('editUrl').value = site.url || '';
+            document.getElementById('editCategory').value = site.category || CATEGORIES[0];
+            document.getElementById('editDescription').value = site.desc || '';
+            document.getElementById('editImageUrl').value = site.imageUrl || '';
+            document.getElementById('editImageFile').value = '';
+
+            // Render Extra Links in Edit Modal
+            const extraLinksContainer = document.getElementById('editExtraLinksContainer');
+            if (extraLinksContainer) {
+                extraLinksContainer.innerHTML = '';
+                let links = Array.isArray(site.extraLinks) ? site.extraLinks : [];
+                if (links.length === 0 && site.longDesc && site.longDesc.trim()) {
+                    links = [{ title: 'Toelichting / Handleiding', url: site.longDesc.startsWith('http') ? site.longDesc : '' }];
+                    if (!links[0].url) {
+                        links = [{ title: site.longDesc, url: '' }];
+                    }
+                }
+
+                if (links.length > 0) {
+                    links.forEach(l => addExtraLinkRow('editExtraLinksContainer', l.title || '', l.url || ''));
+                } else {
+                    addExtraLinkRow('editExtraLinksContainer', '', '');
+                }
+            }
+
+            // Preview current image if available
+            const previewContainer = document.getElementById('currentImagePreviewContainer');
+            const previewImg = document.getElementById('currentImagePreview');
+            if (site.imageUrl) {
+                previewImg.src = site.imageUrl;
+                previewContainer.classList.remove('hidden');
+            } else {
+                previewContainer.classList.add('hidden');
+            }
+
+            // Render Audience Checkboxes
+            const audContainer = document.getElementById('editAudienceCheckboxes');
+            const currentAuds = site.audiences || [];
+            audContainer.innerHTML = AUDIENCES.map(a => `
+                <label class="inline-flex items-center gap-1 text-xs text-slate-700 bg-white px-2 py-1 border rounded cursor-pointer">
+                    <input type="checkbox" value="${a}" ${currentAuds.includes(a) ? 'checked' : ''} class="edit-aud-check">
+                    <span>${a}</span>
+                </label>
+            `).join('');
+
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            currentEditingSite = null;
+        }
+
+        function removeCustomImage() {
+            document.getElementById('editImageUrl').value = '';
+            document.getElementById('currentImagePreviewContainer').classList.add('hidden');
+            if (currentEditingSite) currentEditingSite.imageUrl = null;
+        }
+
+        async function saveWebsiteEdit() {
+            const id = document.getElementById('editSiteId').value;
+            const title = document.getElementById('editTitle').value.trim();
+            const url = document.getElementById('editUrl').value.trim();
+            const category = document.getElementById('editCategory').value;
+            const desc = document.getElementById('editDescription').value.trim();
+            let imageUrlInput = document.getElementById('editImageUrl').value.trim();
+            const fileInput = document.getElementById('editImageFile');
+
+            const audCheckboxes = document.querySelectorAll('.edit-aud-check:checked');
+            const selectedAuds = Array.from(audCheckboxes).map(cb => cb.value);
+
+            // Read Extra Links
+            const rows = document.querySelectorAll('#editExtraLinksContainer > div');
+            const extraLinks = [];
+            rows.forEach(row => {
+                const titleInput = row.querySelector('.extra-link-title');
+                const urlInput = row.querySelector('.extra-link-url');
+
+                const t = titleInput ? titleInput.value.trim() : '';
+                let u = urlInput ? urlInput.value.trim() : '';
+
+                if (u && !u.startsWith('http://') && !u.startsWith('https://')) {
+                    u = 'https://' + u;
+                }
+
+                if (t || u) {
+                    extraLinks.push({ title: t, url: u });
+                }
+            });
+
+            if (!id || !title || !url) {
+                alert('Titel en URL zijn verplicht.');
+                return;
+            }
+
+            const btn = document.getElementById('saveEditBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Opslaan...`;
+
+            try {
+                // If a new image file is chosen, upload it to Firebase Storage
+                if (fileInput && fileInput.files.length > 0) {
+                    imageUrlInput = await uploadImageFile(fileInput.files[0]);
+                }
+
+                // CHECK IF THIS WAS A TEMPORARY LOCAL FALLBACK ITEM (def_X)
+                if (id.startsWith('def_')) {
+                    // Create as a brand new document in Firebase Firestore
+                    await addDoc(websitesCollection, {
+                        title,
+                        url: url.startsWith('http') ? url : 'https://' + url,
+                        category,
+                        audiences: selectedAuds.length > 0 ? selectedAuds : ["Lager (4-12 jaar)"],
+                        desc,
+                        extraLinks: extraLinks,
+                        imageUrl: imageUrlInput || null,
+                        createdAt: serverTimestamp()
+                    });
+                } else {
+                    // Update existing Firestore document
+                    await updateDoc(doc(db, "websites", id), {
+                        title,
+                        url: url.startsWith('http') ? url : 'https://' + url,
+                        category,
+                        audiences: selectedAuds.length > 0 ? selectedAuds : ["Lager (4-12 jaar)"],
+                        desc,
+                        extraLinks: extraLinks,
+                        imageUrl: imageUrlInput || null,
+                        updatedAt: serverTimestamp()
+                    });
+                }
+
+                closeEditModal();
+                alert('✅ Wijzigingen succesvol opgeslagen in Firebase!');
+            } catch (err) {
+                console.error("Fout bij bijwerken in Firebase:", err);
+                alert("Kon wijzigingen niet opslaan: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i><span>Wijzigingen Opslaan in Firebase</span>`;
+            }
+        }
+
+        // DELETE WEBSITE FROM FIREBASE FIRESTORE
+        async function deleteWebsite(id) {
+            if (confirm('Weet u zeker dat u deze website definitief wilt verwijderen?')) {
+                if (id.startsWith('def_')) {
+                    websites = websites.filter(w => w.id !== id);
+                    renderCategoryList();
+                    renderWebsites();
+                    alert('Kaart lokaal verwijderd.');
+                    return;
+                }
+                try {
+                    await deleteDoc(doc(db, "websites", id));
+                    alert('Website verwijderd uit Firebase.');
+                } catch (err) {
+                    console.error("Fout bij verwijderen uit Firebase:", err);
+                    alert("Kon website niet verwijderen: " + err.message);
+                }
+            }
+        }
+
+        // SEED DEFAULT DATA TO FIREBASE
+        async function seedFirebaseDefaults() {
+            if (confirm('Wilt u de 100+ standaardwebsites direct uploaden naar je Firebase database?')) {
+                try {
+                    const batch = writeBatch(db);
+                    
+                    DEFAULT_WEBSITES.forEach(site => {
+                        const newDocRef = doc(websitesCollection);
+                        batch.set(newDocRef, {
+                            ...site,
+                            createdAt: serverTimestamp()
+                        });
+                    });
+
+                    await batch.commit();
+                    alert('🎉 100+ Websites succesvol geüpload naar Firebase! De pagina wordt nu vernieuwd...');
+                    window.location.reload();
+                } catch (err) {
+                    console.error("Fout bij vullen van Firebase:", err);
+                    alert("Kon databank niet vullen: " + err.message + "\n\nControleer of de Firestore Rules op 'allow read, write: if true;' staan.");
+                }
+            }
+        }
+
+        function exportBackupJSON() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            const timestampStr = `${year}-${month}-${day}_${hours}-${minutes}`;
+            const filename = `edukompas_backup_${timestampStr}.json`;
+
+            const backupData = {
+                app: "EduKompas",
+                version: "1.0",
+                exportDate: now.toISOString(),
+                totalItems: websites.length,
+                websites: websites.map(w => ({
+                    title: w.title || "",
+                    url: w.url || "",
+                    category: w.category || "",
+                    audiences: w.audiences || [],
+                    desc: w.desc || "",
+                    imageUrl: w.imageUrl || null
+                }))
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", filename);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+        }
+
+        async function importBackupJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const jsonContent = JSON.parse(e.target.result);
+                    let importedSites = [];
+
+                    if (Array.isArray(jsonContent)) {
+                        importedSites = jsonContent;
+                    } else if (jsonContent && Array.isArray(jsonContent.websites)) {
+                        importedSites = jsonContent.websites;
+                    } else if (jsonContent && Array.isArray(jsonContent.data)) {
+                        importedSites = jsonContent.data;
+                    } else {
+                        alert("❌ Ongeldig backupbestand. Zorg voor een geldig EduKompas JSON bestand.");
+                        event.target.value = '';
+                        return;
+                    }
+
+                    if (importedSites.length === 0) {
+                        alert("⚠️ Het gekozen backupbestand bevat geen websites.");
+                        event.target.value = '';
+                        return;
+                    }
+
+                    // Helper function to normalize URL
+                    const normalizeUrl = (u) => {
+                        if (!u) return "";
+                        return u.toLowerCase().trim().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
+                    };
+
+                    const existingUrls = new Set(websites.map(w => normalizeUrl(w.url)));
+                    const existingTitles = new Set(websites.map(w => (w.title || '').toLowerCase().trim()));
+
+                    const newItems = [];
+                    const duplicates = [];
+
+                    importedSites.forEach(site => {
+                        const normUrl = normalizeUrl(site.url);
+                        const normTitle = (site.title || '').toLowerCase().trim();
+
+                        if ((normUrl && existingUrls.has(normUrl)) || (normTitle && existingTitles.has(normTitle))) {
+                            duplicates.push(site);
+                        } else {
+                            newItems.push(site);
+                            if (normUrl) existingUrls.add(normUrl);
+                            if (normTitle) existingTitles.add(normTitle);
+                        }
+                    });
+
+                    const summaryMessage = `📋 Backup Analyse Resultaat:
+
+` +
+                        `• Totaal in backupbestand: ${importedSites.length} website(s)
+` +
+                        `• Reeds in Firebase (overgeslagen): ${duplicates.length} website(s)
+` +
+                        `• Nieuw toe te voegen: ${newItems.length} website(s)
+
+` +
+                        (newItems.length > 0 
+                            ? `Wilt u deze ${newItems.length} nieuwe website(s) toevoegen aan Firebase?` 
+                            : `Alle websites uit deze backup staan al in de database. Er hoeft niets geïmporteerd te worden.`);
+
+                    if (newItems.length === 0) {
+                        alert(summaryMessage);
+                        event.target.value = '';
+                        return;
+                    }
+
+                    if (confirm(summaryMessage)) {
+                        const batch = writeBatch(db);
+                        newItems.forEach(item => {
+                            const newDocRef = doc(websitesCollection);
+                            batch.set(newDocRef, {
+                                title: item.title || "Geen titel",
+                                url: item.url ? (item.url.startsWith('http') ? item.url : 'https://' + item.url) : "",
+                                category: item.category || CATEGORIES[0],
+                                audiences: Array.isArray(item.audiences) ? item.audiences : ["Lager (4-12 jaar)"],
+                                desc: item.desc || "",
+                                imageUrl: item.imageUrl || null,
+                                createdAt: serverTimestamp()
+                            });
+                        });
+
+                        await batch.commit();
+                        alert(`🎉 Succesvol ${newItems.length} nieuwe website(s) geïmporteerd in Firebase!`);
+                    }
+                } catch (err) {
+                    console.error("Fout bij importeren van backup:", err);
+                    alert("❌ Fout bij verwerken van het backupbestand: " + err.message);
+                } finally {
+                    event.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function downloadStandaloneHTML() {
+            const currentDoc = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            const blob = new Blob([currentDoc], { type: 'text/html;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'EduKompas_Firebase.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // EXPOSE MODULE FUNCTIONS TO WINDOW FOR INLINE ONCLICK HANDLERS
+        
+        // TAB SWITCHER VOOR BEHEERDERSPANEEL
+        function switchAdminTab(tab) {
+            const singleView = document.getElementById('adminSingleView');
+            const bulkView = document.getElementById('adminBulkView');
+            const singleBtn = document.getElementById('adminTabSingleBtn');
+            const bulkBtn = document.getElementById('adminTabBulkBtn');
+
+            if (!singleView || !bulkView) return;
+
+            if (tab === 'bulk') {
+                singleView.classList.add('hidden');
+                bulkView.classList.remove('hidden');
+                if (singleBtn) singleBtn.className = "px-3.5 py-1.5 rounded-md text-xs font-bold transition text-slate-600 hover:text-indigo-900";
+                if (bulkBtn) bulkBtn.className = "px-3.5 py-1.5 rounded-md text-xs font-bold transition bg-indigo-600 text-white shadow-xs";
+                renderBulkGrid();
+            } else {
+                bulkView.classList.add('hidden');
+                singleView.classList.remove('hidden');
+                if (bulkBtn) bulkBtn.className = "px-3.5 py-1.5 rounded-md text-xs font-bold transition text-slate-600 hover:text-indigo-900";
+                if (singleBtn) singleBtn.className = "px-3.5 py-1.5 rounded-md text-xs font-bold transition bg-indigo-600 text-white shadow-xs";
+            }
+        }
+
+        // RENDER RASTERWEERGAVE VOOR BULK EDITING
+        function renderBulkGrid() {
+            const container = document.getElementById('adminBulkGrid');
+            if (!container) return;
+
+            container.innerHTML = websites.map(site => `
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs space-y-3 relative group hover:border-indigo-300 transition" id="bulk_card_${site.id}">
+                    <div class="flex items-center justify-between border-b pb-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                            ID: ${site.id}
+                        </span>
+                        <button onclick="saveSingleBulkCard('${site.id}')" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded font-semibold transition flex items-center gap-1">
+                            <i class="fa-solid fa-floppy-disk text-[10px]"></i> Opslaan
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-600 mb-0.5">Titel</label>
+                        <input type="text" value="${escapeHtml(site.title || '')}" class="bulk-input-title w-full px-2.5 py-1 border rounded text-xs font-semibold text-slate-800">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-600 mb-0.5">URL</label>
+                        <input type="url" value="${escapeHtml(site.url || '')}" class="bulk-input-url w-full px-2.5 py-1 border rounded text-xs text-indigo-700">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-600 mb-0.5">Categorie</label>
+                        <select class="bulk-input-category w-full px-2 py-1 border rounded text-xs bg-white">
+                            ${CATEGORIES.map(c => `<option value="${c}" ${site.category === c ? 'selected' : ''}>${c}</option>`).join('')}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-600 mb-0.5">Doelgroepen</label>
+                        <div class="flex flex-wrap gap-1.5 pt-0.5">
+                            ${AUDIENCES.map(a => {
+                                const checked = (site.audiences || []).includes(a);
+                                return `
+                                    <label class="inline-flex items-center gap-1 text-[10px] bg-slate-50 px-1.5 py-0.5 border rounded cursor-pointer">
+                                        <input type="checkbox" value="${a}" ${checked ? 'checked' : ''} class="bulk-aud-check">
+                                        <span>${a}</span>
+                                    </label>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-600 mb-0.5">Korte Beschrijving</label>
+                        <textarea rows="2" class="bulk-input-desc w-full px-2.5 py-1 border rounded text-xs text-slate-700">${escapeHtml(site.desc || '')}</textarea>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // BULK OPSLAAN PER KAART
+        async function saveSingleBulkCard(siteId) {
+            const card = document.getElementById(`bulk_card_${siteId}`);
+            if (!card) return;
+
+            const title = card.querySelector('.bulk-input-title').value.trim();
+            const url = card.querySelector('.bulk-input-url').value.trim();
+            const category = card.querySelector('.bulk-input-category').value;
+            const desc = card.querySelector('.bulk-input-desc').value.trim();
+            const checkedAuds = Array.from(card.querySelectorAll('.bulk-aud-check:checked')).map(cb => cb.value);
+
+            if (!title || !url) {
+                alert('Titel en URL zijn verplicht.');
+                return;
+            }
+
+            try {
+                if (siteId.startsWith('def_')) {
+                    await addDoc(websitesCollection, {
+                        title, url: url.startsWith('http') ? url : 'https://' + url, category, audiences: checkedAuds, desc, createdAt: serverTimestamp()
+                    });
+                } else {
+                    await updateDoc(doc(db, "websites", siteId), {
+                        title, url: url.startsWith('http') ? url : 'https://' + url, category, audiences: checkedAuds, desc, updatedAt: serverTimestamp()
+                    });
+                }
+                alert('✅ Kaart succesvol bijgewerkt in Firebase!');
+            } catch (err) {
+                alert('Fout bij opslaan: ' + err.message);
+            }
+        }
+
+        // ALLE BULK WIJZIGINGEN IN ÉÉN KEER OPSLAAN VIA FIREBASE BATCH
+        async function saveAllBulkEdits() {
+            if (!confirm('Weet u zeker dat u ALLE wijzigingen in het raster wilt opslaan in Firebase?')) return;
+
+            try {
+                const batch = writeBatch(db);
+                websites.forEach(site => {
+                    const card = document.getElementById(`bulk_card_${site.id}`);
+                    if (!card) return;
+
+                    const title = card.querySelector('.bulk-input-title').value.trim();
+                    const url = card.querySelector('.bulk-input-url').value.trim();
+                    const category = card.querySelector('.bulk-input-category').value;
+                    const desc = card.querySelector('.bulk-input-desc').value.trim();
+                    const checkedAuds = Array.from(card.querySelectorAll('.bulk-aud-check:checked')).map(cb => cb.value);
+
+                    if (!site.id.startsWith('def_')) {
+                        const docRef = doc(db, "websites", site.id);
+                        batch.update(docRef, {
+                            title, url: url.startsWith('http') ? url : 'https://' + url, category, audiences: checkedAuds, desc, updatedAt: serverTimestamp()
+                        });
+                    }
+                });
+
+                await batch.commit();
+                alert('🎉 Alle bulk wijzigingen zijn live opgeslagen in Firebase!');
+            } catch (err) {
+                alert('Fout bij bulk opslaan: ' + err.message);
+            }
+        }
+
+
+        window.switchAdminTab = switchAdminTab;
+        window.renderBulkGrid = renderBulkGrid;
+        window.saveSingleBulkCard = saveSingleBulkCard;
+        window.saveAllBulkEdits = saveAllBulkEdits;
+
+        window.toggleCategory = toggleCategory;
+        window.clearCategoryFilter = clearCategoryFilter;
+        window.toggleAudience = toggleAudience;
+        window.clearAudienceFilter = clearAudienceFilter;
+        window.handleSearch = handleSearch;
+        window.clearSearch = clearSearch;
+        window.resetAllFilters = resetAllFilters;
+        window.toggleAdminModal = toggleAdminModal;
+        window.loginAdmin = loginAdmin;
+        window.logoutAdmin = logoutAdmin;
+        window.addNewWebsite = addNewWebsite;
+        window.openEditModal = openEditModal;
+        window.closeEditModal = closeEditModal;
+        window.removeCustomImage = removeCustomImage;
+        window.saveWebsiteEdit = saveWebsiteEdit;
+        window.deleteWebsite = deleteWebsite;
+        window.seedFirebaseDefaults = seedFirebaseDefaults;
+        window.handleSortChange = handleSortChange;
+        window.exportBackupJSON = exportBackupJSON;
+        window.importBackupJSON = importBackupJSON;
+        window.downloadStandaloneHTML = downloadStandaloneHTML;
+                window.openDetailModal = openDetailModal;
+        window.closeDetailModal = closeDetailModal;
+        window.addExtraLinkRow = addExtraLinkRow;
+    </script>
+</body>
+</html>
