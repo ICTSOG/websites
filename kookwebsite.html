@@ -1,0 +1,2566 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mijn Kookwebsite - Privé Recepten</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #FAF8F5;
+      --bg-card: #FFFFFF;
+      --bg-subtle: #F3EEE7;
+      --border: #E8DFD5;
+      --text-main: #2C2523;
+      --text-muted: #7A6F6B;
+      --primary: #C85A32;
+      --primary-hover: #B04A25;
+      --primary-light: #FDF1ED;
+      --secondary: #5B7065;
+      --accent: #E29578;
+      --danger: #D9383A;
+      --shadow-sm: 0 2px 8px rgba(44, 37, 35, 0.05);
+      --shadow-md: 0 4px 16px rgba(44, 37, 35, 0.08);
+      --shadow-lg: 0 10px 30px rgba(44, 37, 35, 0.12);
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --transition: all 0.25s ease;
+    }
+
+    [data-theme="dark"] {
+      --bg-main: #181615;
+      --bg-card: #23201E;
+      --bg-subtle: #2D2926;
+      --border: #3D3734;
+      --text-main: #F5F2EF;
+      --text-muted: #A89F9A;
+      --primary: #E06D44;
+      --primary-hover: #ED7E56;
+      --primary-light: #34241E;
+      --secondary: #789083;
+      --accent: #E29578;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 80px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        padding-bottom: 40px;
+      }
+    }
+
+    /* HEADER & NAV */
+    header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .logo svg {
+      width: 28px;
+      height: 28px;
+      fill: currentColor;
+    }
+
+    .desktop-nav {
+      display: none;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    @media (min-width: 768px) {
+      .desktop-nav {
+        display: flex;
+      }
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.6rem 1.1rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+    }
+
+    .nav-btn:hover {
+      color: var(--text-main);
+      background: var(--bg-subtle);
+    }
+
+    .nav-btn.active {
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .nav-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn-add {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .btn-add:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .theme-toggle {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .theme-toggle:hover {
+      background: var(--border);
+    }
+
+    .theme-toggle svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+    }
+
+    /* MOBILE NAV */
+    .mobile-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5rem 0.25rem calc(0.5rem + env(safe-area-inset-bottom));
+      z-index: 100;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+    }
+
+    @media (min-width: 768px) {
+      .mobile-nav {
+        display: none;
+      }
+    }
+
+    .mobile-nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0.4rem;
+      flex: 1;
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+    }
+
+    .mobile-nav-btn.active {
+      color: var(--primary);
+    }
+
+    .mobile-nav-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* MAIN CONTAINER */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* VIEW MANAGEMENT */
+    .view-section {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* SEARCH & FILTERS */
+    .filter-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.85rem 1rem 0.85rem 2.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-size: 1rem;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(200, 90, 50, 0.15);
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      stroke: var(--text-muted);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .filter-group label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-group select, .filter-group input[type="text"] {
+      width: 100%;
+      padding: 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .ingredient-mode-toggle {
+      display: flex;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+    }
+
+    .ingredient-mode-toggle label {
+      text-transform: none;
+      font-weight: 500;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      cursor: pointer;
+    }
+
+    .filter-bar-bottom {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .active-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .badge {
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .badge-clear {
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .btn-text {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: underline;
+    }
+
+    .sort-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .sort-control select {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-main);
+      color: var(--text-main);
+    }
+
+    /* CARDS GRID */
+    .recipes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .recipe-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .recipe-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .card-img-wrapper {
+      position: relative;
+      height: 180px;
+      width: 100%;
+      background: var(--bg-subtle);
+    }
+
+    .card-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .fav-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(4px);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+      z-index: 2;
+    }
+
+    [data-theme="dark"] .fav-btn {
+      background: rgba(35, 32, 30, 0.85);
+    }
+
+    .fav-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--danger);
+      fill: none;
+      stroke-width: 2;
+      transition: var(--transition);
+    }
+
+    .fav-btn.active svg {
+      fill: var(--danger);
+    }
+
+    .card-body {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .tag {
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+      line-height: 1.3;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: auto;
+      padding-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .card-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .card-meta-item svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* EMPTY STATES */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin: 1.5rem 0;
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      stroke: var(--text-muted);
+      fill: none;
+      stroke-width: 1.5;
+      margin-bottom: 1rem;
+      opacity: 0.7;
+    }
+
+    .empty-state h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+      color: var(--text-muted);
+      max-width: 400px;
+      margin: 0 auto 1.25rem;
+      font-size: 0.95rem;
+    }
+
+    /* MODAL */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-container {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* DETAIL VIEW MODAL */
+    .recipe-detail-header {
+      position: relative;
+      height: 280px;
+      background: var(--bg-subtle);
+    }
+
+    .recipe-detail-header img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .recipe-detail-content {
+      padding: 1.75rem;
+    }
+
+    .recipe-detail-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .recipe-detail-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .portion-picker {
+      display: inline-flex;
+      align-items: center;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.25rem;
+      gap: 0.5rem;
+      margin: 1rem 0 1.5rem;
+    }
+
+    .portion-picker button {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .portion-picker input {
+      width: 50px;
+      text-align: center;
+      border: none;
+      background: transparent;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-main);
+    }
+
+    .action-bar-detail {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .btn-secondary {
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: var(--transition);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    .btn-wakelock.active {
+      background: var(--secondary);
+      color: white;
+      border-color: var(--secondary);
+    }
+
+    .ingredients-section, .steps-section {
+      margin-bottom: 1.75rem;
+    }
+
+    .section-subtitle {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .ingredients-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .ingredients-list li {
+      background: var(--bg-subtle);
+      padding: 0.65rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .ingredients-list li strong {
+      color: var(--primary);
+    }
+
+    .steps-list {
+      list-style: none;
+      counter-reset: step-counter;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .steps-list li {
+      counter-increment: step-counter;
+      position: relative;
+      padding-left: 3rem;
+      line-height: 1.5;
+      font-size: 1rem;
+    }
+
+    .steps-list li::before {
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: 0;
+      background: var(--primary-light);
+      color: var(--primary);
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    /* FORM STYLES */
+    .form-container {
+      padding: 1.75rem;
+    }
+
+    .form-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+    }
+
+    .dynamic-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      align-items: center;
+    }
+
+    .dynamic-row input[type="number"] { width: 80px; }
+    .dynamic-row select { width: 100px; }
+    .dynamic-row input[type="text"] { flex: 1; }
+
+    .btn-icon-danger {
+      background: transparent;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      padding: 0.4rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn-icon-danger:hover {
+      background: rgba(217, 56, 58, 0.1);
+    }
+
+    .step-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      align-items: flex-start;
+    }
+
+    .step-row textarea {
+      flex: 1;
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .step-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--bg-subtle);
+      padding: 0.4rem 0.75rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .checkbox-label input:checked + span {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    /* WEEKMENU */
+    .week-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .week-nav {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .week-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .week-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .day-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .day-card.today {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(200, 90, 50, 0.2);
+    }
+
+    .day-header {
+      font-weight: 700;
+      font-size: 1.05rem;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .day-header .date-sub {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .meal-slot {
+      margin-bottom: 0.75rem;
+    }
+
+    .meal-slot-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+
+    .meal-item {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .meal-item-actions {
+      display: flex;
+      gap: 0.2rem;
+    }
+
+    .btn-mini {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.2rem;
+    }
+
+    .btn-mini:hover { color: var(--text-main); }
+
+    /* BOODSCHAPPENLIJST */
+    .shopping-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--radius-md);
+    }
+
+    .shopping-category {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .shopping-category-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .shopping-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--bg-subtle);
+    }
+
+    .shopping-item:last-child {
+      border-bottom: none;
+    }
+
+    .shopping-item-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .shopping-item.checked span {
+      text-decoration: line-through;
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
+
+    .shopping-item select {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.4rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg-main);
+      color: var(--text-muted);
+    }
+
+    /* PRINT STYLES */
+    @media print {
+      header, .mobile-nav, .filter-card, .shopping-toolbar, .btn-add, .action-bar-detail {
+        display: none !important;
+      }
+      body { background: white; color: black; padding: 0; }
+      .shopping-category { border: 1px solid #ccc; box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-container">
+      <a href="#" class="logo" onclick="switchView('overview')">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        Mijn Kookboek
+      </a>
+      
+      <nav class="desktop-nav">
+        <button class="nav-btn active" id="nav-overview" onclick="switchView('overview')">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          Gerechten
+        </button>
+        <button class="nav-btn" id="nav-favorites" onclick="switchView('favorites')">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          Favorieten
+        </button>
+        <button class="nav-btn" id="nav-mealplan" onclick="switchView('mealplan')">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          Weekmenu
+        </button>
+        <button class="nav-btn" id="nav-shopping" onclick="switchView('shopping')">
+          <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+          Boodschappen
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <button class="btn-add" onclick="openRecipeForm()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Gerecht toevoegen
+        </button>
+        <button class="theme-toggle" onclick="toggleTheme()" title="Wissel thema">
+          <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+        <button class="theme-toggle" onclick="openSettingsModal()" title="Gegevens beheren">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MOBILE NAV -->
+  <nav class="mobile-nav">
+    <button class="mobile-nav-btn active" id="mob-nav-overview" onclick="switchView('overview')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      Gerechten
+    </button>
+    <button class="mobile-nav-btn" id="mob-nav-favorites" onclick="switchView('favorites')">
+      <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+      Favorieten
+    </button>
+    <button class="mobile-nav-btn" id="mob-nav-mealplan" onclick="switchView('mealplan')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      Weekmenu
+    </button>
+    <button class="mobile-nav-btn" id="mob-nav-shopping" onclick="switchView('shopping')">
+      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+      Boodschappen
+    </button>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <!-- OVERVIEW & FAVORITES VIEW -->
+    <section id="view-overview" class="view-section active">
+      <div class="filter-card">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="search-input" placeholder="Zoek op titel of ingrediënt..." oninput="renderRecipes()">
+        </div>
+
+        <div class="filter-grid">
+          <div class="filter-group">
+            <label>Type gerecht</label>
+            <select id="filter-type" onchange="renderRecipes()">
+              <option value="">Alle types</option>
+              <option value="ontbijt">Ontbijt</option>
+              <option value="lunch">Lunch</option>
+              <option value="voorgerecht">Voorgerecht</option>
+              <option value="hoofdgerecht">Hoofdgerecht</option>
+              <option value="dessert">Dessert</option>
+              <option value="snack">Snack</option>
+              <option value="soep">Soep</option>
+              <option value="bijgerecht">Bijgerecht</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Max. Bereidingstijd</label>
+            <select id="filter-time" onchange="renderRecipes()">
+              <option value="">Alle tijden</option>
+              <option value="15">Max. 15 min</option>
+              <option value="30">Max. 30 min</option>
+              <option value="45">Max. 45 min</option>
+              <option value="60">Max. 60 min</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Soort</label>
+            <select id="filter-category" onchange="renderRecipes()">
+              <option value="">Alle soorten</option>
+              <option value="vegetarisch">Vegetarisch</option>
+              <option value="vegan">Vegan</option>
+              <option value="vis">Vis</option>
+              <option value="vlees">Vlees</option>
+              <option value="pasta">Pasta</option>
+              <option value="rijst">Rijst</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Ingrediënt filter</label>
+            <input type="text" id="filter-ingredient" placeholder="bv. ui, knoflook" oninput="renderRecipes()">
+            <div class="ingredient-mode-toggle">
+              <label><input type="radio" name="ing-mode" value="all" checked onchange="renderRecipes()"> Bevat alle</label>
+              <label><input type="radio" name="ing-mode" value="any" onchange="renderRecipes()"> Bevat minstens 1</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-bar-bottom">
+          <div class="active-badges" id="active-badges"></div>
+          <div class="sort-control">
+            <span id="results-count" style="font-weight: 600; color: var(--text-muted);">0 gerechten</span>
+            <span>| Sorteer:</span>
+            <select id="sort-select" onchange="renderRecipes()">
+              <option value="newest">Nieuwste</option>
+              <option value="title">Alfabetisch</option>
+              <option value="time">Kortste bereidingstijd</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="recipes-grid" id="recipes-grid"></div>
+      <div id="recipes-empty" class="empty-state" style="display: none;">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <h3>Geen gerechten gevonden</h3>
+        <p>Probeer je zoekopdracht of filters aan te passen.</p>
+        <button class="btn-secondary" onclick="clearFilters()" style="margin: 0 auto;">Filters wissen</button>
+      </div>
+    </section>
+
+    <!-- WEEKMENU VIEW -->
+    <section id="view-mealplan" class="view-section">
+      <div class="week-header">
+        <div class="week-nav">
+          <button class="btn-secondary" onclick="changeWeek(-1)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Vorige week
+          </button>
+          <span class="week-title" id="week-title-display">Week 45</span>
+          <button class="btn-secondary" onclick="changeWeek(1)">
+            Volgende week
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn-secondary" onclick="clearWeekMenu()">Week leegmaken</button>
+          <button class="btn-add" onclick="generateShoppingFromMealPlan()">Boodschappenlijst maken</button>
+        </div>
+      </div>
+
+      <div class="week-grid" id="week-grid"></div>
+    </section>
+
+    <!-- BOODSCHAPPENLIJST VIEW -->
+    <section id="view-shopping" class="view-section">
+      <div class="shopping-toolbar">
+        <div>
+          <h2 style="font-size: 1.3rem; margin-bottom: 0.2rem;">Boodschappenlijst</h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted);" id="shopping-subtext">Geautomatiseerd vanuit je weekmenu</p>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="hide-pantry-check" onchange="togglePantryFilter(this.checked)">
+            <span>Verberg voorraadkast</span>
+          </label>
+          <button class="btn-secondary" onclick="addCustomShoppingItem()">+ Handmatig item</button>
+          <button class="btn-secondary" onclick="copyShoppingList()">Kopiëren</button>
+          <button class="btn-secondary" onclick="window.print()">Afdrukken</button>
+        </div>
+      </div>
+
+      <div id="shopping-list-container"></div>
+    </section>
+  </main>
+
+  <!-- DETAIL MODAL -->
+  <div class="modal-backdrop" id="detail-modal">
+    <div class="modal-container">
+      <button class="modal-close" onclick="closeModal('detail-modal')">✕</button>
+      <div id="detail-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- RECIPE FORM MODAL -->
+  <div class="modal-backdrop" id="form-modal">
+    <div class="modal-container">
+      <button class="modal-close" onclick="closeModal('form-modal')">✕</button>
+      <form class="form-container" id="recipe-form" onsubmit="saveRecipe(event)">
+        <h2 class="form-title" id="form-modal-title">Nieuw gerecht toevoegen</h2>
+        <input type="hidden" id="form-recipe-id">
+
+        <div class="form-group">
+          <label>1. Titel</label>
+          <input type="text" id="form-title" class="form-control" placeholder="bv. Romige Paddenstoelenrisotto" required>
+        </div>
+
+        <div class="form-group">
+          <label>2. Ingrediënten (voor 4 personen)</label>
+          <div id="form-ingredients-list"></div>
+          <button type="button" class="btn-secondary" onclick="addIngredientRow()" style="margin-top: 0.5rem;">+ Ingrediënt toevoegen</button>
+        </div>
+
+        <div class="form-group">
+          <label>3. Kookwijze (Stappen)</label>
+          <div id="form-steps-list"></div>
+          <button type="button" class="btn-secondary" onclick="addStepRow()" style="margin-top: 0.5rem;">+ Stap toevoegen</button>
+        </div>
+
+        <div class="form-group">
+          <label>4. Type & Categorieën</label>
+          <div style="margin-bottom: 0.75rem;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Type gerecht:</span>
+            <div class="checkbox-group" id="form-types">
+              <label class="checkbox-label"><input type="checkbox" value="ontbijt"><span>Ontbijt</span></label>
+              <label class="checkbox-label"><input type="checkbox" value="lunch"><span>Lunch</span></label>
+              <label class="checkbox-label"><input type="checkbox" value="voorgerecht"><span>Voorgerecht</span></label>
+              <label class="checkbox-label"><input type="checkbox" value="hoofdgerecht"><span>Hoofdgerecht</span></label>
+              <label class="checkbox-label"><input type="checkbox" value="dessert"><span>Dessert</span></label>
+              <label class="checkbox-label"><input type="checkbox" value="snack"><span>Snack</span></label>
+              <label class="checkbox-label"><input type="checkbox" value="soep"><span>Soep</span></label>
+              <label class="checkbox-label"><input type="checkbox" value="bijgerecht"><span>Bijgerecht</span></label>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 0.75rem;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Soort:</span>
+            <div class="checkbox-group" id="form-categories">
+              <label class="checkbox-label"><input type="checkbox" value="vegetarisch"><span>Vegetarisch</span></label>
+              <label class="checkbox-label"><input type="checkbox" value="vegan"><span>Vegan</span></label>
+              <label class="checkbox-label"><input type="checkbox" value="vis"><span>Vis</span></label>
+              <label class="checkbox-label"><input type="checkbox" value="vlees"><span>Vlees</span></label>
+              <label class="checkbox-label"><input type="checkbox" value="pasta"><span>Pasta</span></label>
+              <label class="checkbox-label"><input type="checkbox" value="rijst"><span>Rijst</span></label>
+            </div>
+          </div>
+
+          <div style="max-width: 200px;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Bereidingstijd (minuten):</span>
+            <input type="number" id="form-preptime" class="form-control" min="1" value="30" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>5. Optioneel: Afbeelding & Bron</label>
+          <input type="text" id="form-image-url" class="form-control" placeholder="Afbeelding URL (of upload hieronder)" style="margin-bottom: 0.5rem;">
+          <input type="file" id="form-image-file" accept="image/*" class="form-control" onchange="handleImageUpload(event)" style="margin-bottom: 0.5rem;">
+          <input type="url" id="form-source-url" class="form-control" placeholder="Link naar origineel recept (https://...)">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn-secondary" onclick="closeModal('form-modal')">Annuleren</button>
+          <button type="submit" class="btn-add">Opslaan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MEALPLAN ADD MODAL -->
+  <div class="modal-backdrop" id="mealplan-add-modal">
+    <div class="modal-container" style="max-width: 450px;">
+      <button class="modal-close" onclick="closeModal('mealplan-add-modal')">✕</button>
+      <div class="form-container">
+        <h3 style="margin-bottom: 1rem;">Gerecht inplannen</h3>
+        <input type="hidden" id="mp-recipe-id">
+        <div class="form-group">
+          <label>Kies dag</label>
+          <select id="mp-select-day" class="form-control">
+            <option value="0">Maandag</option>
+            <option value="1">Dinsdag</option>
+            <option value="2">Woensdag</option>
+            <option value="3">Donderdag</option>
+            <option value="4">Vrijdag</option>
+            <option value="5">Zaterdag</option>
+            <option value="6">Zondag</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Maaltijdmoment</label>
+          <select id="mp-select-slot" class="form-control">
+            <option value="ontbijt">Ontbijt</option>
+            <option value="lunch">Lunch</option>
+            <option value="avondmaal">Avondmaal</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Aantal porties</label>
+          <input type="number" id="mp-select-servings" class="form-control" min="1" value="4">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+          <button class="btn-secondary" onclick="closeModal('mealplan-add-modal')">Annuleren</button>
+          <button class="btn-add" onclick="confirmAddToMealPlan()">Inplannen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS / DATA MODAL -->
+  <div class="modal-backdrop" id="settings-modal">
+    <div class="modal-container" style="max-width: 500px;">
+      <button class="modal-close" onclick="closeModal('settings-modal')">✕</button>
+      <div class="form-container">
+        <h3 style="margin-bottom: 1rem;">Gegevens & Back-up</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+          Exporteer al je gerechten, favorieten en weekmenu's naar een JSON-bestand, of importeer een eerder opgeslagen back-up.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <button class="btn-add" onclick="exportDataJSON()" style="justify-content: center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Exporteer JSON Back-up
+          </button>
+
+          <div style="position: relative;">
+            <input type="file" id="import-json-file" accept=".json" onchange="importDataJSON(event)" style="display: none;">
+            <button class="btn-secondary" onclick="document.getElementById('import-json-file').click()" style="width: 100%; justify-content: center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Importeer JSON Bestand
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* PRELOADED DEFAULT DATA (INCL. DE 6 NIEUWE INSTANT POT GERECHTEN) */
+    const DEFAULT_RECIPES = [
+      {
+        id: 'rec-paddenstoelenrisotto',
+        title: 'Paddenstoelenrisotto (Instant Pot)',
+        prepTime: 20,
+        type: ['hoofdgerecht'],
+        category: ['rijst', 'vegetarisch'],
+        servings: 4,
+        image: 'https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=800&q=80',
+        sourceUrl: '',
+        ingredients: [
+          { amount: 2, unit: 'el', name: 'olijfolie' },
+          { amount: 1, unit: 'stuk', name: 'ui (gesnipperd)' },
+          { amount: 400, unit: 'g', name: 'arboriorijst' },
+          { amount: 60, unit: 'ml', name: 'witte wijn' },
+          { amount: 1000, unit: 'ml', name: 'kippenbouillon (of groentebouillon)' },
+          { amount: 15, unit: 'g', name: 'gedroogd eekhoorntjesbrood (porcini)' },
+          { amount: 0.5, unit: 'tl', name: 'zout' },
+          { amount: 0.5, unit: 'tl', name: 'zwarte peper' },
+          { amount: 1, unit: 'el', name: 'boter' }
+        ],
+        instructions: [
+          'Zet de Instant Pot op de sauteerstand en verhit de olijfolie. Voeg de ui toe en fruit tot deze glazig is.',
+          'Voeg de arboriorijst toe en rooster kort mee totdat enkele korrels licht goudbruin kleuren.',
+          'Blus de pan af met de witte wijn. Voeg vervolgens de kippenbouillon, het gedroogde eekhoorntjesbrood, het zout en de zwarte peper toe.',
+          'Sluit het deksel en stel de kooktijd in op 6 minuten onder hoge druk. Laat na afloop de stoom ontsnappen en open de pan. Als de risotto nog te nat is, zet de pan dan nog even kort op de sauteerstand en roer door tot het mengsel de gewenste dikte heeft.',
+          'Verdeel over de borden en werk af met de boter.'
+        ]
+      },
+      {
+        id: 'rec-romige-polenta',
+        title: 'Romige Polenta (Instant Pot)',
+        prepTime: 20,
+        type: ['bijgerecht', 'ontbijt'],
+        category: ['vegetarisch'],
+        servings: 4,
+        image: 'https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=800&q=80',
+        sourceUrl: '',
+        ingredients: [
+          { amount: 1.9, unit: 'l', name: 'water' },
+          { amount: 2, unit: 'tl', name: 'zout' },
+          { amount: 30, unit: 'g', name: 'boter' },
+          { amount: 320, unit: 'g', name: 'polenta (maïsgriesmeel)' },
+          { amount: 100, unit: 'g', name: 'geraspte Pecorino of Parmezaanse kaas' }
+        ],
+        instructions: [
+          'Zet de Instant Pot op de sauteerstand en voeg het water, zout en de boter toe. Als het water kookt, roer je de polenta er geleidelijk doorheen.',
+          'Sluit het deksel en kies de stand voor pap ('Porridge').',
+          'Werk af met de geraspte kaas en serveer direct (heerlijk onder een stoofpotje of ragoût).'
+        ]
+      },
+      {
+        id: 'rec-cajun-dirty-rice',
+        title: 'Cajun Dirty Rice (Instant Pot)',
+        prepTime: 20,
+        type: ['hoofdgerecht', 'bijgerecht'],
+        category: ['rijst', 'vlees'],
+        servings: 4,
+        image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=800&q=80',
+        sourceUrl: '',
+        ingredients: [
+          { amount: 1, unit: 'el', name: 'olijfolie' },
+          { amount: 170, unit: 'g', name: 'andouille-worst (of rookworst / spekblokjes)' },
+          { amount: 1, unit: 'stuk', name: 'ui (gesnipperd)' },
+          { amount: 2, unit: 'stuk', name: 'stengels bleekselderij (gehakt)' },
+          { amount: 1, unit: 'stuk', name: 'rode paprika (in blokjes)' },
+          { amount: 2, unit: 'stuk', name: 'teentjes knoflook (fijngehakt)' },
+          { amount: 0.5, unit: 'tl', name: 'paprikapoeder' },
+          { amount: 0.25, unit: 'tl', name: 'zwarte peper' },
+          { amount: 0.25, unit: 'tl', name: 'cayennepeper' },
+          { amount: 0.5, unit: 'tl', name: 'gedroogde oregano' },
+          { amount: 0.5, unit: 'tl', name: 'gedroogde tijm' },
+          { amount: 370, unit: 'g', name: 'langgraan witte rijst' },
+          { amount: 475, unit: 'ml', name: 'kippenbouillon' }
+        ],
+        instructions: [
+          'Zet de Instant Pot op de sauteerstand en verhit de olijfolie. Voeg de worst toe en bak goudbruin.',
+          'Voeg de ui, bleekselderij, paprika en knoflook toe. Bak tot de ui glazig is.',
+          'Voeg het paprikapoeder, de zwarte peper, cayennepeper, oregano en tijm toe en rooster 30 seconden mee.',
+          'Voeg de rijst toe en bak mee tot de korrels licht opaak worden. Giet de kippenbouillon erbij en roer goed door.',
+          'Sluit het deksel en stel de kooktijd in op 4 minuten onder hoge druk.',
+          'Laat na afloop de stoom ontsnappen, open het deksel en roer de rijst los met een vork.'
+        ]
+      },
+      {
+        id: 'rec-zuidelijke-succotash',
+        title: 'Zuidelijke Succotash (Instant Pot)',
+        prepTime: 40,
+        type: ['bijgerecht', 'hoofdgerecht'],
+        category: ['vlees'],
+        servings: 4,
+        image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80',
+        sourceUrl: '',
+        ingredients: [
+          { amount: 115, unit: 'g', name: 'spekblokjes' },
+          { amount: 1, unit: 'stuk', name: 'ui (gesnipperd)' },
+          { amount: 1, unit: 'stuk', name: 'teentje knoflook (fijngehakt)' },
+          { amount: 120, unit: 'g', name: 'gehakte tomaten' },
+          { amount: 350, unit: 'g', name: 'gedroogde limabonen / butter beans' },
+          { amount: 450, unit: 'g', name: 'verse maïskorrels' },
+          { amount: 2, unit: 'el', name: 'verse bieslook (gehakt)' },
+          { amount: 0.25, unit: 'tl', name: 'zout' },
+          { amount: 0.5, unit: 'tl', name: 'zwarte peper' }
+        ],
+        instructions: [
+          'Zet de Instant Pot op de sauteerstand en voeg het spek toe. Bak totdat het meeste vet is uitgebakken.',
+          'Voeg de ui en knoflook toe en bak mee totdat de ui glazig is.',
+          'Voeg de gehakte tomaten, limabonen en voldoende water toe om het geheel net onder te zetten. Sluit het deksel en stel de kooktijd in op 20 minuten onder hoge druk.',
+          'Laat na afloop de stoom ontsnappen, open het deksel en voeg de maïs, het zout, de zwarte peper en de bieslook toe. Sluit het deksel kort zonder hitte, zodat de maïs goed doorwarmt. Breng eventueel verder op smaak met extra zout en peper.'
+        ]
+      },
+      {
+        id: 'rec-boston-baked-beans',
+        title: 'Boston Baked Beans (Instant Pot)',
+        prepTime: 70,
+        type: ['bijgerecht', 'hoofdgerecht'],
+        category: ['vlees'],
+        servings: 4,
+        image: 'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&w=800&q=80',
+        sourceUrl: '',
+        ingredients: [
+          { amount: 1, unit: 'el', name: 'olijfolie' },
+          { amount: 115, unit: 'g', name: 'achterham of gezouten spek (in blokjes)' },
+          { amount: 1, unit: 'stuk', name: 'ui (gesnipperd)' },
+          { amount: 2, unit: 'stuk', name: 'teentjes knoflook (fijngehakt)' },
+          { amount: 60, unit: 'ml', name: 'melasse of keukenstroop' },
+          { amount: 60, unit: 'ml', name: 'esdoornsiroop (ahornsiroop)' },
+          { amount: 1, unit: 'el', name: 'mosterdpoeder' },
+          { amount: 1, unit: 'el', name: 'worcestershiresaus' },
+          { amount: 2, unit: 'el', name: 'ketchup' },
+          { amount: 1, unit: 'tl', name: 'zout' },
+          { amount: 0.5, unit: 'tl', name: 'zwarte peper' },
+          { amount: 450, unit: 'g', name: 'droge witte bonen' },
+          { amount: 1, unit: 'l', name: 'water' }
+        ],
+        instructions: [
+          'Zet de Instant Pot op de sauteerstand en verhit de olijfolie. Voeg de ham of het spek toe en bak goudbruin. Voeg de ui en knoflook toe en bak mee tot de ui glazig is.',
+          'Voeg de stroop, esdoornsiroop, het mosterdpoeder, de worcestershiresaus, ketchup, het zout en de zwarte peper toe. Voeg de bonen toe en roer goed door. Giet het water erbij.',
+          'Sluit het deksel en stel de kooktijd in op 30 minuten onder hoge druk.',
+          'Open na afloop de pan en breng de gebakken bonen naar wens verder op smaak met extra zout, peper, worcestershiresaus of een schepje suiker.'
+        ]
+      },
+      {
+        id: 'rec-cincinnati-chili',
+        title: 'Cincinnati Chili (Instant Pot)',
+        prepTime: 65,
+        type: ['hoofdgerecht'],
+        category: ['vlees', 'pasta'],
+        servings: 4,
+        image: 'https://images.unsplash.com/photo-1621996346565-e3d5d6288308?auto=format&fit=crop&w=800&q=80',
+        sourceUrl: '',
+        ingredients: [
+          { amount: 1, unit: 'el', name: 'olijfolie' },
+          { amount: 600, unit: 'g', name: 'rundergehakt' },
+          { amount: 1.5, unit: 'stuk', name: 'ui (gesnipperd)' },
+          { amount: 2, unit: 'stuk', name: 'teentjes knoflook (fijngehakt)' },
+          { amount: 2.5, unit: 'el', name: 'chilipoeder' },
+          { amount: 2, unit: 'tl', name: 'gemalen komijn' },
+          { amount: 2, unit: 'tl', name: 'korianderpoeder' },
+          { amount: 2, unit: 'tl', name: 'cacaopoeder' },
+          { amount: 0.67, unit: 'tl', name: 'piment' },
+          { amount: 0.67, unit: 'tl', name: 'kaneel' },
+          { amount: 0.33, unit: 'tl', name: 'gemalen kruidnagel' },
+          { amount: 320, unit: 'g', name: 'gehakte tomaten' },
+          { amount: 630, unit: 'ml', name: 'water' },
+          { amount: 1.5, unit: 'el', name: 'bruine suiker' },
+          { amount: 0.67, unit: 'tl', name: 'zout' },
+          { amount: 0.67, unit: 'tl', name: 'zwarte peper' },
+          { amount: 300, unit: 'g', name: 'gedroogde rode kidneybonen (afgespoeld)' },
+          { amount: 300, unit: 'g', name: 'spaghetti' },
+          { amount: 150, unit: 'g', name: 'geraspte cheddar' }
+        ],
+        instructions: [
+          'Zet de Instant Pot op de sauteerstand. Voeg de olijfolie en het gehakt toe. Bak het gehakt bruin en giet overtollig vet af uit de pan.',
+          'Voeg de ui, knoflook en alle specerijen (chilipoeder, komijn, koriander, cacaopoeder, piment, kaneel, kruidnagel) toe. Bak mee tot de ui glazig is.',
+          'Voeg de gehakte tomaten, het water, de bruine suiker, het zout, de zwarte peper en de kidneybonen toe. Sluit het deksel en stel de kooktijd in op 25 minuten onder hoge druk.',
+          'Kook ondertussen de spaghetti. Serveer de chili op een bedje van gekookte spaghetti en werk af met een royale laag geraspte cheddar.'
+        ]
+      }
+    ];
+
+    const DEFAULT_PANTRY = ['zout', 'peper', 'olijfolie', 'water', 'suiker', 'boter'];
+
+    /* APP STATE */
+    let recipes = JSON.parse(localStorage.getItem('kb_recipes')) || DEFAULT_RECIPES;
+    let favorites = JSON.parse(localStorage.getItem('kb_favorites')) || [];
+    let mealPlan = JSON.parse(localStorage.getItem('kb_mealplan')) || {};
+    let pantry = JSON.parse(localStorage.getItem('kb_pantry')) || DEFAULT_PANTRY;
+    let customShoppingItems = JSON.parse(localStorage.getItem('kb_custom_shopping')) || [];
+    let checkedShoppingItems = JSON.parse(localStorage.getItem('kb_checked_shopping')) || [];
+    let customCategories = JSON.parse(localStorage.getItem('kb_custom_cats')) || {};
+
+    let currentView = 'overview';
+    let currentWeekOffset = 0;
+    let currentDetailPortions = 4;
+    let wakeLock = null;
+
+    /* INIT */
+    window.addEventListener('DOMContentLoaded', () => {
+      // Theme init
+      const savedTheme = localStorage.getItem('kb_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      
+      // Save default data if empty
+      saveState();
+
+      renderRecipes();
+      renderMealPlan();
+    });
+
+    function saveState() {
+      localStorage.setItem('kb_recipes', JSON.stringify(recipes));
+      localStorage.setItem('kb_favorites', JSON.stringify(favorites));
+      localStorage.setItem('kb_mealplan', JSON.stringify(mealPlan));
+      localStorage.setItem('kb_pantry', JSON.stringify(pantry));
+      localStorage.setItem('kb_custom_shopping', JSON.stringify(customShoppingItems));
+      localStorage.setItem('kb_checked_shopping', JSON.stringify(checkedShoppingItems));
+      localStorage.setItem('kb_custom_cats', JSON.stringify(customCategories));
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('kb_theme', next);
+    }
+
+    /* VIEW SWITCHING */
+    function switchView(viewName) {
+      currentView = viewName;
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(el => el.classList.remove('active'));
+
+      if (viewName === 'overview') {
+        document.getElementById('view-overview').classList.add('active');
+        document.getElementById('nav-overview').classList.add('active');
+        document.getElementById('mob-nav-overview').classList.add('active');
+        renderRecipes();
+      } else if (viewName === 'favorites') {
+        document.getElementById('view-overview').classList.add('active');
+        document.getElementById('nav-favorites').classList.add('active');
+        document.getElementById('mob-nav-favorites').classList.add('active');
+        renderRecipes(true);
+      } else if (viewName === 'mealplan') {
+        document.getElementById('view-mealplan').classList.add('active');
+        document.getElementById('nav-mealplan').classList.add('active');
+        document.getElementById('mob-nav-mealplan').classList.add('active');
+        renderMealPlan();
+      } else if (viewName === 'shopping') {
+        document.getElementById('view-shopping').classList.add('active');
+        document.getElementById('nav-shopping').classList.add('active');
+        document.getElementById('mob-nav-shopping').classList.add('active');
+        renderShoppingList();
+      }
+    }
+
+    /* RENDER RECIPES OVERVIEW & FILTERS */
+    function renderRecipes(onlyFavorites = false) {
+      const grid = document.getElementById('recipes-grid');
+      const empty = document.getElementById('recipes-empty');
+      const badgesContainer = document.getElementById('active-badges');
+
+      const searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+      const filterType = document.getElementById('filter-type').value;
+      const filterTime = document.getElementById('filter-time').value;
+      const filterCategory = document.getElementById('filter-category').value;
+      const filterIngredient = document.getElementById('filter-ingredient').value.toLowerCase().trim();
+      const ingMode = document.querySelector('input[name="ing-mode"]:checked').value;
+      const sortBy = document.getElementById('sort-select').value;
+
+      // Badges render
+      badgesContainer.innerHTML = '';
+      if (onlyFavorites) badgesContainer.innerHTML += `<span class="badge">Alleen favorieten</span>`;
+      if (searchQuery) badgesContainer.innerHTML += `<span class="badge">Zoek: "${searchQuery}"</span>`;
+      if (filterType) badgesContainer.innerHTML += `<span class="badge">Type: ${filterType}</span>`;
+      if (filterTime) badgesContainer.innerHTML += `<span class="badge">Max: ${filterTime} min</span>`;
+      if (filterCategory) badgesContainer.innerHTML += `<span class="badge">Soort: ${filterCategory}</span>`;
+      if (filterIngredient) badgesContainer.innerHTML += `<span class="badge">Ingrediënt: ${filterIngredient}</span>`;
+
+      if (badgesContainer.innerHTML !== '') {
+        badgesContainer.innerHTML += `<button class="btn-text" onclick="clearFilters()">Alles wissen</button>`;
+      }
+
+      // Filter logic
+      let filtered = recipes.filter(r => {
+        if (onlyFavorites && !favorites.includes(r.id)) return false;
+
+        if (searchQuery) {
+          const matchTitle = r.title.toLowerCase().includes(searchQuery);
+          const matchIng = r.ingredients.some(i => i.name.toLowerCase().includes(searchQuery));
+          if (!matchTitle && !matchIng) return false;
+        }
+
+        if (filterType && (!r.type || !r.type.includes(filterType))) return false;
+        if (filterTime && r.prepTime > parseInt(filterTime)) return false;
+        if (filterCategory && (!r.category || !r.category.includes(filterCategory))) return false;
+
+        if (filterIngredient) {
+          const searchIngs = filterIngredient.split(',').map(s => s.trim()).filter(Boolean);
+          if (searchIngs.length > 0) {
+            if (ingMode === 'all') {
+              const hasAll = searchIngs.every(si => r.ingredients.some(i => i.name.toLowerCase().includes(si)));
+              if (!hasAll) return false;
+            } else {
+              const hasAny = searchIngs.some(si => r.ingredients.some(i => i.name.toLowerCase().includes(si)));
+              if (!hasAny) return false;
+            }
+          }
+        }
+
+        return true;
+      });
+
+      // Sort logic
+      filtered.sort((a, b) => {
+        if (sortBy === 'title') return a.title.localeCompare(b.title);
+        if (sortBy === 'time') return a.prepTime - b.prepTime;
+        return (b.id || '').localeCompare(a.id || ''); // newest
+      });
+
+      document.getElementById('results-count').textContent = `${filtered.length} gerecht${filtered.length === 1 ? '' : 'en'}`;
+
+      if (filtered.length === 0) {
+        grid.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+
+      grid.style.display = 'grid';
+      empty.style.display = 'none';
+
+      grid.innerHTML = filtered.map(r => {
+        const isFav = favorites.includes(r.id);
+        const tags = [...(r.type || []), ...(r.category || [])];
+        const defaultImg = 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=800&q=80';
+        
+        return `
+          <div class="recipe-card" onclick="openRecipeDetail('${r.id}')">
+            <div class="card-img-wrapper">
+              <img src="${r.image || defaultImg}" alt="${r.title}" loading="lazy" onerror="this.src='${defaultImg}'">
+              <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${r.id}')" title="Favoriet toggle">
+                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="card-tags">
+                ${tags.map(t => `<span class="tag">${t}</span>`).join('')}
+              </div>
+              <h3 class="card-title">${r.title}</h3>
+              <div class="card-meta">
+                <div class="card-meta-item">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  ${r.prepTime} min
+                </div>
+                <div class="card-meta-item">
+                  <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                  4 porties
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function clearFilters() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('filter-type').value = '';
+      document.getElementById('filter-time').value = '';
+      document.getElementById('filter-category').value = '';
+      document.getElementById('filter-ingredient').value = '';
+      renderRecipes();
+    }
+
+    function toggleFavorite(e, id) {
+      if (e) e.stopPropagation();
+      const idx = favorites.indexOf(id);
+      if (idx > -1) {
+        favorites.splice(idx, 1);
+      } else {
+        favorites.push(id);
+      }
+      saveState();
+      renderRecipes(currentView === 'favorites');
+    }
+
+    /* SMART QUANTITY & FRACTION FORMATTING */
+    function formatQuantity(amount) {
+      if (amount === undefined || amount === null || amount === '' || isNaN(amount)) return '';
+      let num = parseFloat(amount);
+      if (num === 0) return '0';
+
+      // Smart fractions
+      const rounded = Math.round(num * 100) / 100;
+      const fracMap = {
+        0.25: '¼',
+        0.33: '⅓',
+        0.5: '½',
+        0.66: '⅔',
+        0.67: '⅔',
+        0.75: '¾'
+      };
+
+      const whole = Math.floor(rounded);
+      const remainder = Math.round((rounded - whole) * 100) / 100;
+
+      if (fracMap[remainder]) {
+        return whole > 0 ? `${whole} ${fracMap[remainder]}` : fracMap[remainder];
+      }
+
+      return rounded.toString().replace('.', ',');
+    }
+
+    function formatUnitAndAmount(amount, unit) {
+      if (!amount && amount !== 0) return { amountStr: '', unitStr: unit || '' };
+
+      let scaledAmount = amount;
+      let scaledUnit = unit || '';
+
+      // Unit conversions
+      if (scaledUnit === 'g' && scaledAmount >= 1000) {
+        scaledAmount = scaledAmount / 1000;
+        scaledUnit = 'kg';
+      } else if (scaledUnit === 'ml' && scaledAmount >= 1000) {
+        scaledAmount = scaledAmount / 1000;
+        scaledUnit = 'l';
+      } else if (scaledUnit === 'dl' && scaledAmount >= 10) {
+        scaledAmount = scaledAmount / 10;
+        scaledUnit = 'l';
+      }
+
+      return {
+        amountStr: formatQuantity(scaledAmount),
+        unitStr: scaledUnit
+      };
+    }
+
+    /* RECIPE DETAIL MODAL */
+    function openRecipeDetail(id) {
+      const recipe = recipes.find(r => r.id === id);
+      if (!recipe) return;
+
+      currentDetailPortions = 4;
+      const isFav = favorites.includes(recipe.id);
+      const defaultImg = 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=800&q=80';
+
+      const modalBody = document.getElementById('detail-modal-body');
+      modalBody.innerHTML = `
+        <div class="recipe-detail-header">
+          <img src="${recipe.image || defaultImg}" alt="${recipe.title}" onerror="this.src='${defaultImg}'">
+        </div>
+        <div class="recipe-detail-content">
+          <div class="recipe-detail-title-row">
+            <h2 class="recipe-detail-title">${recipe.title}</h2>
+            <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavoriteDetail('${recipe.id}')" style="position: static;">
+              <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+            ${(recipe.type || []).map(t => `<span class="tag" style="background: var(--primary-light); color: var(--primary);">${t}</span>`).join('')}
+            ${(recipe.category || []).map(c => `<span class="tag">${c}</span>`).join('')}
+            <span class="tag">⏱️ ${recipe.prepTime} min</span>
+          </div>
+
+          <div class="action-bar-detail">
+            <button class="btn-add" onclick="openAddToMealPlanModal('${recipe.id}')">+ Weekmenu</button>
+            <button class="btn-secondary btn-wakelock" id="wakelock-btn" onclick="toggleWakeLock()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+              Scherm aan houden
+            </button>
+            <button class="btn-secondary" onclick="openRecipeForm('${recipe.id}')">Bewerken</button>
+            <button class="btn-secondary" onclick="deleteRecipe('${recipe.id}')" style="color: var(--danger);">Verwijderen</button>
+            ${recipe.sourceUrl ? `<a href="${recipe.sourceUrl}" target="_blank" rel="noopener" class="btn-secondary">Bron ↗</a>` : ''}
+          </div>
+
+          <div class="ingredients-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+              <h3 class="section-subtitle">Ingrediënten</h3>
+              <div class="portion-picker">
+                <span>Porties:</span>
+                <button onclick="updateDetailPortions(-1)">−</button>
+                <input type="number" id="detail-portion-input" value="4" min="1" onchange="updateDetailPortions(0, this.value)">
+                <button onclick="updateDetailPortions(1)">+</button>
+              </div>
+            </div>
+
+            <ul class="ingredients-list" id="detail-ingredients-list">
+              ${renderIngredientsItems(recipe.ingredients, 4)}
+            </ul>
+          </div>
+
+          <div class="steps-section">
+            <h3 class="section-subtitle">Kookwijze</h3>
+            <ol class="steps-list">
+              ${(recipe.instructions || []).map(step => `<li>${step}</li>`).join('')}
+            </ol>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('detail-modal').classList.add('active');
+    }
+
+    function renderIngredientsItems(ingredients, targetPortions) {
+      const ratio = targetPortions / 4;
+      return ingredients.map(ing => {
+        let amount = ing.amount ? ing.amount * ratio : null;
+        const formatted = formatUnitAndAmount(amount, ing.unit);
+        return `
+          <li>
+            ${formatted.amountStr ? `<strong>${formatted.amountStr} ${formatted.unitStr}</strong>` : ''}
+            <span>${ing.name}</span>
+          </li>
+        `;
+      }).join('');
+    }
+
+    function updateDetailPortions(delta, directVal) {
+      if (directVal !== undefined) {
+        currentDetailPortions = Math.max(1, parseInt(directVal) || 1);
+      } else {
+        currentDetailPortions = Math.max(1, currentDetailPortions + delta);
+      }
+      document.getElementById('detail-portion-input').value = currentDetailPortions;
+
+      const recipeId = document.querySelector('.recipe-detail-title-row button').getAttribute('onclick').match(/'([^']+)'/)[1];
+      const recipe = recipes.find(r => r.id === recipeId);
+      if (recipe) {
+        document.getElementById('detail-ingredients-list').innerHTML = renderIngredientsItems(recipe.ingredients, currentDetailPortions);
+      }
+    }
+
+    function toggleFavoriteDetail(id) {
+      toggleFavorite(null, id);
+      const btn = document.querySelector('.recipe-detail-title-row .fav-btn');
+      if (btn) btn.classList.toggle('active', favorites.includes(id));
+    }
+
+    /* WAKE LOCK API */
+    async function toggleWakeLock() {
+      const btn = document.getElementById('wakelock-btn');
+      if (!wakeLock) {
+        try {
+          if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            btn.classList.add('active');
+            btn.innerHTML = `
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+              Scherm blijft AAN
+            `;
+          } else {
+            alert('Wake Lock wordt niet ondersteund door je browser. Zorg dat je schermbeveiliging handmatig op een langere tijd staat.');
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        wakeLock.release();
+        wakeLock = null;
+        btn.classList.remove('active');
+        btn.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          Scherm aan houden
+        `;
+      }
+    }
+
+    /* FORM ADD / EDIT RECIPE */
+    function openRecipeForm(editId = null) {
+      closeModal('detail-modal');
+      const form = document.getElementById('recipe-form');
+      form.reset();
+      document.getElementById('form-ingredients-list').innerHTML = '';
+      document.getElementById('form-steps-list').innerHTML = '';
+
+      if (editId) {
+        const recipe = recipes.find(r => r.id === editId);
+        if (!recipe) return;
+        document.getElementById('form-modal-title').textContent = 'Gerecht bewerken';
+        document.getElementById('form-recipe-id').value = recipe.id;
+        document.getElementById('form-title').value = recipe.title;
+        document.getElementById('form-preptime').value = recipe.prepTime;
+        document.getElementById('form-image-url').value = recipe.image || '';
+        document.getElementById('form-source-url').value = recipe.sourceUrl || '';
+
+        // Fill checkboxes
+        document.querySelectorAll('#form-types input').forEach(cb => cb.checked = (recipe.type || []).includes(cb.value));
+        document.querySelectorAll('#form-categories input').forEach(cb => cb.checked = (recipe.category || []).includes(cb.value));
+
+        // Fill ingredients
+        (recipe.ingredients || []).forEach(ing => addIngredientRow(ing.amount, ing.unit, ing.name));
+        // Fill steps
+        (recipe.instructions || []).forEach(step => addStepRow(step));
+      } else {
+        document.getElementById('form-modal-title').textContent = 'Nieuw gerecht toevoegen';
+        document.getElementById('form-recipe-id').value = '';
+        addIngredientRow();
+        addStepRow();
+      }
+
+      document.getElementById('form-modal').classList.add('active');
+    }
+
+    function addIngredientRow(amount = '', unit = 'g', name = '') {
+      const container = document.getElementById('form-ingredients-list');
+      const row = document.createElement('div');
+      row.className = 'dynamic-row';
+      row.innerHTML = `
+        <input type="number" step="any" placeholder="Aantal" value="${amount}" class="form-control">
+        <select class="form-control">
+          <option value="g" ${unit === 'g' ? 'selected' : ''}>g</option>
+          <option value="kg" ${unit === 'kg' ? 'selected' : ''}>kg</option>
+          <option value="ml" ${unit === 'ml' ? 'selected' : ''}>ml</option>
+          <option value="dl" ${unit === 'dl' ? 'selected' : ''}>dl</option>
+          <option value="l" ${unit === 'l' ? 'selected' : ''}>l</option>
+          <option value="el" ${unit === 'el' ? 'selected' : ''}>el</option>
+          <option value="tl" ${unit === 'tl' ? 'selected' : ''}>tl</option>
+          <option value="stuk" ${unit === 'stuk' ? 'selected' : ''}>stuk</option>
+          <option value="snuf" ${unit === 'snuf' ? 'selected' : ''}>snuf</option>
+          <option value="tenen" ${unit === 'tenen' ? 'selected' : ''}>tenen</option>
+        </select>
+        <input type="text" placeholder="Ingrediënt naam" value="${name}" class="form-control" required>
+        <button type="button" class="btn-icon-danger" onclick="this.parentElement.remove()">✕</button>
+      `;
+      container.appendChild(row);
+    }
+
+    function addStepRow(text = '') {
+      const container = document.getElementById('form-steps-list');
+      const row = document.createElement('div');
+      row.className = 'step-row';
+      row.innerHTML = `
+        <textarea class="form-control" placeholder="Beschrijf deze stap..." required>${text}</textarea>
+        <div class="step-actions">
+          <button type="button" class="btn-mini" onclick="moveStep(this, -1)">▲</button>
+          <button type="button" class="btn-mini" onclick="moveStep(this, 1)">▼</button>
+          <button type="button" class="btn-icon-danger" onclick="this.parentElement.parentElement.remove()">✕</button>
+        </div>
+      `;
+      container.appendChild(row);
+    }
+
+    function moveStep(btn, dir) {
+      const row = btn.parentElement.parentElement;
+      if (dir === -1 && row.previousElementSibling) {
+        row.parentElement.insertBefore(row, row.previousElementSibling);
+      } else if (dir === 1 && row.nextElementSibling) {
+        row.parentElement.insertBefore(row.nextElementSibling, row);
+      }
+    }
+
+    function handleImageUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        // Simple client resize via canvas
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const maxDim = 800;
+          let w = img.width, h = img.height;
+          if (w > h && w > maxDim) { h *= maxDim / w; w = maxDim; }
+          else if (h > maxDim) { w *= maxDim / h; h = maxDim; }
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          document.getElementById('form-image-url').value = canvas.toDataURL('image/jpeg', 0.8);
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveRecipe(e) {
+      e.preventDefault();
+      const id = document.getElementById('form-recipe-id').value || 'rec-' + Date.now();
+      const title = document.getElementById('form-title').value.trim();
+      const prepTime = parseInt(document.getElementById('form-preptime').value) || 15;
+      const image = document.getElementById('form-image-url').value.trim();
+      const sourceUrl = document.getElementById('form-source-url').value.trim();
+
+      const type = Array.from(document.querySelectorAll('#form-types input:checked')).map(cb => cb.value);
+      const category = Array.from(document.querySelectorAll('#form-categories input:checked')).map(cb => cb.value);
+
+      const ingredients = Array.from(document.querySelectorAll('#form-ingredients-list .dynamic-row')).map(row => {
+        const inputs = row.querySelectorAll('input, select');
+        return {
+          amount: inputs[0].value ? parseFloat(inputs[0].value) : null,
+          unit: inputs[1].value,
+          name: inputs[2].value.trim()
+        };
+      }).filter(i => i.name);
+
+      const instructions = Array.from(document.querySelectorAll('#form-steps-list textarea'))
+        .map(ta => ta.value.trim()).filter(Boolean);
+
+      const recipeObj = { id, title, prepTime, type, category, servings: 4, image, sourceUrl, ingredients, instructions };
+
+      const existingIdx = recipes.findIndex(r => r.id === id);
+      if (existingIdx > -1) {
+        recipes[existingIdx] = recipeObj;
+      } else {
+        recipes.unshift(recipeObj);
+      }
+
+      saveState();
+      closeModal('form-modal');
+      renderRecipes();
+    }
+
+    function deleteRecipe(id) {
+      if (!confirm('Weet je zeker dat je dit gerecht wilt verwijderen? Het wordt ook verwijderd uit favorieten en weekmenu.')) return;
+      
+      recipes = recipes.filter(r => r.id !== id);
+      favorites = favorites.filter(fId => fId !== id);
+
+      // Clean mealplan
+      Object.keys(mealPlan).forEach(weekKey => {
+        Object.keys(mealPlan[weekKey]).forEach(day => {
+          Object.keys(mealPlan[weekKey][day]).forEach(slot => {
+            mealPlan[weekKey][day][slot] = mealPlan[weekKey][day][slot].filter(item => item.recipeId !== id);
+          });
+        });
+      });
+
+      saveState();
+      closeModal('detail-modal');
+      renderRecipes();
+      renderMealPlan();
+    }
+
+    /* WEEKMENU LOGIC */
+    function getWeekKey(date) {
+      const d = new Date(date);
+      d.setHours(0,0,0,0);
+      d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+      const yearStart = new Date(d.getFullYear(), 0, 1);
+      const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      return `${d.getFullYear()}-W${weekNo}`;
+    }
+
+    function getWeekDates(offset = 0) {
+      const now = new Date();
+      now.setDate(now.getDate() + (offset * 7));
+      const day = now.getDay() || 7;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - day + 1);
+
+      const dates = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        dates.push(d);
+      }
+      return dates;
+    }
+
+    function changeWeek(delta) {
+      currentWeekOffset += delta;
+      renderMealPlan();
+    }
+
+    function renderMealPlan() {
+      const weekDates = getWeekDates(currentWeekOffset);
+      const weekKey = getWeekKey(weekDates[0]);
+      
+      document.getElementById('week-title-display').textContent = 
+        `${weekDates[0].toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} - ${weekDates[6].toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+
+      const days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag'];
+      const slots = ['ontbijt', 'lunch', 'avondmaal'];
+      const todayStr = new Date().toDateString();
+
+      const grid = document.getElementById('week-grid');
+      grid.innerHTML = weekDates.map((dateObj, dayIdx) => {
+        const isToday = dateObj.toDateString() === todayStr;
+        const dayData = (mealPlan[weekKey] && mealPlan[weekKey][dayIdx]) ? mealPlan[weekKey][dayIdx] : {};
+
+        return `
+          <div class="day-card ${isToday ? 'today' : ''}">
+            <div class="day-header">
+              <span>${days[dayIdx]}</span>
+              <span class="date-sub">${dateObj.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}</span>
+            </div>
+
+            ${slots.map(slot => {
+              const items = dayData[slot] || [];
+              return `
+                <div class="meal-slot">
+                  <div class="meal-slot-title">${slot}</div>
+                  ${items.map((item, itemIdx) => {
+                    const recipe = recipes.find(r => r.id === item.recipeId);
+                    if (!recipe) return '';
+                    return `
+                      <div class="meal-item">
+                        <div>
+                          <strong>${recipe.title}</strong>
+                          <div style="font-size: 0.75rem; color: var(--text-muted);">${item.servings} porties</div>
+                        </div>
+                        <div class="meal-item-actions">
+                          <button class="btn-mini" onclick="removeMealItem('${weekKey}', ${dayIdx}, '${slot}', ${itemIdx})" title="Verwijderen">✕</button>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                  <button class="btn-text" style="font-size: 0.8rem;" onclick="openAddToMealPlanModal(null, ${dayIdx}, '${slot}')">+ Toevoegen</button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openAddToMealPlanModal(recipeId = null, dayIdx = 0, slot = 'avondmaal') {
+      document.getElementById('mp-recipe-id').value = recipeId || '';
+      document.getElementById('mp-select-day').value = dayIdx;
+      document.getElementById('mp-select-slot').value = slot;
+
+      // Select box for recipe if null
+      if (!recipeId) {
+        const existingSelect = document.getElementById('mp-recipe-selector');
+        if (!existingSelect) {
+          const div = document.createElement('div');
+          div.className = 'form-group';
+          div.id = 'mp-recipe-select-group';
+          div.innerHTML = `
+            <label>Kies gerecht</label>
+            <select id="mp-recipe-selector" class="form-control">
+              ${recipes.map(r => `<option value="${r.id}">${r.title}</option>`).join('')}
+            </select>
+          `;
+          document.querySelector('#mealplan-add-modal .form-container').insertBefore(div, document.querySelector('#mealplan-add-modal .form-group'));
+        }
+      } else {
+        const existing = document.getElementById('mp-recipe-select-group');
+        if (existing) existing.remove();
+      }
+
+      document.getElementById('mealplan-add-modal').classList.add('active');
+    }
+
+    function confirmAddToMealPlan() {
+      const recipeId = document.getElementById('mp-recipe-id').value || document.getElementById('mp-recipe-selector').value;
+      const dayIdx = parseInt(document.getElementById('mp-select-day').value);
+      const slot = document.getElementById('mp-select-slot').value;
+      const servings = parseInt(document.getElementById('mp-select-servings').value) || 4;
+
+      const weekDates = getWeekDates(currentWeekOffset);
+      const weekKey = getWeekKey(weekDates[0]);
+
+      if (!mealPlan[weekKey]) mealPlan[weekKey] = {};
+      if (!mealPlan[weekKey][dayIdx]) mealPlan[weekKey][dayIdx] = {};
+      if (!mealPlan[weekKey][dayIdx][slot]) mealPlan[weekKey][dayIdx][slot] = [];
+
+      mealPlan[weekKey][dayIdx][slot].push({ recipeId, servings });
+
+      saveState();
+      closeModal('mealplan-add-modal');
+      closeModal('detail-modal');
+      renderMealPlan();
+    }
+
+    function removeMealItem(weekKey, dayIdx, slot, itemIdx) {
+      if (mealPlan[weekKey] && mealPlan[weekKey][dayIdx] && mealPlan[weekKey][dayIdx][slot]) {
+        mealPlan[weekKey][dayIdx][slot].splice(itemIdx, 1);
+        saveState();
+        renderMealPlan();
+      }
+    }
+
+    function clearWeekMenu() {
+      if (!confirm('Weet je zeker dat je het hele weekmenu voor deze week wilt leegmaken?')) return;
+      const weekDates = getWeekDates(currentWeekOffset);
+      const weekKey = getWeekKey(weekDates[0]);
+      delete mealPlan[weekKey];
+      saveState();
+      renderMealPlan();
+    }
+
+    function generateShoppingFromMealPlan() {
+      switchView('shopping');
+    }
+
+    /* BOODSCHAPPENLIJST GENERATOR & INGREDIENT AGGREGATION */
+    function categorizeIngredient(name) {
+      if (customCategories[name.toLowerCase()]) return customCategories[name.toLowerCase()];
+
+      const lower = name.toLowerCase();
+      if (/ui|knoflook|tomaten|paprika|bleekselderij|maïs|bieslook|groente|sla|wortel|spinazie|paddenstoelen|porcini|citroen/.test(lower)) return 'Groenten & Fruit';
+      if (/vlees|gehakt|worst|spek|kip|ham|andouille|vis|zalm/.test(lower)) return 'Vlees & Vis';
+      if (/boter|kaas|pecorino|parmezaan|melk|room|cheddar|yoghurt/.test(lower)) return 'Zuivel';
+      if (/zout|peper|paprikapoeder|oregano|tijm|komijn|koriander|cacaopoeder|piment|kaneel|kruidnagel|cayennepeper|kruiden/.test(lower)) return 'Kruiden & Specerijen';
+      if (/rijst|arboriorijst|polenta|spaghetti|bonen|limabonen|witte bonen|kidneybonen|bloem|suiker|stroop|melasse|esdoornsiroop|ketchup|mosterdpoeder|worcestershiresaus|witte wijn|olijfolie/.test(lower)) return 'Droge voeding & Voorraadkast';
+      return 'Overig';
+    }
+
+    function renderShoppingList() {
+      const container = document.getElementById('shopping-list-container');
+      const weekDates = getWeekDates(currentWeekOffset);
+      const weekKey = getWeekKey(weekDates[0]);
+      const currentPlan = mealPlan[weekKey] || {};
+
+      const hidePantry = document.getElementById('hide-pantry-check').checked;
+
+      // Aggregation map
+      const aggregated = {};
+
+      Object.values(currentPlan).forEach(dayObj => {
+        Object.values(dayObj).forEach(slotItems => {
+          slotItems.forEach(item => {
+            const recipe = recipes.find(r => r.id === item.recipeId);
+            if (!recipe) return;
+            const ratio = item.servings / 4;
+
+            recipe.ingredients.forEach(ing => {
+              const nameKey = ing.name.toLowerCase().trim();
+              if (hidePantry && pantry.includes(nameKey)) return;
+
+              const category = categorizeIngredient(ing.name);
+              const unit = ing.unit || '';
+              const key = `${nameKey}_${unit}`;
+
+              if (!aggregated[key]) {
+                aggregated[key] = {
+                  name: ing.name,
+                  unit: unit,
+                  amount: ing.amount ? ing.amount * ratio : null,
+                  category: category
+                };
+              } else {
+                if (ing.amount && aggregated[key].amount !== null) {
+                  aggregated[key].amount += ing.amount * ratio;
+                }
+              }
+            });
+          });
+        });
+      });
+
+      // Group by Category
+      const categories = ['Groenten & Fruit', 'Vlees & Vis', 'Zuivel', 'Droge voeding & Voorraadkast', 'Kruiden & Specerijen', 'Overig'];
+      const grouped = {};
+      categories.forEach(c => grouped[c] = []);
+
+      // Add custom manual items
+      customShoppingItems.forEach(ci => {
+        const cat = ci.category || 'Overig';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push({
+          id: ci.id,
+          name: ci.name,
+          unit: ci.unit || '',
+          amount: ci.amount || null,
+          isCustom: true
+        });
+      });
+
+      // Add aggregated items
+      Object.values(aggregated).forEach(item => {
+        const cat = item.category;
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(item);
+      });
+
+      let html = '';
+      let totalItems = 0;
+
+      categories.forEach(cat => {
+        const items = grouped[cat];
+        if (!items || items.length === 0) return;
+        totalItems += items.length;
+
+        html += `
+          <div class="shopping-category">
+            <h3 class="shopping-category-title">📂 ${cat}</h3>
+            <div>
+              ${items.map((item, idx) => {
+                const itemKey = `${item.name}_${item.unit}`;
+                const isChecked = checkedShoppingItems.includes(itemKey);
+                const formatted = formatUnitAndAmount(item.amount, item.unit);
+
+                return `
+                  <div class="shopping-item ${isChecked ? 'checked' : ''}">
+                    <div class="shopping-item-left">
+                      <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleShoppingCheck('${itemKey}')">
+                      <span>
+                        ${formatted.amountStr ? `<strong>${formatted.amountStr} ${formatted.unitStr}</strong> ` : ''}
+                        ${item.name}
+                      </span>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                      <select onchange="changeIngredientCategory('${item.name}', this.value)">
+                        ${categories.map(c => `<option value="${c}" ${c === cat ? 'selected' : ''}>${c}</option>`).join('')}
+                      </select>
+                      ${item.isCustom ? `<button class="btn-mini" onclick="removeCustomShoppingItem('${item.id}')">✕</button>` : ''}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      if (totalItems === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path></svg>
+            <h3>Je boodschappenlijst is leeg</h3>
+            <p>Plan gerechten in je weekmenu om automatisch een boodschappenlijst te genereren, of voeg losse items toe.</p>
+          </div>
+        `;
+      } else {
+        container.innerHTML = html;
+      }
+    }
+
+    function toggleShoppingCheck(key) {
+      const idx = checkedShoppingItems.indexOf(key);
+      if (idx > -1) checkedShoppingItems.splice(idx, 1);
+      else checkedShoppingItems.push(key);
+      saveState();
+      renderShoppingList();
+    }
+
+    function togglePantryFilter(checked) {
+      renderShoppingList();
+    }
+
+    function changeIngredientCategory(name, newCat) {
+      customCategories[name.toLowerCase()] = newCat;
+      saveState();
+      renderShoppingList();
+    }
+
+    function addCustomShoppingItem() {
+      const name = prompt('Voeg een extra boodschap toe (bv. wc-papier):');
+      if (!name) return;
+      customShoppingItems.push({
+        id: 'c-' + Date.now(),
+        name: name.trim(),
+        category: 'Overig'
+      });
+      saveState();
+      renderShoppingList();
+    }
+
+    function removeCustomShoppingItem(id) {
+      customShoppingItems = customShoppingItems.filter(i => i.id !== id);
+      saveState();
+      renderShoppingList();
+    }
+
+    function copyShoppingList() {
+      const weekDates = getWeekDates(currentWeekOffset);
+      let text = `Boodschappenlijst week (${weekDates[0].toLocaleDateString('nl-NL')} - ${weekDates[6].toLocaleDateString('nl-NL')}):
+
+`;
+      
+      document.querySelectorAll('.shopping-category').forEach(catEl => {
+        const title = catEl.querySelector('.shopping-category-title').innerText;
+        text += `${title}
+`;
+        catEl.querySelectorAll('.shopping-item').forEach(itemEl => {
+          const isChecked = itemEl.classList.contains('checked');
+          const nameText = itemEl.querySelector('.shopping-item-left span').innerText;
+          text += `${isChecked ? '[x]' : '[ ]'} ${nameText}
+`;
+        });
+        text += '
+';
+      });
+
+      navigator.clipboard.writeText(text).then(() => alert('Boodschappenlijst gekopieerd naar klembord!'));
+    }
+
+    /* DATA EXPORT & IMPORT */
+    function openSettingsModal() {
+      document.getElementById('settings-modal').classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    function exportDataJSON() {
+      const data = {
+        recipes,
+        favorites,
+        mealPlan,
+        pantry,
+        customShoppingItems,
+        customCategories
+      };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+      const dlAnchorElem = document.createElement('a');
+      dlAnchorElem.setAttribute("href", dataStr);
+      dlAnchorElem.setAttribute("download", `kookboek_backup_${new Date().toISOString().slice(0,10)}.json`);
+      dlAnchorElem.click();
+    }
+
+    function importDataJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed.recipes) recipes = parsed.recipes;
+          if (parsed.favorites) favorites = parsed.favorites;
+          if (parsed.mealPlan) mealPlan = parsed.mealPlan;
+          if (parsed.pantry) pantry = parsed.pantry;
+          if (parsed.customShoppingItems) customShoppingItems = parsed.customShoppingItems;
+          if (parsed.customCategories) customCategories = parsed.customCategories;
+
+          saveState();
+          alert('Gegevens succesvol geïmporteerd!');
+          closeModal('settings-modal');
+          renderRecipes();
+          renderMealPlan();
+        } catch (err) {
+          alert('Fout bij importeren van JSON-bestand: Ongeldig formaat.');
+        }
+      };
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>
