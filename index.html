@@ -89,9 +89,57 @@
                 <p class="text-xs text-slate-500 mb-2">Selecteer één of meerdere categorieën:</p>
 
                 <!-- 12 STRICT CATEGORIES LIST -->
-                <div id="categoryList" class="space-y-1 text-xs">
-                    <!-- Populated dynamically via JS -->
-                </div>
+<div id="categoryList" class="space-y-1 text-xs">
+    <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition hover:bg-slate-100 text-slate-700">
+        <div class="flex items-center gap-2 truncate pr-1">
+            <input type="checkbox" value="1. Mediawijsheid &amp; Veiligheid" onchange="toggleCategory('1. Mediawijsheid &amp; Veiligheid')" class="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5">
+            <span class="truncate">1. Mediawijsheid &amp; Veiligheid</span>
+        </div>
+    </label>
+
+    <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition hover:bg-slate-100 text-slate-700">
+        <div class="flex items-center gap-2 truncate pr-1">
+            <input type="checkbox" value="2. ICT Basisvaardigheden" onchange="toggleCategory('2. ICT Basisvaardigheden')" class="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5">
+            <span class="truncate">2. ICT Basisvaardigheden</span>
+        </div>
+    </label>
+
+    <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition hover:bg-slate-100 text-slate-700">
+        <div class="flex items-center gap-2 truncate pr-1">
+            <input type="checkbox" value="3. Creatief met media" onchange="toggleCategory('3. Creatief met media')" class="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5">
+            <span class="truncate">3. Creatief met media</span>
+        </div>
+    </label>
+
+    <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition bg-indigo-100 text-indigo-900 font-semibold">
+        <div class="flex items-center gap-2 truncate pr-1">
+            <input type="checkbox" value="4. Computationeel Denken &amp; Coding" checked onchange="toggleCategory('4. Computationeel Denken &amp; Coding')" class="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5">
+            <span class="truncate">4. Computationeel Denken &amp; Coding</span>
+        </div>
+    </label>
+
+    <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition hover:bg-slate-100 text-slate-700">
+        <div class="flex items-center gap-2 truncate pr-1">
+            <input type="checkbox" value="5. Oefen- &amp; Leerplatform" onchange="toggleCategory('5. Oefen- &amp; Leerplatform')" class="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5">
+            <span class="truncate">5. Oefen- &amp; Leerplatform</span>
+        </div>
+    </label>
+
+    <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition hover:bg-slate-100 text-slate-700">
+        <div class="flex items-center gap-2 truncate pr-1">
+            <input type="checkbox" value="6. AI in de Klas" onchange="toggleCategory('6. AI in de Klas')" class="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5">
+            <span class="truncate">6. AI in de Klas</span>
+        </div>
+    </label>
+
+    <label class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition hover:bg-slate-100 text-slate-700">
+        <div class="flex items-center gap-2 truncate pr-1">
+            <input type="checkbox" value="8. Kennisbank / Didactisch Lesmateriaal" onchange="toggleCategory('8. Kennisbank / Didactisch Lesmateriaal')" class="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5">
+            <span class="truncate">8. Kennisbank / Didactisch Lesmateriaal</span>
+        </div>
+    </label>
+</div>
+                
             </div>
         </aside>
 
@@ -524,23 +572,33 @@
         const CATEGORIES = [
             "1. Mediawijsheid & Veiligheid",
             "2. ICT Basisvaardigheden",
-            "3. Creatief met Media (foto, video, audio)",
+            "3. Creatief met media",
             "4. Computationeel Denken & Coding",
-            "5. Digitale Geletterdheid (Vakoverschrijdend)",
+            "5. Oefen- & Leerplatform",
             "6. AI in de Klas",
-            "7. Onderwijsvisie & Methodieken",
-            "8. Platformen (ondersteunen bij leren)",
-            "9. Internet leerkrachten",
-            "10. ICT didactisch materiaal",
-            "11. Werken aan taal",
-            "12. Digibord tools"
+            "8. Kennisbank / Didactisch Lesmateriaal"
         ];
 
+                const CATEGORY_MAPPING = {
+            "3. Creatief met Media (foto, video, audio)": "3. Creatief met media",
+            "5. Digitale Geletterdheid (Vakoverschrijdend)": "5. Oefen- & Leerplatform",
+            "7. Onderwijsvisie & Methodieken": "8. Kennisbank / Didactisch Lesmateriaal",
+            "8. Platformen (ondersteunen bij leren)": "8. Kennisbank / Didactisch Lesmateriaal",
+            "9. Internet leerkrachten": "8. Kennisbank / Didactisch Lesmateriaal",
+            "10. ICT didactisch materiaal": "8. Kennisbank / Didactisch Lesmateriaal",
+            "11. Werken aan taal": "5. Oefen- & Leerplatform",
+            "12. Digibord tools": "2. ICT Basisvaardigheden"
+        };
+        
+        // Zorg dat bij het laden de categorieën automatisch worden omgezet:
+        function normalizeCategory(cat) {
+            return CATEGORY_MAPPING[cat] || cat;
+        }
+                
         const AUDIENCES = [
-            "Onderbouw (Kleuter / 1e graad)",
-            "Middenbouw (2de graad / 8-10 jaar)",
-            "Bovenbouw (3e graad / 10-12 jaar)",
-            "Lager (4-12 jaar)",
+            "Onderbouw (Kleuter)",
+            "Middenbouw (2de graad)",
+            "Bovenbouw (3e graad)",
             "Leerkracht",
             "Ouders"
         ];
